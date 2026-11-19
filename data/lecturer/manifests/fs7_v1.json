@@ -1,0 +1,779 @@
+{
+  "version": "fs7_lecturer_v1",
+  "reference_ids": [
+    "lecturer_05",
+    "lecturer_04",
+    "lecturer_02",
+    "lecturer_03",
+    "lecturer_06",
+    "lecturer_07",
+    "lecturer_08"
+  ],
+  "production_fewshot_ready": true,
+  "examples": [
+    {
+      "essay_id": "lecturer_05",
+      "question": "Some people said that the most important thing is the Internet and other people do. To what extent do you agree or disagree with this opinion?",
+      "essay": "Some people said that the most important thing is the Internet. It is true, but also not true. So in my view, I totally disagree with this opinion.\n\nOn the one hand, it is clear that the internet has affected and changed the way how people communicate significantly. It changes the way people communicate, for example, from writing a mail then send it to others to writing an email then send it instantly, or from talk face-to-face to messaging, or even video calling.\n\nWe can't denied the importance of the internet. However, it is not the most important thing in this world. Just imagine, how can we use the internet without electricity? How can we use the internet without smart devices or electronic devices? That's the problem. We cannot even touch the internet, if we don't have those things.\n\nFurther, the people's work at Science and Technology is more important than that things. The internet still need human intelligence to operate and great as today.\n\nIn conclusion, it is true that the internet is important, but there are many things are important than internet.",
+      "word_count": 184,
+      "scores": {
+        "task_response": 5.0,
+        "coherence_cohesion": 5.0,
+        "lexical_resource": 5.0,
+        "grammatical_range_accuracy": 5.0,
+        "overall": 5.0
+      },
+      "feedback_by_criterion": {
+        "task_response": {
+          "score": 5.0,
+          "summary": "The essay takes a contradictory stance in the opening ('true, but also not true' followed by 'totally disagree') and leaves body ideas underdeveloped without clear real-world consequences or valid category comparisons.",
+          "comments": [
+            "Resolve the contradictory opening stance; avoid stating that a claim is both true and not true.",
+            "Develop the consequences of internet communication in Body 1, such as reduced need for physical travel and affordable access to foreign cultures.",
+            "Avoid treating people who work in science and technology as inventions; clarify the intended comparison."
+          ],
+          "edits": []
+        },
+        "coherence_cohesion": {
+          "score": 5.0,
+          "summary": "Paragraphs follow a recognizable essay layout, but the contradictory thesis and informal transitions weaken logical progression across the response.",
+          "comments": [
+            "Maintain a consistent position from introduction through conclusion."
+          ],
+          "edits": [
+            {
+              "original": "So in my view, I totally disagree",
+              "revised": "In my view, I totally disagree",
+              "note": "Remove informal conversational 'So' when stating the thesis."
+            }
+          ]
+        },
+        "lexical_resource": {
+          "score": 5.0,
+          "summary": "Limited lexical range and frequent informal expressions, contractions, and imprecise collocations keep vocabulary at Band 5.",
+          "comments": [
+            "Use a more formal academic register instead of conversational expressions and rhetorical questions.",
+            "Avoid contractions such as 'can't' and 'don't' in IELTS Writing Task 2."
+          ],
+          "edits": [
+            {
+              "original": "Some people said that",
+              "revised": "Some people believe that",
+              "note": "Use 'believe' rather than conversational 'said' when framing public views."
+            },
+            {
+              "original": "the internet has affected and changed the way how people communicate significantly",
+              "revised": "the internet has significantly affected and changed the way people communicate",
+              "note": "Place adverb 'significantly' naturally before the main verb phrase."
+            },
+            {
+              "original": "people's work at Science and Technology",
+              "revised": "people who work in the science and technology field",
+              "note": "Replace awkward possessive/prepositional phrasing with standard lowercase field terminology."
+            }
+          ]
+        },
+        "grammatical_range_accuracy": {
+          "score": 5.0,
+          "summary": "Recurring errors in modal verb forms, relative clauses, punctuation, and missing verbs limit grammatical accuracy to Band 5.",
+          "comments": [
+            "Review verb forms after modal auxiliaries and basic relative clause construction."
+          ],
+          "edits": [
+            {
+              "original": "the way how people communicate",
+              "revised": "the way people communicate",
+              "note": "Omit redundant 'how' after 'the way'."
+            },
+            {
+              "original": "We can't denied the importance",
+              "revised": "We can't deny the importance",
+              "note": "Use base verb 'deny' after modal 'can't'."
+            },
+            {
+              "original": "touch the internet, if we don't have",
+              "revised": "touch the internet if we don't have",
+              "note": "Remove unnecessary comma before trailing 'if' clause."
+            }
+          ]
+        }
+      },
+      "source": "lecturer_google_docs",
+      "label_provenance": "explicit_lecturer_annotation",
+      "prompt_verified": true,
+      "fewshot_ready": true
+    },
+    {
+      "essay_id": "lecturer_04",
+      "question": "There have been many inventions in human history, such as the wheel. Some people think the most important invention is the Internet. To what extent do you agree or disagree with this opinion?",
+      "essay": "There are countless inventions in human history, including the wheel. One school of thoughts hold that the internet is the most important inventions. I disagree with this opinion.\n\nFirst of all, the internet is not an absolute necessity for everyone. A large majority in global population can survive without internet connection. For example, many communities in remote areas, as well as previous generation, have lived healthy and happy with rudimentary tools without knowing what is internet.\n\nSecondly, inventions in medicine and sanitation are significantly more essential because they directly save millions of lives. While the internet helps people connect, medical advances protect people health and save people from diseases. A clear example is the discovery of Penicillin, which cured lethal infections and created a healthy workforce caple of later developing information technology.\n\nIn conclusion, while the internet has several benefits, there are lots of inventions that are more essential than the internet.",
+      "word_count": 152,
+      "scores": {
+        "task_response": 5.0,
+        "coherence_cohesion": 6.0,
+        "lexical_resource": 6.0,
+        "grammatical_range_accuracy": 6.0,
+        "overall": 6.0
+      },
+      "feedback_by_criterion": {
+        "task_response": {
+          "score": 5.0,
+          "summary": "TR 5: ideas frequently lack clear results or paragraph-level conclusions, insufficient ideas leave the essay below the 250-word requirement (152 words), and the medicine-vs-internet comparison lacks a consistent criterion.",
+          "comments": [
+            "The essay is below the required 250-word length.",
+            "Ideas frequently lack explicit results or paragraph conclusions tying back to the thesis.",
+            "Establish a consistent comparison criterion before comparing medicine and the internet (for example, contribution to human survival and enabling the workforce behind later innovations)."
+          ],
+          "edits": [
+            {
+              "original": "without knowing what is internet.",
+              "revised": "without knowing about or using internet. Therefore, claiming the internet to be the most important invention for these communities would be a mistake.",
+              "note": "Add an explicit concluding link tying the Body 1 example back to the thesis."
+            }
+          ]
+        },
+        "coherence_cohesion": {
+          "score": 6.0,
+          "summary": "CC 6: overall paragraph structure is clear, though missing explicit concluding steps and awkward clause transitions limit progression.",
+          "comments": [],
+          "edits": []
+        },
+        "lexical_resource": {
+          "score": 6.0,
+          "summary": "LR 6: noticeable vocabulary, collocation, and spelling errors remain across the essay, though they do not prevent comprehension.",
+          "comments": [
+            "Lexical and spelling inaccuracies remain frequent but do not obstruct reader understanding."
+          ],
+          "edits": [
+            {
+              "original": "A large majority in global population",
+              "revised": "The vast majority of the global population",
+              "note": "Replace non-idiomatic phrasing with the natural collocation 'the vast majority of'."
+            },
+            {
+              "original": "caple of later developing information technology",
+              "revised": "capable of fostering later development in information technology",
+              "note": "Correct spelling of 'capable' and use clearer academic phrasing."
+            }
+          ]
+        },
+        "grammatical_range_accuracy": {
+          "score": 6.0,
+          "summary": "GRA 6: frequent errors in subject-verb agreement, plural forms, adverbs, verb tense, and clause structure occur without blocking comprehension.",
+          "comments": [
+            "Grammatical mistakes in agreement, pluralization, adverb forms, and indirect clauses occur repeatedly without preventing comprehension."
+          ],
+          "edits": [
+            {
+              "original": "One school of thoughts hold that the internet is the most important inventions.",
+              "revised": "One school of thoughts holds that the internet is the most important invention.",
+              "note": "Use singular verb 'holds' and singular complement 'invention'."
+            },
+            {
+              "original": "previous generation, have lived healthy and happy with rudimentary tools without knowing what is internet.",
+              "revised": "previous generations, have lived healthily and happily without knowing about or using internet.",
+              "note": "Use plural 'generations', adverbial forms 'healthily and happily', and valid complement structure."
+            },
+            {
+              "original": "because they directly save millions of lives.",
+              "revised": "because they directly saved millions of lives.",
+              "note": "Use past tense 'saved' for past medical impacts."
+            }
+          ]
+        }
+      },
+      "source": "lecturer_google_docs",
+      "label_provenance": "explicit_lecturer_annotation",
+      "prompt_verified": true,
+      "fewshot_ready": true
+    },
+    {
+      "essay_id": "lecturer_02",
+      "question": "Traffic and housing problems could be solved by moving large companies, factories and their employees to the countryside.\n\nDo you agree or disagree?",
+      "essay": "One school of thought holds that relocating large companies, factories and their employees to the countryside would adress traffic congestions and housing problems in major cities. While this policy would have temporary relief, I disagree that it is an efficient long-term solution because it merely moving these problems from big cities to the countryside.\n\nThe primary reason of traffic jams and housing problems in big major cities is their population have exceeded existing infrastructure. As more people are attrated by the concentration of businesses and employment opportunities, roads become more crowded, while the demand for house exceeds the available supply. Consequently, house prices increase to levels that many people cannot afford. Ha Noi, for example, has faced serious traffic jams and rising housing price because its population has continued to grow. Admittedly, relocating large companies, factories and their labors to the countryside would reduce the number of people moving to big cities, which could reduce the pressure on transport systems and housing market in major cities. However, this policy would only moving these problem to other place. Since transport system and housing infrastructure in rural area may less develop, large influx of workers would quickly overwhelm local roads and housing supply. Futhermore, the higher demand for house can increase land and house prices, which creating the same problems that major cities are facing. As a result, this policy does not solve traffic and housing problems but only transfer them from cities to countryside.\n\nA comprehensive and sustainable solution is developing satellite hubs around major cities. Rather than concentrating businesses in one cities or moving completely to the countryside, governments should encourage companies to open branches in nearby areas, where transport systems and housing infrastructure are develop along with major cities.\n\nAs more jobs become more available in more place, people would not have to go to biggest cities to find jobs. Therefore, people can work and live closer to there home, making a more balanced population distribution. As a result, the pressure on traffic systems and housing infrastructure in big cities gradually decrease without creating the same problem in another places.\n\nIn conclusion, relocating large companies, factories and their employees does not truly solve traffic and housing problems because it only transfer",
+      "word_count": 372,
+      "scores": {
+        "task_response": 6.0,
+        "coherence_cohesion": 6.0,
+        "lexical_resource": 6.0,
+        "grammatical_range_accuracy": 7.0,
+        "overall": 6.5
+      },
+      "feedback_by_criterion": {
+        "task_response": {
+          "score": 6.0,
+          "summary": "Body paragraph 1 introduces urban overpopulation without using it to prove why relocation fails, Body paragraph 2 develops the alternative solution ineffectively, and the conclusion ends incomplete mid-sentence.",
+          "comments": [
+            "Condense the introduction contrast into a focused statement balancing temporary relief against exporting urban issues to rural areas.",
+            "Link the root cause (overpopulation exceeding urban infrastructure) directly to why relocating businesses recreates traffic congestion and housing shortages in rural areas.",
+            "Clarify 'nearby areas' as outer suburban satellite hubs outside the city rather than areas still inside the urban core.",
+            "Notice that the final sentence cuts off unfinished ('because it only transfer')."
+          ],
+          "edits": [
+            {
+              "original": "While this policy would have temporary relief, I disagree that it is an efficient long-term solution because it merely moving these problems from big cities to the countryside.",
+              "revised": "While this policy would provide temporary relief, I disagree that it is an efficient long-term solution because it merely moves these problems from big cities to the countryside.",
+              "note": "Tighten thesis contrast and fix verb phrasing."
+            },
+            {
+              "original": "developing satellite hubs around major cities. Rather than concentrating businesses in one cities",
+              "revised": "developing satellite hubs in suburban areas outside major cities. Rather than concentrating businesses in one single urban center",
+              "note": "Specify suburban hubs clearly to distinguish them from city centers."
+            }
+          ]
+        },
+        "coherence_cohesion": {
+          "score": 6.0,
+          "summary": "Body paragraph 1 generally connects sentences except for the logical gap between root cause and relocation outcome plus a redundant final sentence; Body paragraph 2 breaks into disjointed paragraphs.",
+          "comments": [
+            "Remove redundant concluding restatements when the point was already established in the preceding 'However' contrast.",
+            "Improve logical connection from the satellite-hub proposal paragraph into the following outcome paragraph ('As more jobs become more available...')."
+          ],
+          "edits": [
+            {
+              "original": "Ha Noi, for example, has faced serious traffic jams and rising housing price because its population has continued to grow.",
+              "revised": "Ha Noi, for example, has faced increasingly serious traffic jams and rising housing price due to a growing influx of workers and students seeking employment and educational opportunities.",
+              "note": "Refine causal phrasing linking urban growth to traffic and housing demand."
+            },
+            {
+              "original": "As a result, this policy does not solve traffic and housing problems but only transfer them from cities to countryside.",
+              "revised": "",
+              "note": "Remove redundant concluding restatement already covered earlier in the paragraph."
+            }
+          ]
+        },
+        "lexical_resource": {
+          "score": 6.0,
+          "summary": "Vocabulary shows awareness of topic terms, but spelling mistakes, imprecise collocations, and redundant modification limit precision to Band 6.",
+          "comments": [
+            "Specify that a population exceeds 'the capacity of existing infrastructure', rather than exceeding infrastructure itself.",
+            "Avoid redundant adjectives before 'influx', as 'influx' already means a large arrival of people."
+          ],
+          "edits": [
+            {
+              "original": "would adress traffic congestions",
+              "revised": "would address traffic congestions",
+              "note": "Correct spelling of 'address'."
+            },
+            {
+              "original": "would have temporary relief",
+              "revised": "would provide temporary relief",
+              "note": "Use natural collocation 'provide temporary relief'."
+            },
+            {
+              "original": "population have exceeded existing infrastructure",
+              "revised": "population have exceeded the capacity of existing infrastructure",
+              "note": "Clarify that population exceeds infrastructure capacity."
+            },
+            {
+              "original": "As more people are attrated",
+              "revised": "As more people are attracted",
+              "note": "Correct spelling of 'attracted'."
+            },
+            {
+              "original": "their labors",
+              "revised": "their workers",
+              "note": "Use 'workers' rather than 'labors' for company employees."
+            },
+            {
+              "original": "large influx of workers",
+              "revised": "an influx of workers",
+              "note": "Remove redundant modifier 'large' before 'influx'."
+            },
+            {
+              "original": "can increase land and house prices",
+              "revised": "would increase property prices",
+              "note": "Use concise lexical phrase 'property prices'."
+            }
+          ]
+        },
+        "grammatical_range_accuracy": {
+          "score": 7.0,
+          "summary": "Demonstrates good range of complex sentence structures at Band 7 level; remaining errors involve prepositions, finite verb endings, passive voice, and missing clause connectors.",
+          "comments": [
+            "Pay closer attention to grammatical accuracy (finite verbs, passive participles, plural nouns, and clause connectors) when writing complex sentences."
+          ],
+          "edits": [
+            {
+              "original": "primary reason of traffic jams",
+              "revised": "primary reason for traffic jams",
+              "note": "Use 'for' or 'behind' after 'reason'."
+            },
+            {
+              "original": "is their population have exceeded",
+              "revised": "is that their population have exceeded",
+              "note": "Insert 'that' to introduce the complement clause."
+            },
+            {
+              "original": "it merely moving these problems",
+              "revised": "it merely moves these problems",
+              "note": "Use finite present verb 'moves' after 'it'."
+            },
+            {
+              "original": "in rural area may less develop",
+              "revised": "in rural area may be less developed",
+              "note": "Add passive auxiliary 'be' and participle ending '-ed'."
+            },
+            {
+              "original": "prices, which creating the same problems",
+              "revised": "prices, which creates the same problems",
+              "note": "Use finite relative-clause verb 'creates'."
+            }
+          ]
+        }
+      },
+      "source": "lecturer_google_docs",
+      "label_provenance": "explicit_lecturer_annotation",
+      "prompt_verified": true,
+      "fewshot_ready": true
+    },
+    {
+      "essay_id": "lecturer_03",
+      "question": "Traffic and housing problems could be solved by moving large companies, factories and their employees to the countryside. Do you agree or disagree?",
+      "essay": "Traffic and housing problems in major cities could be solved by relocating large companies, factories and their employees to the countryside. In my opinion, I disagree with this statement.\n\nTo begin with, relocating firms, plants and employees only exports these problems. First, the primary causes of traffic and housing lie in the population growth, which exceeds the capacity of urban infrastructure. When there are many people use their private vehicles for daily commuting, urban road often record traffic congestion during rush hours. Similarly, while the number of houses strictly limited in the city, increasing demand often drives up their prices, making them too expensive for many citizens. This can be seen in Ha Noi, it is always experienced traffic congestion during rush hours and the monthly rent for only small room can be around 3 million VND, which may be unaffordable for many workers trying to make a living. Although moving companies and their employees to rural areas can reduce traffic volumes and housing demand, it would be transfer to the countryside. When a large number of people move ther, the rural could experience heavy traffic congestion because their infrastructure is less developed than that in the city. In addition, housing price in the countryside will raise up likely in the city because of increasing housing demand when many people relocate. As a result, if people relocate in the countryside, the problem couldn't be eliminated and it only exports to the countryside.\n\nInstead of moving to the countryside, the governments should adopt urban polycentric. The root cause of the problem is not that city have too many companies, but there are many people and jobs are concentrated in city centre. Therefore, governments should encourage bussiness to move to satellite hubs by investing heavily in developing fast and affordable public transport in these area. Most importantly the mentioned public transport should connect with satellite hubs to the main city centre by trains or metro, allowing citizens to travel seamlessly to the centre whenever needed. Therefore, the volumes of traffic will reduce and the pressure on the accomodation will reduce when the population do not live in only one place, making much pressure.\n\nIn conclusion, moving companies, factories, and their employees in rural area is not good to address traffic and housing problems. Instead, government should adopt urban polycentric to solve this problems.",
+      "word_count": 391,
+      "scores": {
+        "task_response": 7.0,
+        "coherence_cohesion": 7.0,
+        "lexical_resource": 6.0,
+        "grammatical_range_accuracy": 6.0,
+        "overall": 6.5
+      },
+      "feedback_by_criterion": {
+        "task_response": {
+          "score": 7.0,
+          "summary": "Directly addresses the prompt with well-developed ideas (Band 7), though Body paragraph 1 spends excessive space detailing urban root causes instead of using them concisely to prove why relocation fails.",
+          "comments": [
+            "Frame the opening prompt sentence as a held viewpoint ('Some people believe that...') rather than presenting it as an established fact.",
+            "Trim extended urban examples in Body 1 and use overpopulation concisely to prove that relocating businesses exports congestion and housing pressure to rural areas."
+          ],
+          "edits": [
+            {
+              "original": "Traffic and housing problems in major cities could be solved",
+              "revised": "Some people believe that traffic and housing problems in major cities could be solved",
+              "note": "Introduce the prompt statement as an attributed opinion rather than fact."
+            }
+          ]
+        },
+        "coherence_cohesion": {
+          "score": 7.0,
+          "summary": "Paragraph organization and logical progression are clear and smooth (Band 7), with only a minor transition gap between root-cause description and rural relocation consequences.",
+          "comments": [
+            "Avoid repeating specific transit examples ('by trains or metro') when already encompassed by 'public transport system' earlier in the paragraph.",
+            "Smooth the causal transition from overpopulation root cause to rural spillover effects."
+          ],
+          "edits": [
+            {
+              "original": "by trains or metro, allowing citizens",
+              "revised": ", allowing citizens",
+              "note": "Remove redundant transit example already covered by public transport."
+            },
+            {
+              "original": "Therefore, the volumes of traffic will reduce",
+              "revised": "This way, the volumes of traffic will reduce",
+              "note": "Use smoother demonstrative transition referring back to the proposed system."
+            }
+          ]
+        },
+        "lexical_resource": {
+          "score": 6.0,
+          "summary": "Lexical range reaches toward Band 7, but imprecise collocations, prepositions, word forms, and spelling mistakes restrict lexical accuracy to Band 6.",
+          "comments": [
+            "Refer to 'causes of traffic problems and housing challenges' instead of 'causes of traffic and housing'.",
+            "Use stronger, natural collocations to express excessive growth and change ('the sheer pace of population growth', 'increase' rather than 'raise up')."
+          ],
+          "edits": [
+            {
+              "original": "causes of traffic and housing lie in the population growth",
+              "revised": "causes of traffic problems and housing challenges lie in the sheer pace of population growth",
+              "note": "Clarify modified nouns and emphasize rapid population growth."
+            },
+            {
+              "original": "many people use their private vehicles",
+              "revised": "too many people using their private vehicles",
+              "note": "Convey excess with 'too many' rather than neutral 'many'."
+            },
+            {
+              "original": "will raise up likely in the city",
+              "revised": "will also increase",
+              "note": "Replace non-standard 'raise up' and awkward comparison phrase."
+            },
+            {
+              "original": "pressure on the accomodation",
+              "revised": "pressure on the housing system",
+              "note": "Correct spelling and use natural domain collocation."
+            },
+            {
+              "original": "adopt urban polycentric.",
+              "revised": "adopt urban polycentricity.",
+              "note": "Use noun form 'polycentricity' as object of 'adopt'."
+            }
+          ]
+        },
+        "grammatical_range_accuracy": {
+          "score": 6.0,
+          "summary": "Uses varied complex structures (Band 7 range), but frequent missing auxiliaries, clause-parallelism breakdowns, and agreement errors keep accuracy at Band 6.",
+          "comments": [
+            "Check parallel clause structure in complex sentences (e.g., coordinating 'which has always experienced...' with 'and where the monthly rent...').",
+            "Verify missing finite verbs, plural nouns, and passive past participles."
+          ],
+          "edits": [
+            {
+              "original": "urban road often record",
+              "revised": "urban roads often record",
+              "note": "Use plural noun 'roads' for general urban statements."
+            },
+            {
+              "original": "number of houses strictly limited",
+              "revised": "number of houses is strictly limited",
+              "note": "Supply missing finite verb 'is'."
+            },
+            {
+              "original": "it is always experienced traffic congestion during rush hours and the monthly rent for only small room",
+              "revised": "which has always experienced traffic congestion during rush hours, and where the monthly rent for a small room",
+              "note": "Fix active/passive construction and restore parallel relative clauses."
+            },
+            {
+              "original": "it would be transfer to the countryside",
+              "revised": "these problems would be transferred to the countryside",
+              "note": "Supply plural referent and passive past participle 'transferred'."
+            },
+            {
+              "original": "to solve this problems.",
+              "revised": "to solve these problems.",
+              "note": "Match plural demonstrative 'these' with plural noun 'problems'."
+            }
+          ]
+        }
+      },
+      "source": "lecturer_google_docs",
+      "label_provenance": "explicit_lecturer_annotation",
+      "prompt_verified": true,
+      "fewshot_ready": true
+    },
+    {
+      "essay_id": "lecturer_06",
+      "question": "Some university students want to learn about other subjects in addition to their main subjects. Others believe it is more important to give all their time and attention to studying for a qualification. Discuss both views and give your opinion.",
+      "essay": "Some university students are now inclined to study other subjects besides their major, while others argue that dedicating all their time and attention to completing their degrees is of greater importance. This essay will first closely discuss both views before showing my final thoughts.\n\nOn the one hand, proponents of an interdisciplinary approach often argue that it helps broaden students' knowledge and fosters the development of skills that may complement their main subjects. For example, a male undergraduate majoring in computer science might benefit greatly from studying English, as the majority of reliable sources of information in this field is often written in English. Advocates also emphasize that students with a broad set of knowledge and skills are often better prepared for career shifts compared to those who focus predominantly on one major. This adaptability, they say, is of great importance in today's ever-changing job market, where automation and artificial intelligence are gradually displacing workers in numerous industries.\n\nOn the other hand, supporters of dedicating all time and attention to studying for a qualification often emphasize the importance of specialization. Perhaps for them, preparing diligently in only one specialization is the most logical pathway to become successful in any given field. For example, if the above-mentioned computer science undergraduate focuses predominantly on completing his qualification, he will be able to acquire a solid theoretical foundation more quickly and enter the job market sooner. This would allow him to accumulate hands-on experience earlier, making him a better potential candidate for well-paid positions that require practical experience rather than academic knowledge.\n\nUpon weighing both viewpoints, I believe that both approaches are\n\nbeneficial in their own ways, and that there is no one-size-fits-all approach to tertiary education. Each student should carefully consider their preference before choosing an approach. Those who want to accumulate practical experience may benefit more from focusing solely on completing their degrees, while those who value adaptability and a well-rounded skill set may benefit more from an interdisciplinary approach.",
+      "word_count": 329,
+      "scores": {
+        "task_response": 8.0,
+        "coherence_cohesion": 8.0,
+        "lexical_resource": 8.0,
+        "grammatical_range_accuracy": 7.0,
+        "overall": 7.5
+      },
+      "feedback_by_criterion": {
+        "task_response": {
+          "score": 8.0,
+          "summary": "TR 8: effectively paraphrases the task prompt and develops both viewpoints with well-supported examples and a balanced conclusion.",
+          "comments": [
+            "Effective paraphrasing in the introduction clearly frames both views.",
+            "Parenthetical phrasing ('they say,') draws emphasis to the claim but can be tightened for formal academic flow."
+          ],
+          "edits": []
+        },
+        "coherence_cohesion": {
+          "score": 8.0,
+          "summary": "CC 8: logical paragraph progression and cohesive flow across both viewpoints, with localized issues in one overly long example sentence and an unstated comparison target.",
+          "comments": [
+            "Consider dividing the long Body 2 computer-science example sentence into two clearer sentences.",
+            "Clarify who is being compared in 'more quickly and enter the job market sooner'."
+          ],
+          "edits": [
+            {
+              "original": "This adaptability, they say, is of great importance in today's ever-changing job market",
+              "revised": "This adaptability can help them thrive in today's ever-changing job market",
+              "note": "Link adaptability directly to student outcomes cleanly without parenthetical interruption."
+            }
+          ]
+        },
+        "lexical_resource": {
+          "score": 8.0,
+          "summary": "LR 8: strong topic-specific vocabulary (e.g., 'an interdisciplinary approach') with minor word-choice adjustments suggested for precision and avoiding repetition.",
+          "comments": [
+            "Effective topic-specific vocabulary enhances lexical precision.",
+            "Refine imprecise or repetitive word choices such as 'predominantly', 'want to accumulate', and 'choosing an approach'."
+          ],
+          "edits": [
+            {
+              "original": "focus predominantly on one major",
+              "revised": "focus solely on one major",
+              "note": "Replace contextually imprecise 'predominantly' with 'solely'."
+            },
+            {
+              "original": "Advocates also emphasize that students",
+              "revised": "Advocates also highlight that students",
+              "note": "Use 'highlight' to vary phrasing rather than repeating 'emphasize'."
+            },
+            {
+              "original": "focuses predominantly on completing his qualification",
+              "revised": "focuses only on completing his qualification",
+              "note": "Replace imprecise 'predominantly' with 'only'."
+            },
+            {
+              "original": "choosing an approach",
+              "revised": "making a decision",
+              "note": "Replace repeated noun 'approach' with 'making a decision' in the conclusion."
+            },
+            {
+              "original": "Those who want to accumulate practical experience",
+              "revised": "Those who prioritise practical experience",
+              "note": "Use the concise, accurate academic verb 'prioritise'."
+            }
+          ]
+        },
+        "grammatical_range_accuracy": {
+          "score": 7.0,
+          "summary": "GRA 7: uses varied complex structures well overall, limited by localized subject-verb agreement, unqualified comparatives, and singular/plural slips.",
+          "comments": [
+            "After 'majority of + noun', match verb agreement to the following noun ('are' with plural 'sources')."
+          ],
+          "edits": [
+            {
+              "original": "the majority of reliable sources of information in this field is often written in English",
+              "revised": "the majority of reliable sources of information in this field are often written in English",
+              "note": "Match plural verb 'are' to plural noun 'sources'."
+            },
+            {
+              "original": "acquire a solid theoretical foundation more quickly and enter the job market sooner. This would allow him to accumulate hands-on experience earlier, making him a better potential candidate",
+              "revised": "acquire a solid theoretical foundation quickly and enter the job market soon. This would allow him to accumulate hands-on experience earlier, making him a potential candidate",
+              "note": "Remove unsupported comparative forms where no explicit baseline group is named."
+            },
+            {
+              "original": "carefully consider their preference",
+              "revised": "carefully consider their preferences",
+              "note": "Use plural 'preferences' to align with plural pronoun 'their'."
+            }
+          ]
+        }
+      },
+      "source": "lecturer_google_docs",
+      "label_provenance": "explicit_lecturer_annotation",
+      "prompt_verified": true,
+      "fewshot_ready": true
+    },
+    {
+      "essay_id": "lecturer_07",
+      "question": "In many countries around the world, rural people are moving to cities, so the population in the countryside is decreasing.\nDo you think this is a positive or negative development?",
+      "essay": "In many parts of the world, people in rural areas are relocating to cities; therefore, the population in such areas is decreasing. Personally, I believe that this development is largely negative.\n\nA decrease in population can take a toll on the development of rural places. First, decreasing population can lead to a lack of workers in the countryside, potentially hindering economic growth in such areas. In worse cases, if the shortage of workers is not addressed, rural areas might even face economic stagnation. The situation can be further worsened when more and more people move to cities. If this was the case, businesses would become increasingly hesitant to move to the countryside due to the limited talent pool and lack of customers in such areas. This business scarcity would significantly limit economic activities in rural areas, further hindering economic growth in these places.\n\nWhile urban migration can  theoretically stimulate economic growth in cities by providing them with a larger workforce, this is often not the case in reality. In many cities around the world, including major ones like Los Angeles or Tokyo, rapid urban migration often outpaces their ability to create jobs. As a result, many rural migrants often end up unemployed, which can in turn give rise to such social evils as robbery or burglary.  Additionally, an influx of people from rural areas can further exacerbate the problem of overpopulation in cities, straining the infrastructure in cities and aggravating such problems as traffic congestion or air pollution. This can directly lower the quality of life of many urban dwellers. A perfect example can be seen in Hanoi, the capital city of Vietnam, where the migration of rural people has led to severe traffic congestion, forcing thousands of citizens to spend hours commuting to and from work or school every day.\n\nIn conclusion, I believe that the potential benefits of rural-to-urban migration often do not materialize in most cases, and are overshadowed by its drawbacks. The potential harm to social development in the countryside, escalating strain on cities' infrastructure, and the risks of aggravating pressing issues like air pollution and traffic congestion tip the balance against this trend.",
+      "word_count": 358,
+      "scores": {
+        "task_response": 8.0,
+        "coherence_cohesion": 8.0,
+        "lexical_resource": 8.0,
+        "grammatical_range_accuracy": 8.0,
+        "overall": 8.0
+      },
+      "feedback_by_criterion": {
+        "task_response": {
+          "score": 8.0,
+          "summary": "Fully addresses both rural economic decline and urban infrastructure strain with clear, well-supported arguments and specific examples throughout (Band 8.0).",
+          "comments": [
+            "Position is clear from introduction to conclusion with strong, relevant development across every paragraph."
+          ],
+          "edits": []
+        },
+        "coherence_cohesion": {
+          "score": 8.0,
+          "summary": "Information and ideas are sequenced logically with clear paragraphing (Band 8.0); lecturer notes only minor repetition of place phrases and offers smoother transitions.",
+          "comments": [
+            "Avoid repeating 'in rural areas', 'in cities', or 'in such areas' when the location referent is already clear.",
+            "Prefer concise clause transitions and demonstrative reference ('In such scenarios') over repetitive framing."
+          ],
+          "edits": [
+            {
+              "original": "; therefore, the population in such areas is decreasing",
+              "revised": ", leading to a decline in population in these regions",
+              "note": "Paraphrase the causal clause cleanly into a participial phrase."
+            },
+            {
+              "original": "when more and more people move to cities",
+              "revised": "as more people move to cities",
+              "note": "Tighten connector and remove repetitive intensifier."
+            },
+            {
+              "original": "If this was the case",
+              "revised": "In such scenarios",
+              "note": "Replace conditional filler with concise anaphoric reference."
+            },
+            {
+              "original": "limit economic activities in rural areas, further hindering",
+              "revised": "limit economic activities, further hindering",
+              "note": "Omit redundant location phrase already clear from previous sentences."
+            },
+            {
+              "original": "straining the infrastructure in cities",
+              "revised": "straining infrastructure",
+              "note": "Omit redundant 'in cities' after 'overpopulation in cities'."
+            }
+          ]
+        },
+        "lexical_resource": {
+          "score": 8.0,
+          "summary": "Uses a wide range of vocabulary fluently and naturally (Band 8.0); lecturer offers stylistic paraphrases for repeated terms.",
+          "comments": [
+            "Vary recurring terms such as 'lack of workers' ('shortage of workers') and 'do not materialize' ('fail to materialize')."
+          ],
+          "edits": [
+            {
+              "original": "lead to a lack of workers",
+              "revised": "lead to a shortage of workers",
+              "note": "Stylistic synonym variation to avoid repeating 'lack'."
+            },
+            {
+              "original": "hesitant to move to the countryside",
+              "revised": "hesitant to establish themselves in the countryside",
+              "note": "More formal corporate verb choice."
+            },
+            {
+              "original": "providing them with a larger workforce",
+              "revised": "increasing the workforce",
+              "note": "More concise academic verb phrase."
+            },
+            {
+              "original": "often do not materialize",
+              "revised": "often fail to materialize",
+              "note": "Stronger idiomatic academic collocation."
+            }
+          ]
+        },
+        "grammatical_range_accuracy": {
+          "score": 8.0,
+          "summary": "Demonstrates wide control over complex sentence structures with minimal minor slips (Band 8.0).",
+          "comments": [
+            "Keep article usage and concise active/intransitive verb choices sharp."
+          ],
+          "edits": [
+            {
+              "original": "First, decreasing population can lead",
+              "revised": "First, a decreasing population can lead",
+              "note": "Add indefinite article 'a' before countable singular phrase."
+            },
+            {
+              "original": "can be further worsened",
+              "revised": "can worsen",
+              "note": "Prefer concise intransitive verb 'worsen' over passive form."
+            }
+          ]
+        }
+      },
+      "source": "lecturer_google_docs",
+      "label_provenance": "explicit_lecturer_annotation",
+      "prompt_verified": true,
+      "fewshot_ready": true
+    },
+    {
+      "essay_id": "lecturer_08",
+      "question": "Many museums and historical sites are mainly visited by tourists and not local people. Why is this the case? What can be done to attract local people?",
+      "essay": "Recent surveys have pointed out that a large number of museums and historical sites primarily welcome tourists rather than local residents. This essay will discuss the reasons underlying this problem, before proposing some potential measures to address it.\n\nThe disproportionate numbers of visitors and local people visiting museums and historical sites can be attributed to two main reasons. First, these culturally important institutions are often included in visitors’ travel itineraries, driven by their desire for a deeper understanding of the historical events and cultural values of their destinations. In contrast, local people often assume that they already have sufficient historical and cultural knowledge of their regions, leading to a lack of motivation to make visits to local museums and historical places. Furthermore, many people visit museums and historical sites solely in search of a sense of novelty. This is why such institutions and places are often much more appealing to visitors than to the locals, given the latter's familiarity to them.\n\nTo boost tourism to such places, a multi-faceted approach is necessitated. The government should allocated more funding for museums and historical sites to hire experts, allowing them to organize educational programs to attract local parents to take their children to these places for educational purpose. This policy has been successfully implemented in the Vietnam Museum of Ethnology, which is visited by thousands of local residents and students monthly. In tandem with this, museums and historical sites should actively carry out initiatives to employ modern features. Such schemes as exhibiting works of modern artists, or integrating modern technologies like smart displays, touch screens, or virtual reality could bring a sense of novelty, thereby attracting more local residents.\n\nIn conclusion, the difference in the numbers of local dwellers and travellers making visits to museums and historical destinations stems from each's familiarity as well as historical and cultural knowledge. To combat this, a dual-pronged measure is necessitated, including the allocation of extra financial resources and the implementation of initiatives to innovate such sites and institutions.",
+      "word_count": 333,
+      "scores": {
+        "task_response": 8.0,
+        "coherence_cohesion": 8.0,
+        "lexical_resource": 8.0,
+        "grammatical_range_accuracy": 8.0,
+        "overall": 8.0
+      },
+      "feedback_by_criterion": {
+        "task_response": {
+          "score": 8.0,
+          "summary": "Strong, well-developed Band 8.0 response; lecturer notes that sharpening the Body 2 topic sentence focus on local residents rather than tourism would elevate Task Response toward Band 9.",
+          "comments": [
+            "Target the Body 2 topic sentence specifically at increasing local engagement rather than 'boosting tourism'.",
+            "Clarify the causal distinction: allocating extra funding is an enabler allowing museums to hire experts, not an activity in itself.",
+            "Explain the attendance gap explicitly via differing levels of historical and cultural familiarity."
+          ],
+          "edits": [
+            {
+              "original": "To boost tourism to such places",
+              "revised": "To increase local engagement with such places",
+              "note": "Align topic sentence directly with attracting local residents rather than tourists."
+            },
+            {
+              "original": "This policy has been successfully implemented",
+              "revised": "This strategy has been successfully implemented",
+              "note": "Replace 'policy' with 'strategy' when referring to funding allocation."
+            },
+            {
+              "original": "from each's familiarity as well as historical and cultural knowledge",
+              "revised": "from their differing levels of familiarity as well as cultural knowledge",
+              "note": "Clarify comparison of familiarity across locals and visitors."
+            }
+          ]
+        },
+        "coherence_cohesion": {
+          "score": 8.0,
+          "summary": "Logical sequencing and paragraph unity are natural throughout (Band 8.0), with one ambiguous backward reference flagged.",
+          "comments": [
+            "Avoid unclear backward references such as 'the latter' where the antecedent requires effort to reconstruct."
+          ],
+          "edits": [
+            {
+              "original": ", given the latter's familiarity to them",
+              "revised": "",
+              "note": "Remove ambiguous 'the latter' trailing clause to keep reference crisp."
+            }
+          ]
+        },
+        "lexical_resource": {
+          "score": 8.0,
+          "summary": "Wide, sophisticated vocabulary used naturally (Band 8.0), nearly Band 9 with idiomatic collocation refinements such as 'pay visits' and 'disparity'.",
+          "comments": [
+            "Prefer precise collocations: 'pay visits' instead of 'make visits', 'disparity' instead of 'difference', and 'funding to' instead of 'funding for'."
+          ],
+          "edits": [
+            {
+              "original": "make visits to local museums",
+              "revised": "pay visits to local museums",
+              "note": "Use natural collocation 'pay visits'."
+            },
+            {
+              "original": "funding for museums and historical sites",
+              "revised": "funding to museums and historical sites",
+              "note": "Use natural preposition 'to' after 'allocate funding'."
+            },
+            {
+              "original": "take their children to these places",
+              "revised": "bring their children",
+              "note": "Use contextually natural verb 'bring' and drop redundant place phrase."
+            },
+            {
+              "original": "the difference in the numbers",
+              "revised": "the disparity in the number",
+              "note": "Replace general 'difference' with more precise 'disparity'."
+            }
+          ]
+        },
+        "grammatical_range_accuracy": {
+          "score": 8.0,
+          "summary": "High grammatical range and accuracy (Band 8.0) with only one modal verb-form slip ('should allocated') and a minor participial clause attachment.",
+          "comments": [
+            "Check modal + bare infinitive agreement and participial clause subjects."
+          ],
+          "edits": [
+            {
+              "original": "The disproportionate numbers of visitors",
+              "revised": "The disproportionate number of visitors",
+              "note": "Use singular 'number' matching the comparison statistic."
+            },
+            {
+              "original": "The government should allocated more funding",
+              "revised": "The government should allocate more funding",
+              "note": "Use bare infinitive 'allocate' after modal verb 'should'."
+            },
+            {
+              "original": "to hire experts, allowing them to organize",
+              "revised": ", enabling them to hire experts, who can organize",
+              "note": "Attach the organizing clause clearly to 'experts' rather than 'museums'."
+            }
+          ]
+        }
+      },
+      "source": "lecturer_google_docs",
+      "label_provenance": "explicit_lecturer_annotation",
+      "prompt_verified": true,
+      "fewshot_ready": true
+    }
+  ]
+}

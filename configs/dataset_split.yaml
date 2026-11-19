@@ -1,0 +1,86 @@
+# Centralized configuration for IELTS Writing Task 2 Dataset Splitting & AES Evaluation Pipeline
+version: "dataset_v1"
+random_seed: 42
+
+# Hard similarity and quality thresholds
+max_prompt_sim: 0.60
+near_dup_essay_sim: 0.85
+max_criterion_spread: 2.0
+
+# Gold label aggregation convention (matches backend/benchmark/compare_raters.py & app/grading/task2.py)
+# Each criterion: round_half_up((r1 + r2) / 2) to 0.5 increments
+# Overall: official IELTS rounding of mean(TR, CC, LR, GRA) to nearest 0.5 (.25 -> .5, .75 -> +1.0)
+gold_aggregation: "midpoint_round_half_up"
+
+# Input dataset paths and detected schema mappings
+inputs:
+  examiner_fs7_json: "data/lecturer/manifests/fs7_v1.json"
+  examiner_supplemental_jsonl: "data/lecturer/supplemental/essays.jsonl"
+  rater1_csv: "data/splits/clean_862_agent_fs7.csv"
+  rater2_json: "data/exports/blind_clean_200/rater2_supplement/rater2_all_862_scores.json"
+
+column_mappings:
+  examiner_fs7:
+    id: "essay_id"
+    prompt: "question"
+    essay: "essay"
+    scores_obj: "scores"
+    criteria:
+      tr: "task_response"
+      cc: "coherence_cohesion"
+      lr: "lexical_resource"
+      gra: "grammatical_range_accuracy"
+    feedback: "feedback_by_criterion"
+  examiner_supplemental:
+    id: "essay_id"
+    prompt: "task_prompt"
+    essay: "original_essay"
+    scores_obj: "scores"
+    criteria:
+      tr: "task_response"
+      cc: "coherence_cohesion"
+      lr: "lexical_resource"
+      gra: "grammatical_range_accuracy"
+    feedback: "comments"
+  rater1_csv:
+    id: "essay_id"
+    prompt: "prompt"
+    essay: "essay"
+    criteria:
+      tr: "gold_tr"
+      cc: "gold_cc"
+      lr: "gold_lr"
+      gra: "gold_gra"
+    overall: "gold_overall"
+  rater2_json:
+    records_key: "records"
+    criteria:
+      tr: "task_response"
+      cc: "coherence_cohesion"
+      lr: "lexical_resource"
+      gra: "grammatical_range_accuracy"
+    rationale: "brief_rationale"
+
+# Split targets and tail-protection parameters
+splits:
+  seed_extra_low_tail: 2
+  seed_low_tail_max_band: 5.0
+  holdout_target_min: 110
+  holdout_target_max: 125
+  low_tail_max_band: 5.5
+  strict_low_tail_max_band: 5.0
+  high_tail_min_band: 8.0
+  strict_high_tail_min_band: 8.5
+  mid_range_bloated_bands: [6.5, 7.0]
+  holdout_min_low_tail: 8
+  holdout_min_high_tail: 10
+  balanced_low_tail_target: 15
+  optimizer_restarts: 25
+  optimizer_steps: 400
+
+# Evaluation benchmarks (Williamson et al., 2012; Yancey et al., 2023)
+evaluation:
+  qwk_threshold: 0.70
+  smd_abs_threshold: 0.15
+
+output_dir: "artifacts/dataset_v1"

@@ -1,0 +1,17 @@
+{
+  "revision": "8a291a1a6ab3d537fa3e4d6523dcfb23cdef0a1d4eb64de6668c05de76761240",
+  "csv_sha256": "d5ee9b035232295114dc17b8944cb0a4275008b7b3f8e3c606cf1734b0d3a429",
+  "label_provenance": "Lexibot estimates transcribed from supplied DOCX files; agreement with another system, without examiner verification.",
+  "essays": 7,
+  "source_files": {
+    "lexi01_trimmed.docx": "a37db53a36e80e813c2c4f9ffece239a26fa36c135dfa24b917e7e98c43ff279",
+    "lexi02_trimmed.docx": "0d252d292023f9fe02dac80ecdca0f78f9b2dc6bf09d503dcd173295cc477003",
+    "lexi03_trimmed.docx": "5e4efb9e41a313be790e51cfff12c9955aee6b6721b78d8666c9ff52ac14d6ee",
+    "lexi04_trimmed.docx": "1be269dd506c2b8faa13601a07e6300df492621a9aba4445fbd625cf1134610a",
+    "lexi05_trimmed.docx": "7eb32a014cf9f27e44654a26da490d34ace1dabc6660be3b64eeba2df8adbe3d",
+    "lexi06_trimmed.docx": "face54981d35d08e4d5f46d83ee6d3d7dc750c4527049fc9530a9e5a2e01b24c",
+    "lexi07_trimmed.docx": "1cf9a2f955432682103a28e34bdeb496f314c88183a53d293f20e9169389c18e"
+  },
+  "revisions_supplied": 5,
+  "paragraph_feedback_supplied": 1
+}

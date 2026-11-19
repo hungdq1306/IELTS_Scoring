@@ -1,0 +1,21 @@
+{
+  "format": "curated_essay_layout_with_supplemental_provenance",
+  "supplemental_count": 6,
+  "combined_count": 14,
+  "reference_ids": [
+    "lecturer_09",
+    "lecturer_10",
+    "lecturer_11",
+    "lecturer_12",
+    "lecturer_13",
+    "lecturer_14"
+  ],
+  "source_lecturer_dataset_sha256": "625869d37a7c44886e266ab40c63ffe1bc1d1a7ebc9efc8ec9d5f086a6f84448",
+  "comments_and_corrections": "not_provided; empty arrays, never fabricated",
+  "schema_extensions": [
+    "Nullable source document IDs",
+    "overall_source=agent_assessment",
+    "IDs lecturer_09 through lecturer_14"
+  ],
+  "existing_fs5_fs7_manifests_changed": false
+}

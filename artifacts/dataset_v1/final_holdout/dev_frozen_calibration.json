@@ -1,0 +1,6 @@
+{
+  "source": "artifacts\\dataset_v1\\candidate_v1\\dev_live_predictions_v1.jsonl",
+  "n_dev_essays": 173,
+  "cc_additive_offset": 0.182081,
+  "note": "Learned strictly on frozen Dev v1 predictions (173 essays). Zero Holdout parameters fitted."
+}

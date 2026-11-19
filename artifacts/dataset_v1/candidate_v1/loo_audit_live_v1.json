@@ -1,0 +1,786 @@
+{
+  "n_essays": 13,
+  "n_clusters": 12,
+  "benchmarks": {
+    "qwk_min": 0.7,
+    "smd_abs_max": 0.15,
+    "sd_ratio_range": [
+      0.67,
+      1.5
+    ],
+    "bootstrap_iters": 1000
+  },
+  "metrics": {
+    "overall": {
+      "target": "overall",
+      "n": 13,
+      "qwk": 0.9727,
+      "qwk_pass": true,
+      "qwk_ci_95": [
+        0.6667,
+        0.993
+      ],
+      "micro_mae": 0.1923,
+      "micro_mae_ci_95": [
+        0.0769,
+        0.3214
+      ],
+      "rmse": 0.3101,
+      "macro_mae": 0.2083,
+      "mean_bias": 0.1923,
+      "smd": 0.14,
+      "smd_pass": true,
+      "sd_ratio": 0.984,
+      "sd_ratio_pass": true,
+      "exact_agreement_pct": 61.54,
+      "adjacent_agreement_pct": 100.0,
+      "bootstrap_clusters": 12,
+      "bootstrap_iters": 1000,
+      "strata": {
+        "low_tail_le_5_5": {
+          "n": 1,
+          "mae": 0.0,
+          "mean_bias": 0.0
+        },
+        "low_tail_le_5_0": {
+          "n": 1,
+          "mae": null,
+          "mean_bias": null
+        },
+        "mid_range_6_0_to_7_5": {
+          "n": 3,
+          "mae": 0.1667,
+          "mean_bias": 0.1667
+        },
+        "high_tail_ge_8_0": {
+          "n": 9,
+          "mae": 0.2222,
+          "mean_bias": 0.2222
+        },
+        "high_tail_ge_8_5": {
+          "n": 6,
+          "mae": 0.0833,
+          "mean_bias": 0.0833
+        }
+      }
+    },
+    "tr": {
+      "target": "tr",
+      "n": 13,
+      "qwk": 0.9587,
+      "qwk_pass": true,
+      "qwk_ci_95": [
+        0.7271,
+        0.9921
+      ],
+      "micro_mae": 0.2308,
+      "micro_mae_ci_95": [
+        0.0833,
+        0.375
+      ],
+      "rmse": 0.3922,
+      "macro_mae": 0.2639,
+      "mean_bias": 0.2308,
+      "smd": 0.1637,
+      "smd_pass": false,
+      "sd_ratio": 0.9824,
+      "sd_ratio_pass": true,
+      "exact_agreement_pct": 61.54,
+      "adjacent_agreement_pct": 92.31,
+      "bootstrap_clusters": 12,
+      "bootstrap_iters": 1000,
+      "strata": {
+        "low_tail_le_5_5": {
+          "n": 2,
+          "mae": 0.0,
+          "mean_bias": 0.0
+        },
+        "low_tail_le_5_0": {
+          "n": 2,
+          "mae": null,
+          "mean_bias": null
+        },
+        "mid_range_6_0_to_7_5": {
+          "n": 2,
+          "mae": 0.5,
+          "mean_bias": 0.5
+        },
+        "high_tail_ge_8_0": {
+          "n": 9,
+          "mae": 0.2222,
+          "mean_bias": 0.2222
+        },
+        "high_tail_ge_8_5": {
+          "n": 5,
+          "mae": 0.2,
+          "mean_bias": 0.2
+        }
+      }
+    },
+    "cc": {
+      "target": "cc",
+      "n": 13,
+      "qwk": 0.9557,
+      "qwk_pass": true,
+      "qwk_ci_95": [
+        0.6667,
+        0.9916
+      ],
+      "micro_mae": 0.2308,
+      "micro_mae_ci_95": [
+        0.0833,
+        0.3824
+      ],
+      "rmse": 0.3922,
+      "macro_mae": 0.25,
+      "mean_bias": 0.2308,
+      "smd": 0.1695,
+      "smd_pass": false,
+      "sd_ratio": 1.0236,
+      "sd_ratio_pass": true,
+      "exact_agreement_pct": 61.54,
+      "adjacent_agreement_pct": 92.31,
+      "bootstrap_clusters": 12,
+      "bootstrap_iters": 1000,
+      "strata": {
+        "low_tail_le_5_5": {
+          "n": 1,
+          "mae": 0.0,
+          "mean_bias": 0.0
+        },
+        "low_tail_le_5_0": {
+          "n": 1,
+          "mae": null,
+          "mean_bias": null
+        },
+        "mid_range_6_0_to_7_5": {
+          "n": 3,
+          "mae": 0.3333,
+          "mean_bias": 0.3333
+        },
+        "high_tail_ge_8_0": {
+          "n": 9,
+          "mae": 0.2222,
+          "mean_bias": 0.2222
+        },
+        "high_tail_ge_8_5": {
+          "n": 6,
+          "mae": 0.0833,
+          "mean_bias": 0.0833
+        }
+      }
+    },
+    "lr": {
+      "target": "lr",
+      "n": 13,
+      "qwk": 0.9477,
+      "qwk_pass": true,
+      "qwk_ci_95": [
+        0.0,
+        0.9932
+      ],
+      "micro_mae": 0.2308,
+      "micro_mae_ci_95": [
+        0.0417,
+        0.4333
+      ],
+      "rmse": 0.3922,
+      "macro_mae": 0.25,
+      "mean_bias": 0.2308,
+      "smd": 0.1845,
+      "smd_pass": false,
+      "sd_ratio": 1.0526,
+      "sd_ratio_pass": true,
+      "exact_agreement_pct": 61.54,
+      "adjacent_agreement_pct": 92.31,
+      "bootstrap_clusters": 12,
+      "bootstrap_iters": 1000,
+      "strata": {
+        "low_tail_le_5_5": {
+          "n": 1,
+          "mae": 0.0,
+          "mean_bias": 0.0
+        },
+        "low_tail_le_5_0": {
+          "n": 1,
+          "mae": null,
+          "mean_bias": null
+        },
+        "mid_range_6_0_to_7_5": {
+          "n": 3,
+          "mae": 0.5,
+          "mean_bias": 0.5
+        },
+        "high_tail_ge_8_0": {
+          "n": 9,
+          "mae": 0.1667,
+          "mean_bias": 0.1667
+        },
+        "high_tail_ge_8_5": {
+          "n": 6,
+          "mae": 0.0,
+          "mean_bias": 0.0
+        }
+      }
+    },
+    "gra": {
+      "target": "gra",
+      "n": 13,
+      "qwk": 0.9109,
+      "qwk_pass": true,
+      "qwk_ci_95": [
+        0.4787,
+        1.0
+      ],
+      "micro_mae": 0.2308,
+      "micro_mae_ci_95": [
+        0.0,
+        0.625
+      ],
+      "rmse": 0.5883,
+      "macro_mae": 0.3,
+      "mean_bias": 0.2308,
+      "smd": 0.1602,
+      "smd_pass": false,
+      "sd_ratio": 0.9763,
+      "sd_ratio_pass": true,
+      "exact_agreement_pct": 76.92,
+      "adjacent_agreement_pct": 92.31,
+      "bootstrap_clusters": 12,
+      "bootstrap_iters": 1000,
+      "strata": {
+        "low_tail_le_5_5": {
+          "n": 1,
+          "mae": 0.0,
+          "mean_bias": 0.0
+        },
+        "low_tail_le_5_0": {
+          "n": 1,
+          "mae": null,
+          "mean_bias": null
+        },
+        "mid_range_6_0_to_7_5": {
+          "n": 4,
+          "mae": 0.5,
+          "mean_bias": 0.5
+        },
+        "high_tail_ge_8_0": {
+          "n": 8,
+          "mae": 0.125,
+          "mean_bias": 0.125
+        },
+        "high_tail_ge_8_5": {
+          "n": 6,
+          "mae": 0.0,
+          "mean_bias": 0.0
+        }
+      }
+    }
+  },
+  "mode": "live_v1",
+  "n_folds": 13,
+  "folds": [
+    {
+      "fold": 1,
+      "target_essay_id": "lecturer_02",
+      "prompt_cluster_id": "CL_EX_001",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 6.0,
+        "cc": 6.0,
+        "lr": 6.0,
+        "gra": 7.0,
+        "overall": 6.5
+      },
+      "pred": {
+        "tr": 7.0,
+        "cc": 7.0,
+        "lr": 7.0,
+        "gra": 7.0,
+        "overall": 7.0
+      },
+      "overall_error": 0.5,
+      "rationale": {
+        "brief": "The essay addresses all parts of the prompt with a clear, well-developed position, achieving a strong Band 7.0 to 7.5 level in Task Response. Coherence and Cohesion are well-managed with clear paragraphing and logical flow, though there are minor mechanical linking issues and repetitive phrase patterns (Band 7.0). Lexical Resource is sufficient for flexibility and precision, with appropriate topic-specific vocabulary alongside occasional collocation and word-form slips (Band 7.0). Grammatical Range and Accuracy show a variety of complex structures with frequent error-free sentences, but minor slips in verb forms and prepositions slightly impact absolute accuracy (Band 7.0). Note that the conclusion cuts off abruptly at the end ('because it only transfer'), which is factored into the assessment.",
+        "criteria": {
+          "task_response": "The essay presents a clear position throughout and extends main ideas effectively. The arguments against moving companies to the countryside and the counter-proposal of satellite hubs are well-explained and supported with a relevant example (Hanoi). It addresses all parts of the prompt directly, aligning closely with Band 7.0 to 7.5 criteria.",
+          "coherence_cohesion": "The essay is logically organized with clear central topics for each paragraph. Progression is evident from the introduction through body paragraphs to the conclusion, although the abrupt cutoff in the final sentence shows a minor mechanical breakdown. Cohesive devices are managed reasonably well, fitting a solid Band 7.0 level.",
+          "lexical_resource": "A sufficient range of vocabulary is used with some precision ('infrastructure', 'concentration', 'sustainable solution', 'influx'), allowing for adequate flexibility. However, minor word-form and spelling slips ('adress', 'attrated', 'develop' instead of 'developed') occur, placing this securely at Band 7.0.",
+          "grammatical_range_accuracy": "The essay utilizes a mix of simple and complex sentence forms with frequent error-free sentences. Minor grammatical errors ('it merely moving', 'reason of traffic jams', 'demand for house', 'there home') occur occasionally but rarely impede overall meaning, supporting a Band 7.0 rating."
+        }
+      },
+      "latency_ms": 2885,
+      "usage": {
+        "candidates_token_count": 528,
+        "prompt_token_count": 5129,
+        "total_token_count": 5657
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 2,
+      "target_essay_id": "lecturer_03",
+      "prompt_cluster_id": "CL_EX_001",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 7.0,
+        "cc": 7.0,
+        "lr": 6.0,
+        "gra": 6.0,
+        "overall": 6.5
+      },
+      "pred": {
+        "tr": 7.0,
+        "cc": 7.0,
+        "lr": 6.5,
+        "gra": 6.0,
+        "overall": 6.5
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "The essay effectively addresses the prompt, taking a clear counter-stand and supporting it with developed arguments and a viable alternative (polycentric development). Paragraphing and logical progression are clear (CC 7.0). Vocabulary is adequate with some precise phrasing alongside occasional word-form and spelling slips (LR 6.5). Grammatical range features complex structures, but there are several noticeable errors and awkward phrasing/punctuation slips that constrain the band (GRA 6.0).",
+        "criteria": {
+          "task_response": "The response addresses all parts of the task, presenting a clear position that disagrees with the premise and offering a well-reasoned alternative (satellite hubs/polycentric urban model). Main ideas are extended and supported with relevant examples, such as reference to Ha Noi, aligning closely with Band 7.0 standards.",
+          "coherence_cohesion": "Information and ideas are logically organized with clear overall progression. Paragraphing is used effectively, and cohesive devices are employed appropriately, though there are minor mechanical or slightly repetitive transitions. It meets the Band 7.0 requirements.",
+          "lexical_resource": "A sufficient range of vocabulary is used to allow some flexibility and precision (e.g., 'relocating', 'infrastructure', 'urban polycentric'), though occasional collocation and word-form slips occur ('raise up', 'bussiness', 'accomodation'), placing it securely at Band 6.5.",
+          "grammatical_range_accuracy": "The essay uses a mix of simple and complex sentence forms. However, there are frequent minor grammatical and mechanical errors (e.g., 'When there are many people use', 'it would be transfer', 'housing price... will raise up', 'solve this problems') that occasionally impede smooth reading, justifying a Band 6.0."
+        }
+      },
+      "latency_ms": 2397,
+      "usage": {
+        "candidates_token_count": 453,
+        "prompt_token_count": 5130,
+        "total_token_count": 5583
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 3,
+      "target_essay_id": "lecturer_04",
+      "prompt_cluster_id": "CL_EX_002",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 5.0,
+        "cc": 6.0,
+        "lr": 6.0,
+        "gra": 6.0,
+        "overall": 6.0
+      },
+      "pred": {
+        "tr": 5.0,
+        "cc": 6.0,
+        "lr": 6.0,
+        "gra": 6.0,
+        "overall": 6.0
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "The essay is significantly underlength at 152 words (well below the 250-word minimum). Consequently, task response is severely limited by under-extension and lack of full development. Coherence and cohesion are adequate for a short piece with clear paragraphing, but referencing and progression are basic. Lexical resource shows some appropriate vocabulary with minor slips ('thoughts hold', 'inventions', 'caple'), and grammatical range and accuracy are generally clear despite minor awkward phrasing and articles. Overall, the underlength nature caps the essay.",
+        "criteria": {
+          "task_response": "The prompt asks to discuss the extent of agreement with the idea that the internet is the most important invention. The response presents a clear position disagreeing with this and offers two supporting arguments (remote/past survival without it, and medical inventions being more vital). However, because the essay is only 152 words, the ideas remain underdeveloped and lack sufficient extension, capping the task response at Band 5.0.",
+          "coherence_cohesion": "The essay is divided into logical paragraphs with an introduction, two body paragraphs, and a conclusion. Transition markers like 'First of all', 'Secondly', and 'In conclusion' are used. Although paragraphing is clear, the overall progression is basic due to the brevity of the response, aligning well with a Band 6.0 level.",
+          "lexical_resource": "Vocabulary is reasonably adequate to convey meaning ('countless inventions', 'rudimentary tools', 'sanitation', 'lethal infections'), though there are minor errors such as 'One school of thoughts hold' (thought) and 'inventions' (invention), alongside 'caple' (capable). This fits the Band 6.0 descriptor.",
+          "grammatical_range_accuracy": "The essay uses a mix of simple and complex sentence structures with generally good control. While there are minor slips (e.g., 'protect people health', 'what is internet'), the grammatical errors do not impede communication, supporting a Band 6.5 or 6.0 score."
+        }
+      },
+      "latency_ms": 2537,
+      "usage": {
+        "candidates_token_count": 508,
+        "prompt_token_count": 4579,
+        "total_token_count": 5087
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 4,
+      "target_essay_id": "lecturer_05",
+      "prompt_cluster_id": "CL_EX_003",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 5.0,
+        "cc": 5.0,
+        "lr": 5.0,
+        "gra": 5.0,
+        "overall": 5.0
+      },
+      "pred": {
+        "tr": 5.0,
+        "cc": 5.0,
+        "lr": 5.0,
+        "gra": 5.0,
+        "overall": 5.0
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "The essay is significantly under length at 184 words, which severely restricts its ability to develop ideas fully. Task Response is limited because the position is basic and arguments lack adequate extension. Coherence and Cohesion show some paragraph structure, but transitions are abrupt and repetitive. Lexical Resource is basic and repetitive, with noticeable errors. Grammatical Range and Accuracy display frequent errors and reliance on simple or awkward structures.",
+        "criteria": {
+          "task_response": "The essay addresses the prompt minimally, reaching an under-length word count of 184 words. Ideas regarding why the internet is not the most important thing (e.g., dependence on electricity and smart devices) are stated rather than fully extended, leading to a TR score of 5.0.",
+          "coherence_cohesion": "Paragraphing is attempted with a clear introduction, body paragraphs, and conclusion. However, overall progression is somewhat disjointed, and cohesive devices are basic or awkward ('So in my view', 'Further'). Overall, it aligns with a Band 5.0.",
+          "lexical_resource": "Vocabulary is limited and repetitive ('important', 'internet', 'things', 'communicate'). There are lexical inaccuracies ('the people's work at Science and Technology', 'We can't denied'), placing it firmly at Band 5.0.",
+          "grammatical_range_accuracy": "The essay uses a mix of simple and attempting complex structures, but errors are frequent and occasionally impede clarity ('the way how people', 'there are many things are important than internet', 'We cannot even touch the internet'). This warrants a Band 5.0."
+        }
+      },
+      "latency_ms": 3129,
+      "usage": {
+        "candidates_token_count": 417,
+        "prompt_token_count": 4583,
+        "total_token_count": 5000
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 5,
+      "target_essay_id": "lecturer_06",
+      "prompt_cluster_id": "CL_EX_004",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 8.0,
+        "cc": 8.0,
+        "lr": 8.0,
+        "gra": 7.0,
+        "overall": 8.0
+      },
+      "pred": {
+        "tr": 8.5,
+        "cc": 8.5,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 8.5
+      },
+      "overall_error": 0.5,
+      "rationale": {
+        "brief": "The essay addresses all parts of the task thoroughly, presenting a well-developed discussion of both views along with a clear personal opinion. Coherence and cohesion are managed exceptionally well through seamless paragraphing and logical progression. Lexical resource demonstrates precision, natural collocations, and a rich variety of vocabulary. Grammatical range and accuracy are outstanding, featuring complex structures with virtually no errors.",
+        "criteria": {
+          "task_response": "The essay successfully addresses all parts of the task. It discusses both sides of the argument—learning additional subjects versus focusing exclusively on the major—and presents a clear, well-supported opinion. The arguments are well-extended and relevant, aligning closely with Band 8/9 standards.",
+          "coherence_cohesion": "Coherence is strong and natural, with clear logical progression throughout. Paragraphing is used skillfully to separate the introduction, two body viewpoints, and a balanced conclusion. Cohesive devices are managed naturally without mechanical over-reliance, matching the Band 8.5-9.0 profile.",
+          "lexical_resource": "The vocabulary is precise, natural, and sophisticated. Phrases such as 'interdisciplinary approach', 'ever-changing job market', 'solid theoretical foundation', and 'well-rounded skill set' are used naturally and accurately, demonstrating high-level lexical control.",
+          "grammatical_range_accuracy": "The essay displays a wide range of complex grammatical structures used with complete flexibility and control. Sentences are virtually error-free, with accurate punctuation and complex subordination, matching the highest calibration standard."
+        }
+      },
+      "latency_ms": 3571,
+      "usage": {
+        "candidates_token_count": 404,
+        "prompt_token_count": 4576,
+        "total_token_count": 4980
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 6,
+      "target_essay_id": "lecturer_07",
+      "prompt_cluster_id": "CL_EX_005",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 8.0,
+        "cc": 8.0,
+        "lr": 8.0,
+        "gra": 8.0,
+        "overall": 8.0
+      },
+      "pred": {
+        "tr": 8.0,
+        "cc": 8.5,
+        "lr": 8.5,
+        "gra": 8.5,
+        "overall": 8.5
+      },
+      "overall_error": 0.5,
+      "rationale": {
+        "brief": "The essay addresses all parts of the prompt with a clear and well-developed position, presenting arguments regarding both rural and urban consequences. Coherence and cohesion are skillfully managed through logical paragraphing and natural transitions. Lexical resource is strong and precise, incorporating natural collocations and sophisticated vocabulary. Grammatical range and accuracy are excellent, featuring complex sentence structures with near-native control and rare, minor slips.",
+        "criteria": {
+          "task_response": "The response fully addresses the prompt by evaluating rural-to-urban migration as a negative development. It develops well-supported ideas concerning both the economic decline of rural areas and the infrastructural and social pressures placed on cities, supported by relevant examples such as Hanoi.",
+          "coherence_cohesion": "Paragraphing is logical and well-structured, with a clear introduction, distinct body paragraphs focusing on separate aspects of the issue, and a concise conclusion. Cohesion is smooth and unobtrusive, utilizing effective referencing and logical progression.",
+          "lexical_resource": "Vocabulary is wide-ranging, fluent, and precise. The essay employs sophisticated terms and natural collocations (e.g., 'economic stagnation', 'talent pool', 'outpaces their ability', 'infrastructure', 'aggravating') without forced or awkward usage.",
+          "grammatical_range_accuracy": "There is a wide range of complex structures used with a high degree of control and accuracy. Sentences are grammatically sound, virtually error-free, and support the clear communication of ideas."
+        }
+      },
+      "latency_ms": 3224,
+      "usage": {
+        "candidates_token_count": 391,
+        "prompt_token_count": 5064,
+        "total_token_count": 5455
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 7,
+      "target_essay_id": "lecturer_08",
+      "prompt_cluster_id": "CL_EX_006",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 8.0,
+        "cc": 8.0,
+        "lr": 8.0,
+        "gra": 8.0,
+        "overall": 8.0
+      },
+      "pred": {
+        "tr": 8.0,
+        "cc": 8.5,
+        "lr": 8.5,
+        "gra": 8.5,
+        "overall": 8.5
+      },
+      "overall_error": 0.5,
+      "rationale": {
+        "brief": "The essay fully addresses all parts of the prompt with a clear and well-developed position. Coherence and cohesion are managed exceptionally well through natural progression and precise referencing. Lexical resource demonstrates a high level of precision and natural collocation, while grammatical range and accuracy are near-flawless with only minor slips.",
+        "criteria": {
+          "task_response": "The essay addresses all parts of the task—explaining why museums and historical sites are visited mostly by tourists rather than locals, and suggesting solutions to attract local residents. The ideas are well-extended with relevant examples, such as the Vietnam Museum of Ethnology, and a clear position is maintained throughout.",
+          "coherence_cohesion": "Paragraphing is logical and coherent. Cohesion is managed skillfully without mechanical over-use of linkers. The progression of ideas flows naturally from the causes to solutions, maintaining a seamless overall structure.",
+          "lexical_resource": "A wide and natural vocabulary is used fluently and precisely (e.g., 'disproportionate numbers', 'travel itineraries', 'multi-faceted approach', 'dual-pronged measure'). Word choice and collocations are highly accurate, with only a rare minor slip ('familiarity to them' instead of 'familiarity with them').",
+          "grammatical_range_accuracy": "A wide range of complex structures is used with full flexibility and control (e.g., participial phrases, conditional and passive constructions). Sentences are virtually error-free, with just a minor slip in verb agreement ('The government should allocated'), which does not impede communication."
+        }
+      },
+      "latency_ms": 3597,
+      "usage": {
+        "candidates_token_count": 411,
+        "prompt_token_count": 5065,
+        "total_token_count": 5476
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 8,
+      "target_essay_id": "lecturer_09",
+      "prompt_cluster_id": "CL_EX_007",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 8.0,
+        "cc": 8.5,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 8.5
+      },
+      "pred": {
+        "tr": 8.5,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "overall_error": 0.5,
+      "rationale": {
+        "brief": "The essay is fully responsive to all parts of the three-part prompt, explaining environmental damage (air pollution, waste), governmental measures (laws, green taxes), and individual actions (public transport, recycling). The structure is cohesive, logical, and clear. Vocabulary is precise, fluent, and naturally deployed. Grammar demonstrates an excellent range of complex structures with virtually error-free control.",
+        "criteria": {
+          "task_response": "The response successfully addresses all three parts of the prompt: ways humans damage the environment, what governments can do, and what individuals can do. Ideas are well-extended and supported with relevant examples, aligning closely with Band 8/9 standards.",
+          "coherence_cohesion": "Paragraphing is logical and precise, with a clear introduction, body paragraphs addressing distinct aspects of the prompt, and a concise conclusion. Cohesion is seamless and unobtrusive.",
+          "lexical_resource": "Vocabulary is natural, precise, and varied (e.g., 'gas emissions', 'exhaust fumes', 'contaminates', 'green taxes'). There are no inappropriate word choices or spelling errors.",
+          "grammatical_range_accuracy": "A wide range of complex grammatical structures is used flexibly and accurately (e.g., conditional constructions, modal verbs for recommendation, participial phrases). The essay is virtually error-free."
+        }
+      },
+      "latency_ms": 3326,
+      "usage": {
+        "candidates_token_count": 358,
+        "prompt_token_count": 4570,
+        "total_token_count": 4928
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 9,
+      "target_essay_id": "lecturer_10",
+      "prompt_cluster_id": "CL_EX_008",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 8.5,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "pred": {
+        "tr": 8.5,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "The essay addresses all parts of the prompt with a clear discussion of both views and a well-supported personal stance. Cohesion is natural and unobtrusive, utilizing excellent paragraphing and referencing. Lexical resource is precise, varied, and fluent, employing sophisticated collocations naturally. Grammatical range and accuracy are exceptionally high, featuring complex structures deployed with near-native control and virtually no errors, closely mirroring the standards of Anchor 8 and 9.",
+        "criteria": {
+          "task_response": "The essay fully addresses all parts of the task. It discusses why saving minority languages might be viewed as a waste of money, why they should be protected, and clearly presents a well-developed personal opinion throughout. The arguments are relevant, concise, and logically extended.",
+          "coherence_cohesion": "Cohesion is seamless and unobtrusive. The logical progression from discussing financial arguments to cultural value and concluding with a balanced summary is managed expertly. Paragraphing is clear, and referencing is handled with precision.",
+          "lexical_resource": "Vocabulary is sophisticated and precise, featuring natural collocations and a wide range of terms such as 'cultural diversity', 'short term', 'cultural heritage', and 'education programmes'. Lexical control is strong and flexible, with no awkward or inappropriate word choices.",
+          "grammatical_range_accuracy": "The essay demonstrates full control of a wide range of complex grammatical structures. Sentences are virtually error-free, featuring accurate subordinate clauses, conditional forms, and modality handled with a high degree of precision."
+        }
+      },
+      "latency_ms": 2022,
+      "usage": {
+        "candidates_token_count": 396,
+        "prompt_token_count": 5018,
+        "total_token_count": 5414
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 10,
+      "target_essay_id": "lecturer_11",
+      "prompt_cluster_id": "CL_EX_009",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 8.5,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "pred": {
+        "tr": 9.0,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "The essay is exceptionally well-written, concise, and closely matches the high-level Band 8.5-9.0 calibration anchors (such as Anchor 7 and Anchor 8). It fully explores both views and presents a clear, well-extended personal position. Cohesion is seamless and unobtrusive, lexical resource is precise and natural, and grammatical control is virtually error-free.",
+        "criteria": {
+          "task_response": "The prompt is fully addressed. Both sides are discussed clearly—the benefits of starting work immediately (earning money, gaining practical experience, faster career progression) and the advantages of higher education (mandatory qualifications for certain professions, higher earning potential, competitiveness in the job market). The writer's position is well-supported throughout.",
+          "coherence_cohesion": "Cohesion is smooth, logical, and unobtrusive. Paragraphing is clear, each paragraph has a distinct central topic, and referencing is handled naturally without any mechanical or forced transition markers.",
+          "lexical_resource": "Vocabulary is precise, natural, and flexible (e.g., 'dilemma', 'independent', 'real experience', 'competitive', 'relevant degree'). Collocations are accurate and appropriate for academic discourse.",
+          "grammatical_range_accuracy": "The essay displays a wide range of complex structures used with full control. Sentences are virtually error-free, featuring excellent management of subordination and referencing."
+        }
+      },
+      "latency_ms": 2216,
+      "usage": {
+        "candidates_token_count": 379,
+        "prompt_token_count": 5025,
+        "total_token_count": 5404
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 11,
+      "target_essay_id": "lecturer_12",
+      "prompt_cluster_id": "CL_EX_010",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 8.5,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "pred": {
+        "tr": 9.0,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "The essay is a concise, well-balanced, and clearly articulated response that addresses both views and presents a well-supported personal opinion. It aligns closely with Anchor 7 and Anchor 8, demonstrating seamless cohesion, precise lexical choices, and virtually flawless grammar within a compact 253-word structure.",
+        "criteria": {
+          "task_response": "The essay addresses all parts of the prompt fully. It discusses both the entertainment and educational functions of museums and clearly presents the writer's position that museums should encompass both. The arguments are well-extended and directly supported.",
+          "coherence_cohesion": "Cohesion is natural, fluent, and unobtrusive. Paragraphing is logical, moving seamlessly from introduction to the two opposing views and a synthesis conclusion. Reference and substitution are used skillfully without mechanical signposts.",
+          "lexical_resource": "Vocabulary is precise, flexible, and used accurately throughout (e.g., 'visually spectacular', 'detailed commentary', 'cultural diversity'). Collocations are natural and appropriate, matching high-band descriptors.",
+          "grammatical_range_accuracy": "The essay displays a wide range of complex structures used with full control and accuracy. Sentences are virtually error-free, reflecting the high-level control seen in Band 9 anchor essays."
+        }
+      },
+      "latency_ms": 2324,
+      "usage": {
+        "candidates_token_count": 346,
+        "prompt_token_count": 4996,
+        "total_token_count": 5342
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 12,
+      "target_essay_id": "lecturer_13",
+      "prompt_cluster_id": "CL_EX_011",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 9.0,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "pred": {
+        "tr": 9.0,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "This essay directly and fully addresses the prompt with a clear, well-supported position. Cohesion is seamless and unobtrusive. Lexical resource demonstrates high precision and natural collocations, while grammatical control is nearly flawless, matching the upper-tier calibration anchors.",
+        "criteria": {
+          "task_response": "The essay presents a well-developed, clear position throughout. Both main body paragraphs offer relevant and well-extended arguments regarding the impracticality and unfairness of forced equal gender quotas in university courses. The prompt is fully explored in a concise manner (265 words).",
+          "coherence_cohesion": "Cohesion is managed with absolute fluency and natural progression. Paragraphing is logical, and referencing is precise. There is no reliance on mechanical transition markers, achieving a smooth and transparent flow similar to the top-band anchors.",
+          "lexical_resource": "Vocabulary is precise, natural, and sophisticated ('unrealistic', 'practical concerns', 'merit', 'selection procedure'). Word choices and collocations are used with complete accuracy, matching Band 8.5–9.0 standards.",
+          "grammatical_range_accuracy": "The text exhibits a wide range of complex structures used with full control. Sentences are virtually error-free, featuring natural subordination and conditional clauses without any slips affecting meaning."
+        }
+      },
+      "latency_ms": 2325,
+      "usage": {
+        "candidates_token_count": 357,
+        "prompt_token_count": 5033,
+        "total_token_count": 5390
+      },
+      "model": "gemini-3.5-flash-lite"
+    },
+    {
+      "fold": 13,
+      "target_essay_id": "lecturer_14",
+      "prompt_cluster_id": "CL_EX_012",
+      "fewshot_pool_size": 12,
+      "true": {
+        "tr": 9.0,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "pred": {
+        "tr": 9.0,
+        "cc": 9.0,
+        "lr": 8.5,
+        "gra": 9.0,
+        "overall": 9.0
+      },
+      "overall_error": 0.0,
+      "rationale": {
+        "brief": "The essay is exceptionally well-structured, clear, and concise (280 words), addressing all parts of the prompt with a fully developed position. Cohesion is seamless and unobtrusive. Vocabulary is precise and natural with skillful phrasing, and grammatical control is virtually error-free, matching the top-tier calibration anchors (Band 8.5-9.0).",
+        "criteria": {
+          "task_response": "The response fully addresses all parts of the prompt, establishing a clear and well-supported position. Arguments are well-extended with relevant examples comparing local versus international aid, demonstrating deep exploration of the issue within a concise word count.",
+          "coherence_cohesion": "Cohesion is natural, fluent, and unobtrusive. Paragraphing is logical, and referencing is skillfully managed without any mechanical signposts, matching the top calibration anchors.",
+          "lexical_resource": "Vocabulary is utilized with precision and flexibility. Natural collocations and sophisticated phrasing (e.g., 'impoverished or disadvantaged', 'curable diseases', 'national boundaries') are deployed effortlessly with rare, negligible slips.",
+          "grammatical_range_accuracy": "The essay displays a wide range of complex structures with full control. Sentences are virtually error-free, reflecting a high level of grammatical accuracy and syntactic variety."
+        }
+      },
+      "latency_ms": 3032,
+      "usage": {
+        "candidates_token_count": 349,
+        "prompt_token_count": 5030,
+        "total_token_count": 5379
+      },
+      "model": "gemini-3.5-flash-lite"
+    }
+  ],
+  "telemetry": {
+    "model": "gemini-3.5-flash-lite",
+    "mean_latency_ms": 2814.2,
+    "total_prompt_tokens": 63798,
+    "total_candidates_tokens": 5297,
+    "total_tokens": 69095
+  },
+  "examiner_calibration_highlights": {
+    "overall_qwk": 0.9727,
+    "overall_qwk_ci_95": [
+      0.6667,
+      0.993
+    ],
+    "overall_micro_mae": 0.1923,
+    "overall_macro_mae": 0.2083,
+    "overall_smd": 0.14,
+    "overall_sd_ratio": 0.984,
+    "bands_8_5_to_9_0_n": 6,
+    "bands_8_5_to_9_0_mae": 0.0833,
+    "bands_8_5_to_9_0_mean_bias": 0.0833
+  }
+}
