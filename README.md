@@ -1,4 +1,6 @@
-# IELTS Writing Studio
+# FogWrite — IELTS Writing Studio
+
+The FogWrite UI includes a landing page, a 12-prompt topic library, 40-minute writing sessions with draft recovery, grounded highlights, criterion panels and a dedicated practice workspace. See [UI guide](docs/FOGWRITE_UI.md) for startup and build instructions. The prebuilt interface is served by FastAPI on http://127.0.0.1:8000.
 
 Automated IELTS Academic Writing Task 2 assessment and targeted practice platform built with **FastAPI**, **React**, and **Google Gemini** (`gemini-3.5-flash-lite`), calibrated to the **May 2023 official IELTS Writing Band Descriptors** using an **8-anchor stratified examiner benchmark (`V1_STRATIFIED`)**.
 

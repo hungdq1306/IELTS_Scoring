@@ -40,9 +40,9 @@ function ExerciseCard({ exercise, source, busy, run, reload }) {
   </article>;
 }
 
-export function PracticeWorkspace({ result, essay }) {
+export function PracticeWorkspace({ result, essay, criterion = null, skill = null, sourceQuote = null }) {
   const sid=result.submission_id;
-  const [tab,setTab]=useState("feedback");
+  const [tab,setTab]=useState("practice");
   const [batch,setBatch]=useState(null);
   const [progress,setProgress]=useState(null);
   const [index,setIndex]=useState(0);
@@ -61,12 +61,17 @@ export function PracticeWorkspace({ result, essay }) {
   useEffect(()=>{let active=true;if(sid)reload().catch(e=>{if(active)setFailure(e.message);});return()=>{active=false;};},[sid]);
   useEffect(()=>{if(!busy)return;const started=Date.now();setElapsed(0);const timer=setInterval(()=>setElapsed(Math.floor((Date.now()-started)/1000)),1000);return()=>clearInterval(timer);},[busy]);
   async function run(action) {if(busy)return;setBusy(true);setFailure("");try{await action();}catch(e){setFailure(e.message);}finally{setBusy(false);}}
-  const exercises=batch?.exercises || [];
+  const allExercises=batch?.exercises || [];
+  const exercises=allExercises.filter(ex => {
+    const source=batch.errors.find(e=>e.error_id===ex.source_error_id);
+    return (!criterion || source?.criterion===criterion) && (!skill || ex.skill===skill)
+      && (!sourceQuote || (source?.original_quote && (source.original_quote.includes(sourceQuote) || sourceQuote.includes(source.original_quote))));
+  });
   const chosen=exercises[Math.min(index,Math.max(0,exercises.length-1))];
   const paragraphOptions=[...new Set((batch?.errors || []).filter(e=>e.exercise_eligible).map(e=>e.paragraph_number))];
   return <div className="practice-workspace">
     <nav className="actions" aria-label="Learning sections">
-      {[['feedback','Writing Feedback'],['practice','Practice Your Mistakes'],['progress','Revision & Progress']].map(([key,label])=><button key={key} className={tab===key ? "primary" : "secondary"} aria-current={tab===key ? "page":undefined} onClick={()=>setTab(key)}>{label}</button>)}
+      {[['practice','Exercises'],['progress','Revision & progress']].map(([key,label])=><button key={key} className={tab===key ? "primary" : "secondary"} aria-current={tab===key ? "page":undefined} onClick={()=>setTab(key)}>{label}</button>)}
     </nav>
     {tab==="feedback" && <Feedback result={result} essay={essay} />}
     {tab!=="feedback" && <>
@@ -82,7 +87,7 @@ export function PracticeWorkspace({ result, essay }) {
         <ExerciseCard key={chosen.exercise_id} exercise={chosen} source={batch.errors.find(e=>e.error_id===chosen.source_error_id)} busy={busy} run={run} reload={reload} />
         <div className="actions"><button className="secondary" disabled={busy || index===0} onClick={()=>setIndex(index-1)}>Previous Exercise</button><button className="secondary" disabled={busy || index>=exercises.length-1} onClick={()=>setIndex(index+1)}>Next Exercise</button></div>
       </>}
-      {batch?.state==="ready" && !exercises.length && <Notice>No suitable exercises found for this essay.</Notice>}
+      {batch?.state==="ready" && !exercises.length && <Notice>{criterion || skill || sourceQuote ? "No approved exercises match this selection. Choose all priority skills to see other available exercises." : "No suitable exercises found for this essay."}</Notice>}
     </>}
     {tab==="progress" && sid && <>
       {progress && <>

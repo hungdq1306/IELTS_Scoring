@@ -40,7 +40,7 @@ def create_app(data_root: Path = ROOT / "data", results_root: Path = ROOT / "res
             if app.state.practice_provider is not app.state.provider:
                 await app.state.practice_provider.close()
 
-    app = FastAPI(title="IELTS Writing Studio", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="FogWrite — IELTS Writing Studio", version="1.0.0", lifespan=lifespan)
 
     @app.exception_handler(ProviderError)
     async def handle_provider_error(_request: Request, exc: ProviderError):
