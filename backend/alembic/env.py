@@ -22,6 +22,14 @@ async def online():
 
 
 if context.is_offline_mode():
-    raise RuntimeError('Use an online database connection for these migrations.')
+    settings = PilotSettings()
+    context.configure(
+        url=(settings.migration_database_url or settings.database_url).get_secret_value(),
+        target_metadata=Base.metadata,
+        literal_binds=True,
+        dialect_opts={'paramstyle': 'named'},
+    )
+    with context.begin_transaction():
+        context.run_migrations()
 else:
     asyncio.run(online())

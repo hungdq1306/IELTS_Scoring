@@ -60,6 +60,14 @@ Password có ký tự đặc biệt phải được URL-encode. Không đổi Ne
 
 ## 5. Tạo Clerk và thử local
 
+**Cách nhanh trên Windows:** tạo application FogWrite trong Clerk Development, bật Email/Google và copy **Publishable Key `pk_test_...`**. Sau đó mở `SETUP_CLERK.cmd` tại thư mục gốc repo và dán key. Script giữ cấu hình Gemini hiện có, tự suy ra issuer, chọn `http://localhost:8000`, chuẩn bị local SQLite khi chưa có database URL, rồi chạy migration/seed. Nó không tạo tài khoản Clerk hoặc thay đổi provider trong Dashboard.
+
+Khi setup thành công, chạy **`RUN_FOGWRITE_CLERK.cmd`** và mở **http://localhost:8000**. File `RUN_FOGWRITE.cmd` cũ vẫn là demo phiên trình duyệt, không bật Clerk. Cấu hình local không cần `sk_` secret key; đừng đưa key đó vào chat/frontend.
+
+Có thể chỉ ghi cấu hình qua CLI: `python -m app.setup_clerk --publishable-key pk_test_REPLACE_WITH_REAL_KEY --origin http://localhost:8000`. Kiểm tra bằng `python -m app.setup_clerk --check`. Công cụ không ghi đè `.env` production hoặc đổi sang Clerk app khác mà không có lựa chọn rõ ràng.
+
+Tạo application/đăng nhập Clerk thật vẫn cần tài khoản của bạn. Kiểm tra local setup chỉ xác nhận cấu hình; chưa xác nhận Google OAuth, gửi email verification hoặc live JWT verification.
+
 1. Tạo application `FogWrite`, bật Email verification hoặc Google theo nhu cầu.
 2. Ban đầu dùng Development instance. Copy publishable key `pk_test_...` và **issuer/Frontend API URL** từ dashboard/JWT settings. Issuer phải đúng với claim `iss` trong session token.
 3. Bổ sung `.env`:

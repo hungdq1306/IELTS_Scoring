@@ -21,7 +21,7 @@ class Settings:
 
 
 def load_settings() -> Settings:
-    values = dotenv_values(ROOT / ".env")
+    values = {**dotenv_values(ROOT / ".env"), **dotenv_values(ROOT / ".env.local")}
 
     def get(key, default):
         key = "GEMINI_" + key

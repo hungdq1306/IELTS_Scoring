@@ -7,10 +7,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class PilotSettings(BaseSettings):
-    model_config = SettingsConfigDict(env_file='.env', extra='ignore', case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=('.env', '.env.local'), extra='ignore', case_sensitive=False)
     app_env: Literal['development', 'test', 'production'] = 'development'
     database_url: SecretStr = SecretStr('sqlite+aiosqlite:///./results/pilot.sqlite3')
     migration_database_url: SecretStr | None = None
+    database_url_unpooled: SecretStr | None = None
     frontend_origin: str = 'http://localhost:5173'
     clerk_issuer: str = ''
     clerk_publishable_key: str = ''
@@ -42,6 +43,8 @@ class PilotSettings(BaseSettings):
 
     @model_validator(mode='after')
     def deployment_checks(self):
+        if self.migration_database_url is None or not self.migration_database_url.get_secret_value():
+            self.migration_database_url = self.database_url_unpooled
         origin = urlparse(self.frontend_origin)
         if origin.scheme not in ('http', 'https') or not origin.netloc or origin.path not in ('', '/'):
             raise ValueError('FRONTEND_ORIGIN must be one exact origin without a path.')

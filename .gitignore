@@ -1,5 +1,10 @@
 # Secrets & local environment
 .env
+.env.local
+.env.*.local
+.neon
+.neon/
+node_modules/
 .venv/
 venv/
 
