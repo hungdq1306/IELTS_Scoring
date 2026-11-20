@@ -61,9 +61,14 @@ textarea::placeholder { color: #65766c; }
 .spin { border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; width: 15px; height: 15px; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
-.band-hero { background: #e5eee2; border-radius: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; color: #224b33; }
+.band-hero { background: #e5eee2; border-radius: 12px; padding: 15px; display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #224b33; }
 .band-hero b { font-family: "Instrument Serif", Georgia, serif; font-size: 3.2rem; line-height: 1.12; font-weight: 550; }
 .band-hero small, .band-hero > span { font-size: .83rem; font-weight: 650; }
+.band-margin { font-size: 1.15rem; font-weight: 650; color: #2e5d40; }
+.band-range { font-size: .86rem; color: #2e5d40; margin-top: 2px; }
+.band-confidence { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; font-size: .83rem; font-weight: 650; text-align: right; }
+.confidence-pill { background: #ffffffb8; border: 1px solid #bfd4be; color: #1f4830; border-radius: 999px; padding: 4px 10px; font-size: .78rem; font-weight: 650; white-space: nowrap; }
+.band-disclaimer { font-size: .81rem; color: var(--subtle); margin: 6px 0 2px; }
 .scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
 .scores div, .metrics div { border: 1px solid var(--edge); background: #f9fbf8; border-radius: 8px; padding: 9px 11px; min-width: 0; }
 .scores small, .metrics small { display: block; color: var(--subtle); font-size: .78rem; }

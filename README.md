@@ -100,6 +100,7 @@ python -m src.eval.ab_compare
 ## Further Documentation
 
 - [System Architecture](docs/ARCHITECTURE.md)
+- [Standalone Web Specification (V2)](docs/SPEC_V2_STANDALONE_WEB.md)
 - [Live Demo Guide](docs/DEMO_GUIDE.md)
 - [Dataset Audit Report](artifacts/dataset_v1/audit_report.md)
 - [Final Holdout Evaluation Report](artifacts/dataset_v1/final_holdout/final_holdout_report.md)

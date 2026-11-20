@@ -246,6 +246,40 @@ def test_live_demo_v1_stratified_wiring(tmp_path: Path) -> None:
         assert body["fewshot_config"] == "V1_STRATIFIED"
         assert body["reference_example_ids"] == V1_STRATIFIED_IDS
         assert body["estimated_overall_band"] == 8.0
+        assert body["confidence"]["band_margin"] == 0.5
+        assert body["confidence"]["band_range_low"] == 7.5
+        assert body["confidence"]["band_range_high"] == 8.5
+        assert 55 <= body["confidence"]["percentage"] <= 95
+        assert body["confidence"]["label"] in {"High", "Moderate", "Borderline"}
+        assert "examiner judgment" in body["confidence"]["note"].lower()
         assert "NO ARTIFICIAL 8.0 CEILING" in captured["system"]
         assert "SEAMLESS, UNOBTRUSIVE cohesion" in captured["system"]
         assert "eight stratified examiner-verified references" in captured["system"].lower()
+
+
+def test_band_confidence_and_half_band_range() -> None:
+    """Verify deterministic confidence calibration and +/-0.5 band range under boundary & variance conditions."""
+    from app.grading.schemas import Scores
+    from app.grading.task2 import compute_band_confidence, overall_band
+
+    # 1. Exact balanced mid-range essay -> High confidence, 6.5 +/- 0.5 -> [6.0, 7.0]
+    s_clean = Scores(task_response=6.5, coherence_cohesion=6.5, lexical_resource=6.5, grammatical_range_accuracy=6.5)
+    c_clean = compute_band_confidence(s_clean, overall_band(s_clean), 280, [])
+    assert c_clean.band_range_low == 6.0 and c_clean.band_range_high == 7.0
+    assert c_clean.label == "High" and c_clean.score >= 0.85
+
+    # 2. Borderline .75 rounding boundary + wide spread + under-length -> Borderline / lower confidence
+    s_edge = Scores(task_response=5.0, coherence_cohesion=6.0, lexical_resource=7.0, grammatical_range_accuracy=7.0)
+    ov_edge = overall_band(s_edge)
+    assert ov_edge == 6.5  # 6.25 rounds to 6.5
+    c_edge = compute_band_confidence(s_edge, ov_edge, 210, ["under_250"])
+    assert c_edge.band_range_low == 6.0 and c_edge.band_range_high == 7.0
+    assert c_edge.score < c_clean.score
+    assert c_edge.label == "Borderline"
+    assert "borderline" in c_edge.note.lower()
+
+    # 3. Clamped upper bound at 9.0 -> [8.5, 9.0]
+    s_top = Scores(task_response=9.0, coherence_cohesion=9.0, lexical_resource=9.0, grammatical_range_accuracy=9.0)
+    c_top = compute_band_confidence(s_top, 9.0, 300, [])
+    assert c_top.band_range_low == 8.5 and c_top.band_range_high == 9.0
+    assert c_top.score < 1.0  # never claim 100% certainty

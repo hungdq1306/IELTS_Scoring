@@ -81,7 +81,18 @@ function Live({ draft, setDraft, result, evaluating, failure, evaluate, setResul
       {evaluating && <div className="placeholder"><Spinner>Assessing your essay…</Spinner><p className="muted">{elapsed} seconds</p></div>}
       {!evaluating && !result && !failure && <div className="placeholder"><span className="paper-mark" aria-hidden="true">W</span><h3>Your assessment will appear here</h3><p>Submit an essay to see your estimated band and next steps.</p></div>}
       {result && <>
-        <div className="band-hero"><div><small>Estimated Task 2 band</small><div><b>{band(result.estimated_overall_band)}</b><span> / 9</span></div></div><span>AI estimate</span></div>
+        <div className="band-hero">
+          <div>
+            <small>Estimated Task 2 band</small>
+            <div className="band-score-row">
+              <b>{band(result.estimated_overall_band)}</b>
+              <span className="band-margin"> ± 0.5</span>
+              <span> / 9</span>
+            </div>
+          </div>
+          <span>AI estimate</span>
+        </div>
+        <p className="band-disclaimer">{result.confidence?.note || "AI estimate (±0.5 band): actual IELTS scores depend on human examiner judgment."}</p>
         <p className="meta">{assessmentNames[result.fewshot_config] || "Saved assessment"} · {(result.latency_ms / 1000).toFixed(1)} s{result.reference_example_ids?.length ? ` · ${result.reference_example_ids.length} lecturer examples` : ""}</p>
         {result.diagnostic_mode && <Notice>Preview assessment · some reference questions are unverified.</Notice>}
         <ScoreStrip values={result.criterion_scores} />

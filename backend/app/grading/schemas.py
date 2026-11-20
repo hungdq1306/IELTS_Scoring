@@ -102,6 +102,16 @@ class Attempt(StrictModel):
     usage: dict[str, int] = Field(default_factory=dict)
 
 
+class BandConfidence(StrictModel):
+    score: float = Field(ge=0.0, le=1.0)
+    percentage: int = Field(ge=0, le=100)
+    label: Literal["High", "Moderate", "Borderline"]
+    band_margin: float = 0.5
+    band_range_low: Band
+    band_range_high: Band
+    note: str
+
+
 class GradeResult(ModelGrade):
     fewshot_config: str | None = None
     fewshot_version: str | None = None
@@ -115,6 +125,7 @@ class GradeResult(ModelGrade):
     paragraph_count: int | None = None
     task_type: Literal["task_2"] = "task_2"
     estimated_overall_band: Band
+    confidence: BandConfidence | None = None
     word_count: int
     model: str
     model_version: str | None = None

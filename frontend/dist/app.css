@@ -570,3 +570,5 @@ footer { max-width: 1320px; margin: auto; padding: 0 32px 24px; color: var(--sub
 .practice-option input { width: auto; margin: 0; }
 .practice-card fieldset { border: 1px solid #d9e2dc; border-radius: 8px; }
 .practice-workspace blockquote { border-left: 3px solid #62856d; padding-left: 1rem; margin-inline: 0; overflow-wrap: anywhere; }
+
+.band-margin{font-size:1.15rem;font-weight:650;color:#2e5d40}.band-range{font-size:.86rem;color:#2e5d40;margin-top:2px}.band-confidence{display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-size:.83rem;font-weight:650;text-align:right}.confidence-pill{background:#ffffffb8;border:1px solid #bfd4be;color:#1f4830;border-radius:999px;padding:4px 10px;font-size:.78rem;font-weight:650;white-space:nowrap}.band-disclaimer{font-size:.81rem;color:var(--subtle);margin:6px 0 2px}
