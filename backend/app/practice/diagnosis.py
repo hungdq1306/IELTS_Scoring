@@ -73,10 +73,14 @@ def validate_exercise(ex,error,essay):
   if not ex.target_span or ex.question.count(ex.target_span)!=1:issues.append('identification target must be unique in question')
   if normalize(ex.correct_answer)!=normalize(ex.target_span):issues.append('identification key must match target span')
  if ex.type not in {'multiple_choice','error_identification'} and not ex.evaluation_rubric:issues.append('missing free-text rubric')
+ if ex.structure_prompt:
+  if ex.type!='sentence_rewriting':issues.append('structure scaffolds are for rewriting only')
+  if normalize(ex.structure_prompt)==normalize(ex.correct_answer) or (len(ex.correct_answer)>20 and normalize(ex.correct_answer) in normalize(ex.structure_prompt)):
+   issues.append('structure scaffold reveals reference answer')
  if ex.type=='paragraph_revision':
   p=essay_paragraphs(essay)[error['paragraph_number']-1]
   if ex.question!=p:issues.append('paragraph revision must use original paragraph')
  elif normalize(ex.question) in normalize(essay) or normalize(ex.question)==normalize(error['original_quote']):
   issues.append('practice must use a new context')
- if re.search(r'ignore (?:all |previous |system )?instructions|system prompt|api.?key|correct answer is',ex.question+' '+ex.instruction,re.I):issues.append('instruction injection or answer leakage')
+ if re.search(r'ignore (?:all |previous |system )?instructions|system prompt|api.?key|correct answer is',ex.question+' '+ex.instruction+' '+ex.structure_prompt,re.I):issues.append('instruction injection or answer leakage')
  return issues

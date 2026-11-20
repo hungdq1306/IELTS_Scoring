@@ -1,0 +1,17 @@
+.git
+.env
+**/.env
+**/.env.*
+.cache
+.pytest_cache
+**/__pycache__
+**/node_modules
+results
+data
+artifacts/*
+!artifacts/dataset_v1
+artifacts/dataset_v1/*
+!artifacts/dataset_v1/seed.jsonl
+frontend/dist
+debug.log
+*.zip

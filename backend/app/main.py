@@ -9,6 +9,7 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from filelock import FileLock, Timeout
 
 from app import api_models as api
@@ -24,6 +25,23 @@ from benchmark.metrics import summarize
 from benchmark.run import evaluate_record, make_metadata, manifest_for
 
 
+class FrontendFiles(StaticFiles):
+    """Serve known React routes without routing missing API/assets to HTML."""
+    async def get_response(self, path, scope):
+        is_page = bool(re.fullmatch(
+            r"(?:overview|topics|practice|check|skill-practice|history|assessment(?:/(?:task-response|coherence-cohesion|lexical-resource|grammatical-range-accuracy))?)/?",
+            path,
+        ))
+        try:
+            response = await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            if exc.status_code != 404 or not is_page:
+                raise
+            response = await super().get_response("index.html", scope)
+        response.headers["Cache-Control"] = "no-store" if is_page or path in {"", ".", "index.html"} else "no-cache"
+        return response
+
+
 def create_app(data_root: Path = ROOT / "data", results_root: Path = ROOT / "results", provider_factory=GeminiProvider):
     @asynccontextmanager
     async def lifespan(app):
@@ -32,13 +50,16 @@ def create_app(data_root: Path = ROOT / "data", results_root: Path = ROOT / "res
         from app.practice.store import PracticeStore
         from app.practice.service import PracticeService
         app.state.practice_provider = provider_factory(replace(app.state.settings,retries=min(1,app.state.settings.retries)))
-        app.state.practice = PracticeService(PracticeStore(results_root / "_practice.sqlite3"),app.state.practice_provider)
+        app.state.practice_answer_provider = provider_factory(replace(app.state.settings,model=app.state.settings.practice_answer_model,retries=min(1,app.state.settings.retries)))
+        app.state.practice = PracticeService(PracticeStore(results_root / "_practice.sqlite3"),app.state.practice_provider,app.state.practice_answer_provider)
         try:
             yield
         finally:
             await app.state.provider.close()
             if app.state.practice_provider is not app.state.provider:
                 await app.state.practice_provider.close()
+            if app.state.practice_answer_provider not in (app.state.provider,app.state.practice_provider):
+                await app.state.practice_answer_provider.close()
 
     app = FastAPI(title="FogWrite — IELTS Writing Studio", version="1.0.0", lifespan=lifespan)
 
@@ -271,7 +292,7 @@ def create_app(data_root: Path = ROOT / "data", results_root: Path = ROOT / "res
 
     dist = ROOT / "frontend" / "dist"
     if (dist / "index.html").is_file():
-        app.mount("/", StaticFiles(directory=dist, html=True), name="frontend")
+        app.mount("/", FrontendFiles(directory=dist, html=True), name="frontend")
     return app
 
 

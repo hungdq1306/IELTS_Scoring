@@ -1,27 +1,34 @@
-# FogWrite
+# FogWrite — Screen Design 01
 
-Approved direction: Clear Progress, with a small friendly frog on a lily pad.
-Use the name FogWrite exactly. English interface; IELTS Academic Writing Task 2.
+The six-screen UI specification supplied by the user supersedes the earlier editorial/inline-SVG direction.
 
-## Visual system
+## Tokens
 
-- Teal #0F766E for actions; ink #172B2A; paper #F8FAF9; white surfaces.
-- Mint #E8F5F1 for context and criterion evidence; apricot #F4B183 for optional suggestions.
-- Rose underlines for grounded language errors. Evidence is not automatically a strength.
-- Be Vietnam Pro for interface; Source Serif 4 for essays. Fonts load optionally from Google Fonts with local fallbacks.
-- Calm two-column workspaces; 8–12px component corners. Keep illustrations out of essay text.
-- Responsive single-column reading and editing; visible keyboard focus; reduced motion support.
+- Brand: FogWrite, subtitle IELTS Writing Studio.
+- UI and headings: Plus Jakarta Sans; ink #132A26; secondary #526B66.
+- Canvas #F6FAF8; cards #FFFFFF with #DCE8E3 border, 16px corners and 0 2px 10px rgba(15,76,67,.04) shadow.
+- Sidebar #0F4C43; active navigation #236B60 with 12px corners.
+- Primary action #0E6258, hover #0B4F47, white text, 12px corners.
+- Mint banner #E6F2ED; strength #D6F3E3 / #135E37; suggestion and band #FCE6CC / #8C4312; error #FADBD8 / #991B1B with #E5534B underline.
+- UI icons: lucide-react, 1.75px strokes.
 
-## Surfaces
+## Screen composition
 
-- Landing: persuasive hero with explicitly labelled sample feedback; no invented results or testimonials.
-- Writing: task operation; editor, timer and word count lead. No AI hints before submission.
-- Feedback: reading; essay stays beside one criterion panel at a time. Highlight selects detail, not a large modal.
-- Practice: dedicated route with source context, exercise, hints, answer checking and revision.
+1. Landing: no sidebar; frog logo, navigation and Sign in; two-column hero; white sample feedback card with writing PNG overlapping the bottom-right corner; three equal feature cards.
+2. Topics: dark sidebar; prompt heading; mint Surprise me banner with a peeking PNG on its top edge; four filter pills; four initial prompt cards in two columns.
+3. Writing: timer, save state and live word count; 4/8 prompt/editor columns; compact formatting/list toolbar; sleeping PNG beside autosave text; submit action on the right.
+4. Assessment: 8/4 essay/score columns; honest annotation legend; selected-passage popover; peach band badge and criterion rows; encouraging PNG beside a speech bubble.
+5. Criterion: 7/5 essay/detail columns; segmented criterion tabs; strengths, development and quote cards; pointing PNG on the Next step card; full-width practice action.
+6. Skill practice: back link, title, actual exercise progress; 4/8 source/editor columns; hint and answer actions; peach feedback banner with a lilypad PNG.
 
-## References consulted
+## Character rules
 
-- https://github.com/pbakaus/impeccable/blob/main/plugin/skills/impeccable/SKILL.md
-- https://github.com/anthropics/skills/blob/main/skills/frontend-design/SKILL.md
+See [PNG asset mapping](docs/MASCOT_ASSETS.md). There are no inline frog SVGs. Every character comes from a fixed local transparent PNG through FrogMascot.tsx. Never restore the old arm/head rigs or use a custom-drawn fallback. Keep sidebar content to its compact brand and five navigation links.
 
-The Impeccable launcher was not installed in this environment. Its written guidance was consulted; no automated Impeccable audit is claimed.
+## Product truth
+
+Sample assessments and sample exercises are labelled. Live feedback comes from the existing APIs. Criterion evidence is neutral unless its data explicitly identifies it as a strength or suggestion. The Sign in button explains that account sign-in is unavailable in the current browser-session pilot.
+
+## Verification limits
+
+The reference image could not be downloaded in the implementation environment. The implementation follows the supplied screen-by-screen specification. All six screens passed headless Chromium screenshot and interaction checks at 1440x900 and 1280x800. Pixel-identical comparison remains unconfirmed because the reference image could not be downloaded and the offline checker uses fallback fonts.

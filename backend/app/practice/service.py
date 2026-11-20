@@ -13,14 +13,17 @@ from app.practice.prompts import GENERATOR,REVIEWER,ANSWER_EVALUATOR,GENERATION_
 
 
 class PracticeService:
- def __init__(self,store,provider):self.store,self.provider=store,provider
+ def __init__(self,store,provider,answer_provider=None):
+  self.store,self.provider=store,provider
+  self.answer_provider=answer_provider or provider
 
  def lock(self,resource):return FileLock(str(self.store.path.parent / ('practice-'+resource+'.lock')),timeout=0)
 
  async def call(self,sid,operation,system,data,schema):
   start=perf_counter()
   try:
-   g=await self.provider.generate_structured(system,json.dumps(data,ensure_ascii=False) if not isinstance(data,str) else data,schema)
+   provider=self.answer_provider if operation in {'answer','batch_answer','revision'} else self.provider
+   g=await provider.generate_structured(system,json.dumps(data,ensure_ascii=False) if not isinstance(data,str) else data,schema)
   except ProviderError as exc:
    self.store.log_call(sid,operation,exc.generation.raw if exc.generation else None,{'status':exc.code,'elapsed_ms':round((perf_counter()-start)*1000),'attempts':[a.model_dump() for a in exc.attempts]})
    raise
@@ -43,6 +46,7 @@ class PracticeService:
   public_ex=[]
   for e in data.get('exercises',[]):
    out={k:e[k] for k in ('exercise_id','source_error_id','type','skill','difficulty','instruction','question','options','learning_objective','validation_status')}
+   out['structure_prompt']=e.get('structure_prompt','')
    answers=[r for r in self.store.answer_rows(e['exercise_id']) if r.get('state')=='complete']
    out.update(completed=any(r['result']['outcome']=='correct' for r in answers),attempts=len(answers),hint_used=bool(self.store.query('SELECT 1 FROM hints WHERE exercise_id=?',(e['exercise_id'],))))
    public_ex.append(out)
@@ -114,6 +118,7 @@ class PracticeService:
   return {'exercise_id':eid,'hint':e['hint'],'human_reviewed':False}
 
  def deterministic(self,e,answer):
+  if e['type']=='sentence_rewriting':return None
   if e['type']=='multiple_choice':return normalize(answer)==normalize(e['correct_answer'])
   if e['type']=='error_identification':
    target=re.findall(r"\w+",e['target_span'].casefold());tokens=re.findall(r"\w+",answer.casefold())
@@ -123,6 +128,11 @@ class PracticeService:
   if any(norm(answer)==norm(k) for k in keys):return True
   return None
 
+ def answer_view(self,e,result):
+  # Older stored attempts may predate open-ended rewriting; never expose a fixed key.
+  if e['type']=='sentence_rewriting':return {**result,'correct_answer':'','accepted_alternatives':[]}
+  return result
+
  async def answer(self,eid,session_id,answer,request_id):
   sid,e=self.store.owned_exercise(eid,session_id)
   try:
@@ -131,10 +141,10 @@ class PracticeService:
     if prior:
      previous=json.loads(prior[0]['payload'])
      if previous['answer']!=answer:raise HTTPException(409,'This request ID was already used with a different answer.')
-     if previous['state']=='complete':return previous['result']
+     if previous['state']=='complete':return self.answer_view(e,previous['result'])
      raise HTTPException(409,'This answer request is pending or failed; no duplicate evaluation is made. Use a new request ID only after checking its status.')
     records=[r for r in self.store.answer_rows(eid) if r.get('state')=='complete']
-    if records and normalize(records[-1]['answer'])==normalize(answer):return records[-1]['result']
+    if records and normalize(records[-1]['answer'])==normalize(answer):return self.answer_view(e,records[-1]['result'])
     if len(records)>=5:raise HTTPException(409,'Five-answer limit reached for this exercise. Review the explanation before continuing.')
     aid=uid('attempt');record={'state':'pending','answer':answer}
     self.store.execute('INSERT INTO answers VALUES (?,?,?,?,?)',(aid,eid,request_id,json.dumps(record),now()))
@@ -151,12 +161,13 @@ class PracticeService:
       evaluator='gemini_automated'
      hinted=bool(self.store.query('SELECT 1 FROM hints WHERE exercise_id=?',(eid,)))
      result={'attempt_id':aid,'exercise_id':eid,**assessment.model_dump(),'evaluator':evaluator,'human_reviewed':False,
-       'correct_answer':e['correct_answer'],'accepted_alternatives':e['accepted_alternatives'],'attempt_number':len(records)+1,'hint_used':hinted}
+       'correct_answer':'' if e['type']=='sentence_rewriting' else e['correct_answer'],
+       'accepted_alternatives':[] if e['type']=='sentence_rewriting' else e['accepted_alternatives'],'attempt_number':len(records)+1,'hint_used':hinted}
      record.update(state='complete',result=result)
     except BaseException:
      record['state']='failed';self.store.execute('UPDATE answers SET payload=? WHERE id=?',(json.dumps(record),aid));raise
     self.store.execute('UPDATE answers SET payload=? WHERE id=?',(json.dumps(record,ensure_ascii=False),aid))
-    return result
+    return self.answer_view(e,result)
   except Timeout as exc:raise HTTPException(409,'This exercise answer is already being checked.') from exc
 
  async def revision(self,sid,session_id,paragraph_number,answer,request_id):

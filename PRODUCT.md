@@ -10,7 +10,7 @@ Choose an original practice prompt or supply a question; write for 40 minutes; s
 
 - Scores are AI estimates, never official IELTS results.
 - The topic bank contains 12 original prompts, not claimed past exam questions.
-- The landing feedback example is a labelled fixture, never presented as a live assessment.
+- Sample feedback and sample exercises are labelled demonstrations, never presented as live AI assessments.
 - Live grading and practice use existing backend APIs; no new scoring prompts, models or calibration changes.
 - Current drafts and timer timestamps are browser-local. Saved assessments use the existing cookie-owned server session.
 - Exercise selection can filter a generated batch by criterion and overlap with a selected source quote. Missing matches produce an honest empty state.

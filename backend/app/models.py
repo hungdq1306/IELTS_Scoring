@@ -1,0 +1,159 @@
+"""Persistent pilot records. Times are UTC epoch seconds, including quota windows."""
+import time
+from uuid import uuid4
+
+from sqlalchemy import Boolean, CheckConstraint, Float, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+
+
+def uid():
+    return str(uuid4())
+
+
+class Base(DeclarativeBase):
+    pass
+
+
+class User(Base):
+    __tablename__ = 'users'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    external_auth_id: Mapped[str] = mapped_column(String(200), unique=True)
+    role: Mapped[str] = mapped_column(String(16), default='student')
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    consent_version: Mapped[str | None] = mapped_column(String(80))
+    consent_at: Mapped[float | None] = mapped_column(Float)
+    created_at: Mapped[float] = mapped_column(Float, default=time.time)
+    __table_args__ = (CheckConstraint("role IN ('student','ta','teacher','admin')"),)
+
+
+class ClassRoom(Base):
+    __tablename__ = 'classes'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    name: Mapped[str] = mapped_column(String(120))
+    teacher_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    invite_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    invite_expires_at: Mapped[float] = mapped_column(Float)
+    invite_max_uses: Mapped[int] = mapped_column(Integer, default=45)
+    invite_uses: Mapped[int] = mapped_column(Integer, default=0)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[float] = mapped_column(Float, default=time.time)
+
+
+class Membership(Base):
+    __tablename__ = 'class_memberships'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    class_id: Mapped[str] = mapped_column(ForeignKey('classes.id', ondelete='CASCADE'), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
+    role: Mapped[str] = mapped_column(String(16), default='student')
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    __table_args__ = (UniqueConstraint('class_id', 'user_id'), CheckConstraint("role IN ('student','ta','teacher')"))
+
+
+class Prompt(Base):
+    __tablename__ = 'prompts'
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    prompt_text: Mapped[str] = mapped_column(Text)
+    topic_tag: Mapped[str] = mapped_column(String(100), default='General')
+    task_type: Mapped[str] = mapped_column(String(30), default='task_2')
+    source: Mapped[str] = mapped_column(String(80), default='original_practice')
+    is_published: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_by: Mapped[str | None] = mapped_column(ForeignKey('users.id'))
+
+
+class TeacherProfile(Base):
+    __tablename__ = 'teacher_profiles'
+    teacher_id: Mapped[str] = mapped_column(ForeignKey('users.id'), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    style: Mapped[str] = mapped_column(Text, default='')
+    offsets: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+class TeacherAnchor(Base):
+    __tablename__ = 'teacher_anchors'
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    teacher_id: Mapped[str | None] = mapped_column(ForeignKey('users.id'), index=True)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    payload: Mapped[dict] = mapped_column(JSON)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class ExerciseTemplate(Base):
+    __tablename__ = 'exercise_templates'
+    id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    teacher_id: Mapped[str | None] = mapped_column(ForeignKey('users.id'), index=True)
+    version: Mapped[int] = mapped_column(Integer, default=1)
+    kind: Mapped[str] = mapped_column(String(40))
+    instruction: Mapped[str] = mapped_column(Text)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class Submission(Base):
+    __tablename__ = 'submissions'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    class_id: Mapped[str] = mapped_column(ForeignKey('classes.id'), index=True)
+    prompt_id: Mapped[str | None] = mapped_column(ForeignKey('prompts.id'))
+    prompt: Mapped[str] = mapped_column(Text)
+    essay: Mapped[str] = mapped_column(Text)
+    word_count: Mapped[int] = mapped_column(Integer)
+    warnings: Mapped[list] = mapped_column(JSON, default=list)
+    status: Mapped[str] = mapped_column(String(24), default='QUEUED')
+    config_snapshot: Mapped[dict] = mapped_column(JSON)
+    created_at: Mapped[float] = mapped_column(Float, default=time.time, index=True)
+
+
+class Assessment(Base):
+    __tablename__ = 'assessments'
+    submission_id: Mapped[str] = mapped_column(ForeignKey('submissions.id', ondelete='CASCADE'), primary_key=True)
+    result: Mapped[dict] = mapped_column(JSON)
+    raw_scores: Mapped[dict] = mapped_column(JSON)
+    teacher_override: Mapped[dict | None] = mapped_column(JSON)
+    reviewed_by: Mapped[str | None] = mapped_column(ForeignKey('users.id'))
+
+
+class PracticeSet(Base):
+    __tablename__ = 'practice_sets'
+    submission_id: Mapped[str] = mapped_column(ForeignKey('submissions.id', ondelete='CASCADE'), primary_key=True)
+    state: Mapped[str] = mapped_column(String(24), default='not_generated')
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    templates: Mapped[list] = mapped_column(JSON, default=list)
+    draft_answers: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class Job(Base):
+    __tablename__ = 'jobs'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    submission_id: Mapped[str] = mapped_column(ForeignKey('submissions.id', ondelete='CASCADE'), index=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    kind: Mapped[str] = mapped_column(String(30))
+    request_key: Mapped[str] = mapped_column(String(100))
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    result: Mapped[dict | None] = mapped_column(JSON)
+    status: Mapped[str] = mapped_column(String(20), default='QUEUED')
+    priority: Mapped[int] = mapped_column(Integer, default=10)
+    attempt_count: Mapped[int] = mapped_column(Integer, default=0)
+    lease_token: Mapped[str | None] = mapped_column(String(36))
+    lease_expires_at: Mapped[float | None] = mapped_column(Float)
+    next_attempt_at: Mapped[float] = mapped_column(Float, default=0)
+    error_code: Mapped[str | None] = mapped_column(String(80))
+    created_at: Mapped[float] = mapped_column(Float, default=time.time)
+    completed_at: Mapped[float | None] = mapped_column(Float)
+    __table_args__ = (UniqueConstraint('user_id', 'kind', 'request_key'),
+                      Index('ix_jobs_claim', 'status', 'next_attempt_at', 'priority', 'created_at'))
+
+
+class QuotaBucket(Base):
+    __tablename__ = 'quota_buckets'
+    key: Mapped[str] = mapped_column(String(180), primary_key=True)
+    events: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class AuditEvent(Base):
+    __tablename__ = 'audit_events'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    actor_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
+    action: Mapped[str] = mapped_column(String(80))
+    target_id: Mapped[str] = mapped_column(String(80))
+    detail: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[float] = mapped_column(Float, default=time.time)

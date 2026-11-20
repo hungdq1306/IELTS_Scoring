@@ -24,6 +24,8 @@ class PracticeStore:
    CREATE TABLE IF NOT EXISTS hints(exercise_id TEXT PRIMARY KEY, created INTEGER);
    CREATE TABLE IF NOT EXISTS revisions(id TEXT PRIMARY KEY, submission_id TEXT NOT NULL, request_id TEXT NOT NULL, payload TEXT NOT NULL, created INTEGER, UNIQUE(submission_id,request_id));
    CREATE TABLE IF NOT EXISTS practice_calls(id TEXT PRIMARY KEY, submission_id TEXT NOT NULL, operation TEXT NOT NULL, raw TEXT, metadata TEXT NOT NULL, created INTEGER);
+   CREATE TABLE IF NOT EXISTS practice_drafts(submission_id TEXT PRIMARY KEY, payload TEXT NOT NULL, updated INTEGER NOT NULL);
+   CREATE TABLE IF NOT EXISTS practice_attempts(id TEXT PRIMARY KEY, submission_id TEXT NOT NULL, request_id TEXT NOT NULL, payload TEXT NOT NULL, created INTEGER NOT NULL, UNIQUE(submission_id,request_id));
    CREATE TABLE IF NOT EXISTS study_observations(id TEXT PRIMARY KEY, session_id TEXT NOT NULL, study_id TEXT, group_label TEXT CHECK(group_label IN ('feedback_only','feedback_plus_practice')), phase TEXT CHECK(phase IN ('pre_test','mid_test','post_test','transfer','delayed')), assessment_ref TEXT, recorded INTEGER);
    """)
 

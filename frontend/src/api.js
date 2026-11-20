@@ -1,4 +1,10 @@
+import {runtimeConfig} from './pilot-auth';
+import {pilotApi} from './pilot-api';
 export async function api(path, options = {}) {
+  const config=await runtimeConfig();
+  return config.mode==='clerk'?pilotApi(path,options):legacyApi(path,options);
+}
+async function legacyApi(path, options = {}) {
   let response;
   try {
     response = await fetch("/api" + path, {

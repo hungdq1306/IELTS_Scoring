@@ -29,6 +29,7 @@ class ExerciseDraft(StrictModel):
  difficulty: int = Field(ge=1,le=4)
  instruction: Line
  question: str = Field(min_length=3,max_length=3500)
+ structure_prompt: str = Field(default='',max_length=1000)
  options: list[Line] = Field(max_length=4)
  correct_answer: str = Field(min_length=1,max_length=3500)
  accepted_alternatives: list[Line] = Field(max_length=5)
@@ -85,6 +86,23 @@ class AnswerAssessment(StrictModel):
 class RevisionRequest(AnswerRequest):
  paragraph_number: int = Field(ge=1,le=100)
 
+class PracticeAnswer(StrictModel):
+ exercise_id: str = Field(min_length=1,max_length=80)
+ answer: str = Field(max_length=5000)
+
+class PracticeAnswers(StrictModel):
+ answers: list[PracticeAnswer] = Field(max_length=5)
+
+class PracticeSubmit(PracticeAnswers):
+ request_id: str = Field(min_length=8,max_length=80,pattern=r"^[A-Za-z0-9_-]+$")
+
+class ExerciseAssessment(AnswerAssessment):
+ exercise_id: str
+
+class BatchAssessment(StrictModel):
+ items: list[ExerciseAssessment] = Field(min_length=1,max_length=5)
+ summary: Line
+
 class PublicError(StrictModel):
  error_id: str
  criterion: str
@@ -109,6 +127,7 @@ class PublicExercise(StrictModel):
  difficulty: int
  instruction: str
  question: str
+ structure_prompt: str = ''
  options: list[str]
  learning_objective: str
  validation_status: str
@@ -139,6 +158,25 @@ class AnswerResponse(StrictModel):
  accepted_alternatives: list[str]
  attempt_number: int
  hint_used: bool
+
+class PracticeSubmitResponse(StrictModel):
+ submission_id: str
+ attempt_id: str
+ state: Literal['complete']
+ items: list[AnswerResponse] = Field(min_length=1,max_length=5)
+ correct_count: int = Field(ge=0,le=5)
+ total: int = Field(ge=1,le=5)
+ summary: str
+ evaluation_model: str
+ human_reviewed: bool = False
+
+class PracticeAttemptResponse(StrictModel):
+ submission_id: str
+ answers: list[PracticeAnswer]
+ state: Literal['draft','pending','failed','complete']
+ result: PracticeSubmitResponse | None
+ exercises_total: int
+ evaluation_model: str
 
 class ProgressResponse(StrictModel):
  submission_id: str

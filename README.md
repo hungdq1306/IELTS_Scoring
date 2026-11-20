@@ -1,5 +1,9 @@
 # FogWrite — IELTS Writing Studio
 
+To open the local MVP on this Windows checkout, double-click **`RUN_FOGWRITE.cmd`** and open **http://127.0.0.1:8000** after `Application startup complete` appears. The built frontend calls the real scoring and complete-set practice APIs. This local entry point uses browser-session history; configure Clerk/Neon separately for the classroom deployment below.
+
+For the authenticated classroom pilot, use **`app.pilot:app`** and follow [the deployment guide](backend/README_DEPLOY.md). It includes Clerk, Neon PostgreSQL, durable leased jobs, class authorization, quotas, Docker/Render configuration and account setup. The local research/demo server below remains a separate entry point.
+
 The FogWrite UI includes a landing page, a 12-prompt topic library, 40-minute writing sessions with draft recovery, grounded highlights, criterion panels and a dedicated practice workspace. See [UI guide](docs/FOGWRITE_UI.md) for startup and build instructions. The prebuilt interface is served by FastAPI on http://127.0.0.1:8000.
 
 Automated IELTS Academic Writing Task 2 assessment and targeted practice platform built with **FastAPI**, **React**, and **Google Gemini** (`gemini-3.5-flash-lite`), calibrated to the **May 2023 official IELTS Writing Band Descriptors** using an **8-anchor stratified examiner benchmark (`V1_STRATIFIED`)**.

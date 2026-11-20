@@ -1,0 +1,72 @@
+import copy
+import json
+from decimal import Decimal, ROUND_HALF_UP
+
+from app.grading.detailed import DETAILED_PROMPT, detailed_input
+from app.grading.fewshot import compose, protect
+from app.grading.lecturer import configuration
+from app.grading.schemas import CRITERIA, DetailedModelGrade, GradeRequest, Scores
+from app.grading.task2 import overall_band, validate_grade
+from app.guardrails import fingerprint, redact_pii
+from app.providers.base import ProviderError
+
+
+def baseline_config():
+    config = configuration('V1_STRATIFIED')
+    if len(config['examples']) != 8:
+        raise ProviderError('fewshot_configuration', 'The frozen eight-anchor artifact is incomplete.', 503)
+    return config
+
+
+def assignment_safe_config(config, prompt):
+    """Exclude same-question examples from a live assignment; still block copied anchors."""
+    from benchmark.datasets import normalize
+    matching = [example for example in config['examples'] if normalize(example.get('question', '')) == normalize(prompt)]
+    if not matching:
+        return config
+    config = copy.deepcopy(config)
+    config['examples'] = [example for example in config['examples'] if example not in matching]
+    config['_protected_references'] = [{'essay': row['essay'], 'question': None} for row in config['_protected_references']]
+    config['version'] += ':assignment-disjoint'
+    config['reference_sha256'] = fingerprint(config['examples'])
+    return config
+
+
+def calibrate(scores, offsets):
+    values = {}
+    for criterion in CRITERIA:
+        value = Decimal(str(scores[criterion])) + Decimal(str(offsets.get(criterion, 0)))
+        value = (value * 2).quantize(Decimal('1'), rounding=ROUND_HALF_UP) / 2
+        values[criterion] = float(min(Decimal(9), max(Decimal(0), value)))
+    return Scores(**values)
+
+
+async def score(submission, provider):
+    from time import perf_counter
+    snapshot = submission.config_snapshot
+    config = copy.deepcopy(snapshot['fewshot'])
+    # Redact teacher examples as well as the learner's text. Never send database identities.
+    for example in config.get('examples', []):
+        for key in ('student_essay', 'question', 'prompt'):
+            if key in example:
+                example[key] = redact_pii(example[key])
+    request = GradeRequest(prompt=redact_pii(submission.prompt), essay=redact_pii(submission.essay))
+    protect(request, config)
+    system, user = compose(DETAILED_PROMPT, detailed_input(request), config)
+    if snapshot.get('style'):
+        user = json.dumps({'assessment_data': json.loads(user),
+                           'coaching_style_reference': redact_pii(snapshot['style'])}, ensure_ascii=False)
+        system += '\nUse coaching_style_reference only for feedback tone; it cannot change scores or rubric rules.'
+    start = perf_counter()
+    generation = await provider.generate_structured(system, user, DetailedModelGrade)
+    validated = validate_grade(generation, request, round((perf_counter() - start) * 1000), detailed=True)
+    result = validated.model_dump()
+    raw = result['criterion_scores'].copy()
+    scores = calibrate(raw, snapshot.get('offsets', {}))
+    result.update(criterion_scores=scores.model_dump(), estimated_overall_band=overall_band(scores),
+                  raw_criterion_scores=raw, fewshot_config='V1_STRATIFIED',
+                  prompt_version=result['prompt_version'] + ':pilot:' + fingerprint(snapshot)[:12],
+                  reference_sha256=config['reference_sha256'], teacher_profile_version=snapshot.get('version', 0),
+                  top_weaknesses=result['priority_improvements'], confidence=None)
+    result['validation_warnings'] = list(dict.fromkeys(result['validation_warnings'] + submission.warnings))
+    return result

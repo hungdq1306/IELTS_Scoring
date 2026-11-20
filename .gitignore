@@ -7,6 +7,18 @@ venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.cache/pilot-deps/
+.cache/pilot-wheels/
+.cache/postgres17/
+.cache/postgres17.tgz
+.cache/pilot-pgdata/
+.cache/pilot-pg.log
+.cache/ui-deps/
+.cache/ui-archives/
+.cache/pilot-*.log
+.cache/pilot-browser/
+.cache/pilot-ui-deps/
+.cache/
 
 # Frontend dev dependencies (keep prebuilt frontend/dist/ tracked for zero-Node demo)
 frontend/node_modules/

@@ -1,5 +1,7 @@
 from fastapi import HTTPException,Request
 from app.practice.schemas import PracticeResponse,AnswerRequest,AnswerResponse,RevisionRequest,ProgressResponse
+from app.practice.schemas import PracticeAnswers,PracticeSubmit,PracticeAttemptResponse,PracticeSubmitResponse
+from app.practice.batch import PracticeBatch
 
 COOKIE='ielts_practice_session'
 
@@ -17,6 +19,21 @@ def install_routes(app):
   rows=service.store.query('SELECT id,payload,created FROM submissions WHERE session_id=? ORDER BY created DESC,rowid DESC LIMIT 30',(session_id,))
   import json
   return {'items':[{'submission_id':r['id'],'prompt':json.loads(r['payload'])['prompt'],'created':r['created']} for r in rows]}
+
+ @app.get('/api/writing/task2/{submission_id}/practice-attempt',response_model=PracticeAttemptResponse)
+ def practice_attempt(submission_id:str,request:Request):
+  service,sid=context(request)
+  return PracticeBatch(service).view(submission_id,sid)
+
+ @app.put('/api/writing/task2/{submission_id}/practice-attempt')
+ def save_practice_attempt(submission_id:str,body:PracticeAnswers,request:Request):
+  service,sid=context(request)
+  return PracticeBatch(service).save(submission_id,sid,body.answers)
+
+ @app.post('/api/writing/task2/{submission_id}/practice-attempt/submit',response_model=PracticeSubmitResponse)
+ async def submit_practice_attempt(submission_id:str,body:PracticeSubmit,request:Request):
+  service,sid=context(request)
+  return await PracticeBatch(service).submit(submission_id,sid,body.answers,body.request_id)
 
  @app.get('/api/writing/task2/{submission_id}/submission')
  def submission(submission_id:str,request:Request):
@@ -41,10 +58,10 @@ def install_routes(app):
  @app.get('/api/exercises/{exercise_id}/feedback',response_model=AnswerResponse)
  def last_feedback(exercise_id:str,request:Request):
   service,sid=context(request)
-  service.store.owned_exercise(exercise_id,sid)
+  _,exercise=service.store.owned_exercise(exercise_id,sid)
   records=[r for r in service.store.answer_rows(exercise_id) if r.get('state')=='complete']
   if not records:raise HTTPException(404,'No answer has been submitted yet.')
-  return records[-1]['result']
+  return service.answer_view(exercise,records[-1]['result'])
 
  @app.post('/api/exercises/{exercise_id}/hint')
  def hint(exercise_id:str,request:Request):

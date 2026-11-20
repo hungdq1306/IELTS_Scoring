@@ -189,7 +189,7 @@ class GeminiProvider:
             temperature=0, max_output_tokens=8192,
         )
         attempts = []
-        budget_wait = max(30, 60 / self.settings.requests_per_minute + 5)
+        budget_wait = getattr(self, 'budget_wait_seconds', max(30, 60 / self.settings.requests_per_minute + 5))
         async with self.semaphore:
             for attempt_no in range(self.settings.retries + 1):
                 try:

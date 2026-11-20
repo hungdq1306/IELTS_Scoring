@@ -1,0 +1,189 @@
+{
+  "mode": "REAL_GEMINI",
+  "submission_id": "sub_df1aa96c90f84bec8f4a52a3ee50eb2e",
+  "essay_model": "gemini-3.5-flash-lite",
+  "practice_generation_calls": 2,
+  "practice_evaluation_calls": 1,
+  "total_generate_content_calls_including_essay": 4,
+  "practice_evaluation_model": "gemini-3.1-flash-lite",
+  "evaluation_elapsed_ms": 8888,
+  "evaluation_provider_latency_ms": 6876,
+  "evaluation_token_usage": {
+    "candidates_token_count": 432,
+    "prompt_token_count": 1385,
+    "total_token_count": 1817
+  },
+  "essay_token_usage": {
+    "candidates_token_count": 2778,
+    "prompt_token_count": 6536,
+    "total_token_count": 9314
+  },
+  "practice_call_metadata": [
+    {
+      "operation": "generate",
+      "status": "ok",
+      "model": "gemini-3.5-flash-lite",
+      "model_version": "gemini-3.5-flash-lite",
+      "elapsed_ms": 18077,
+      "provider_latency_ms": 15146,
+      "usage": {
+        "candidates_token_count": 1508,
+        "prompt_token_count": 3104,
+        "total_token_count": 4612
+      },
+      "attempts": [
+        {
+          "status": "ok",
+          "latency_ms": 15146,
+          "api_code": null,
+          "usage": {
+            "candidates_token_count": 1508,
+            "prompt_token_count": 3104,
+            "total_token_count": 4612
+          }
+        }
+      ],
+      "version": "practice-v1.2-contextual-rewriting"
+    },
+    {
+      "operation": "review",
+      "status": "ok",
+      "model": "gemini-3.5-flash-lite",
+      "model_version": "gemini-3.5-flash-lite",
+      "elapsed_ms": 2572,
+      "provider_latency_ms": 2557,
+      "usage": {
+        "candidates_token_count": 639,
+        "prompt_token_count": 1796,
+        "total_token_count": 2435
+      },
+      "attempts": [
+        {
+          "status": "ok",
+          "latency_ms": 2557,
+          "api_code": null,
+          "usage": {
+            "candidates_token_count": 639,
+            "prompt_token_count": 1796,
+            "total_token_count": 2435
+          }
+        }
+      ],
+      "version": "practice-v1.2-contextual-rewriting"
+    },
+    {
+      "operation": "batch_answer",
+      "status": "ok",
+      "model": "gemini-3.1-flash-lite",
+      "model_version": "gemini-3.1-flash-lite",
+      "elapsed_ms": 8888,
+      "provider_latency_ms": 6876,
+      "usage": {
+        "candidates_token_count": 432,
+        "prompt_token_count": 1385,
+        "total_token_count": 1817
+      },
+      "attempts": [
+        {
+          "status": "ok",
+          "latency_ms": 6876,
+          "api_code": null,
+          "usage": {
+            "candidates_token_count": 432,
+            "prompt_token_count": 1385,
+            "total_token_count": 1817
+          }
+        }
+      ],
+      "version": "practice-v1.2-contextual-rewriting"
+    }
+  ],
+  "exercises": 3,
+  "correct_count": 3,
+  "browser_checks": {
+    "batch_browser_posts": 1,
+    "individual_answer_posts": 0,
+    "idempotent_replay": true,
+    "results_restored_after_navigation": true,
+    "browser_errors": [],
+    "scoring_reused_existing_result": true
+  },
+  "feedback": {
+    "submission_id": "sub_df1aa96c90f84bec8f4a52a3ee50eb2e",
+    "attempt_id": "practice_ff1002d396954b4389b7610e33dce499",
+    "state": "complete",
+    "items": [
+      {
+        "attempt_id": "attempt_9cbcabae2f6546999d94336366ccf09d",
+        "exercise_id": "ex_4f1743660c3945968e23a77a894bcc83",
+        "outcome": "correct",
+        "explanation": "You correctly identified that the plural subject 'Most experts' requires the plural verb 'believe'.",
+        "suggested_improvement": "None needed.",
+        "target_fixed": true,
+        "meaning_preserved": true,
+        "no_new_serious_errors": true,
+        "evaluator": "gemini_batch_with_deterministic_mcq",
+        "human_reviewed": false,
+        "correct_answer": "believe",
+        "accepted_alternatives": [],
+        "attempt_number": 1,
+        "hint_used": false
+      },
+      {
+        "attempt_id": "attempt_d1842e0692334497a26cdb4a83eaacc1",
+        "exercise_id": "ex_65a9337fd0254986ac92ded51393cfe6",
+        "outcome": "correct",
+        "explanation": "You successfully corrected the subject-verb agreement error by changing 'argues' to 'argue' to match the plural subject 'scientists'.",
+        "suggested_improvement": "None needed.",
+        "target_fixed": true,
+        "meaning_preserved": true,
+        "no_new_serious_errors": true,
+        "evaluator": "gemini_batch_automated",
+        "human_reviewed": false,
+        "correct_answer": "",
+        "accepted_alternatives": [],
+        "attempt_number": 1,
+        "hint_used": false
+      },
+      {
+        "attempt_id": "attempt_22d99f4d386f4505ad70def954a82073",
+        "exercise_id": "ex_3407c8e89ba048fbac96471e19067ced",
+        "outcome": "correct",
+        "explanation": "You accurately identified and corrected all three subject-verb agreement errors in the passage.",
+        "suggested_improvement": "None needed.",
+        "target_fixed": true,
+        "meaning_preserved": true,
+        "no_new_serious_errors": true,
+        "evaluator": "gemini_batch_automated",
+        "human_reviewed": false,
+        "correct_answer": "Some researchers suggest that online learning increases flexibility. However, many students prefer traditional classrooms for social interaction. Both methods have distinct advantages.",
+        "accepted_alternatives": [
+          "Some researchers suggest that online learning increases flexibility. However, many students prefer traditional classrooms for social interaction. Both methods have distinct advantages."
+        ],
+        "attempt_number": 1,
+        "hint_used": false
+      }
+    ],
+    "correct_count": 3,
+    "total": 3,
+    "summary": "You have demonstrated a strong grasp of subject-verb agreement with plural subjects. To continue improving, focus on identifying agreement errors in longer, more complex sentences where the subject and verb might be separated by prepositional phrases or relative clauses.",
+    "evaluation_model": "gemini-3.1-flash-lite",
+    "human_reviewed": false
+  },
+  "test_results": {
+    "backend": {
+      "passed": 39,
+      "failed": 0
+    },
+    "frontend_unit": {
+      "passed": 16,
+      "failed": 0
+    },
+    "browser_offline_contract": "passed at 1440x900 and 1280x800"
+  },
+  "limitations": [
+    "One real practice set, not a quality benchmark or learning-gains study.",
+    "Browser replay reused the persisted real-model evaluation and did not make another model call.",
+    "Existing single-answer endpoints remain for older clients; the current UI submits full sets."
+  ]
+}
