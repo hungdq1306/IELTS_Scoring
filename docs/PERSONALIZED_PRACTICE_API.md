@@ -1,35 +1,31 @@
 # Personalized practice API
 
-Base URL: http://127.0.0.1:8000/api. Grade first using the existing evaluation endpoint; retain the HttpOnly ielts_practice_session cookie and response submission_id. Browser requests must send credentials on the same origin.
+## Classroom pilot contract
 
-| Method | Path | Behavior |
-|---|---|---|
-| GET | /practice/submissions | List up to 30 owned saved assessments |
-| GET | /writing/task2/{submission_id}/submission | Restore original question, essay and grade |
-| POST | /writing/task2/{submission_id}/exercises | Generate once, return cached ready batch thereafter |
-| GET | /writing/task2/{submission_id}/exercises | Read public exercises without generation |
-| POST | /exercises/{exercise_id}/answer | Check answer and reveal feedback/key after submission |
-| GET | /exercises/{exercise_id}/feedback | Restore last submitted feedback; 404 before any answer |
-| POST | /exercises/{exercise_id}/hint | Persist hint use, no Gemini request |
-| POST | /writing/task2/{submission_id}/revision | Evaluate a paragraph with an approved source weakness |
-| GET | /writing/task2/{submission_id}/progress | Read persisted practice outcomes and revisions |
+All paths below are prefixed with `/api`. Requests use a Clerk bearer token. Backend ownership requires the submission owner and an active class membership; staff review uses separate teacher routes. Client-supplied user IDs do not grant access.
 
-Answer body:
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/writing/task2/{submission_id}/exercises` | Practice state and public exercises |
+| POST | `/writing/task2/{submission_id}/exercises` | Start generation or reconnect to a pending job |
+| GET / PUT | `/writing/task2/{submission_id}/practice-attempt` | Restore/save complete-set answer drafts |
+| POST | `/writing/task2/{submission_id}/practice-attempt/submit` | Submit a complete set for evaluation |
+| GET | `/exercises/{exercise_id}/feedback` | Last applicable feedback |
+| POST | `/exercises/{exercise_id}/answer` | Supported individual-answer API; current UI uses complete sets |
+| POST | `/exercises/{exercise_id}/hint` | Request a hint |
+| POST | `/writing/task2/{submission_id}/revision` | Evaluate an approved paragraph revision |
+| GET | `/writing/task2/{submission_id}/progress` | Persisted learning progress |
 
-```json
-{"answer":"helps","request_id":"unique-request-0001"}
-```
+Operations requiring AI return HTTP 202 with a job ticket and `poll_url`. Poll `/jobs/{job_id}` until `COMPLETED` or `FAILED`; successful results are in `result`. Queue admission and idempotency are enforced on the server. Public exercises hide reviewed answer keys until the appropriate feedback operation. Rewriting accepts multiple valid responses and does not expose a fixed reference answer.
 
-Revision body additionally contains paragraph_number (one-based). Request IDs are 8–80 letters, digits, underscores or hyphens. Reusing a request ID with another body returns 409. Answers have a 5,000-character maximum. Whitespace-only answers should not be sent by clients.
+The frontend restores saved answers and submits all exercise IDs once the set is complete. Schema and ownership validation remain authoritative. API payload details are defined in `app/practice/schemas.py` and routes in `app/routers/pilot.py`; do not infer them from archived demo screenshots.
 
-Public errors include evidence, category, offsets and reviewability. Public exercises include question, options, source linkage, objective, difficulty, validation_status, completion and attempts. They exclude correct_answer, alternatives, target_span, detailed correction and hint until the appropriate action. Answer responses distinguish deterministic and Gemini evaluation, return correct/incorrect/partially_correct, explanation, suggested improvement and target/meaning/new-error checks; human_reviewed is false.
+## Failures and limits
 
-No numeric grading scores are sent to the practice generation prompt. No overall IELTS band is assigned to an exercise or paragraph revision.
+401 means absent/expired authentication; 403 means permission/active-membership or consent failure; 404 means unavailable or unowned resources; 409 indicates conflicting input/state; 422 indicates schema validation; 429 indicates an applicable quota; 503 may indicate full queue or unavailable service. Provider failures of admitted jobs are exposed through safe job error codes. A failed practice operation preserves the successful assessment and does not refund its essay grading credit.
 
-## Errors and operational limits
+Practice may contain fewer than the requested items, including none when review rejects every candidate. Grading/practice generation and answer evaluation consume provider budget; hints, key-based checks and reads generally do not call Gemini. High-band refinement and retries can require extra calls. Token/cost data are estimates and may be unavailable.
 
-401: absent/expired session. 404: resource not owned or no feedback yet. 409: duplicate/conflicting/in-flight request, generation/attempt/revision limit, or no approved revision weakness. 422: invalid request/schema. Provider exceptions retain existing HTTP mapping: quota/rate limits, DNS/network/configuration, timeout and malformed structured outputs are shown by the frontend. Failed generation leaves grading available.
+## Local demo
 
-A ready batch may contain fewer than three or zero exercises. This is an intentional validated outcome. A pending operation left by a crashed process requires operator inspection of practice_calls and batch state before any manual reset; never automatically reset and rebill it.
-
-Generation ordinarily costs two logical requests: draft plus independent review; one if all source errors fail evidence checks. MCQ, span selection, hint, history and exact reviewed-answer matches cost zero calls. Nonmatching free-text evaluation and paragraph revision ordinarily cost one request each. Provider retries may add attempts; the configured daily budget and pacing are shared with grading.
+`app.main:app` provides a separate cookie-owned SQLite adapter with shared practice schemas. Some responses are synchronous rather than pilot job tickets. Use [demo instructions](DEMO_GUIDE.md); historical measurements are under [archive](archive/README.md).

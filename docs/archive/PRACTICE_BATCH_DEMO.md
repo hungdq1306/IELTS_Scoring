@@ -1,3 +1,5 @@
+> Historical snapshot. This document records an earlier implementation or proposal. For current behavior, see [documentation](../README.md) and [architecture](../ARCHITECTURE.md).
+
 Complete-set practice feedback — 2026-11-20
 
 Students write every response before submitting the practice set. Moving between exercises saves drafts without evaluating them. The browser also retains local drafts between saves. A blank or missing response prevents submission, and the backend independently validates ownership, IDs and completeness.

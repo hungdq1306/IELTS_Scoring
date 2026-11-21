@@ -13,6 +13,7 @@ from app.models import Assessment, AuditEvent, ClassRoom, ExerciseTemplate, Memb
 from app.pilot_schemas import AnchorInput, AssignMember, CreateClass, ProfileUpdate, PromptInput, ScoreOverride, TemplateInput
 from app.queue import locked_bucket
 from app.entitlements import system_settings
+from app.identity import display_label
 from app.pilot_schemas import ClassPatch
 from app.routers.pilot import class_access, database, effective_grade
 
@@ -41,7 +42,9 @@ async def classes(request: Request, user=Depends(staff_user)):
             count = await session.scalar(select(func.count()).select_from(Membership).where(
                 Membership.class_id == row.id, Membership.active.is_(True), Membership.role == 'student'))
             item = {'id': row.id, 'name': row.name, 'active': row.active, 'invite_uses': row.invite_uses,
-                    'student_count': count, 'daily_student_quota': row.daily_student_quota}
+                    'can_manage': user.role == 'admin' or (user.role == 'teacher' and row.teacher_id == user.id),
+                    'student_count': count, 'daily_student_quota': row.daily_student_quota,
+                    'teacher_name':display_label(await session.get(User,row.teacher_id))}
             if user.role == 'admin' or (user.role == 'teacher' and row.teacher_id == user.id):
                 item.update(join_code=row.join_code, invite_expires_at=row.invite_expires_at)
             items.append(item)
@@ -92,7 +95,10 @@ async def members(class_id: str, request: Request, user=Depends(staff_user)):
     async with database(request).sessions() as session:
         await class_access(session, class_id, user)
         rows = (await session.execute(select(Membership, User).join(User, User.id == Membership.user_id).where(Membership.class_id == class_id).limit(100))).all()
+        counts=dict((await session.execute(select(Submission.user_id,func.count()).where(Submission.class_id==class_id).group_by(Submission.user_id))).all())
         return {'items': [{'user_id': member.user_id, 'role': member.role, 'active': member.active,
+                           'full_name':account.full_name,'email':account.email,'display_label':display_label(account),
+                           'submission_count':counts.get(account.id,0),
                            'member_role':member.role,'status':'ACTIVE' if member.active else 'REMOVED',
                            'joined_at':member.joined_at} for member, account in rows]}
 
@@ -128,24 +134,27 @@ async def remove_student(class_id: str, user_id: str, request: Request, user=Dep
 @router.get('/submissions')
 async def all_submissions(request: Request, user=Depends(staff_user)):
     async with database(request).sessions() as session:
-        query = select(Submission, Assessment).join(ClassRoom, ClassRoom.id==Submission.class_id).outerjoin(Assessment, Assessment.submission_id==Submission.id)
+        query = select(Submission, Assessment,User).join(ClassRoom, ClassRoom.id==Submission.class_id).join(User,User.id==Submission.user_id).outerjoin(Assessment, Assessment.submission_id==Submission.id)
         if user.role != 'admin':
             query = query.where(((ClassRoom.teacher_id==user.id) & (user.role=='teacher')) | ClassRoom.id.in_(select(Membership.class_id).where(
                 Membership.user_id==user.id, Membership.active.is_(True), Membership.role=='ta')))
         rows = (await session.execute(query.order_by(Submission.created_at.desc()).limit(100))).all()
-        return {'items':[{'id':s.id,'class_id':s.class_id,'user_id':s.user_id,'prompt':s.prompt,'essay':s.essay,
-                          'status':s.status,'grade':effective_grade(a) if a else None} for s,a in rows]}
+        return {'items':[submission_row(s,a,u) for s,a,u in rows]}
+
+
+def submission_row(s,a,u):
+    return {'id':s.id,'class_id':s.class_id,'user_id':s.user_id,'prompt':s.prompt,'essay':s.essay,'status':s.status,
+            'student_name':display_label(u),'student_email':u.email,'submitted_at':s.created_at,
+            'submission_code':s.id[:8].upper(),'grade':effective_grade(a) if a else None}
 
 
 @router.get('/classes/{class_id}/submissions')
 async def submissions(class_id: str, request: Request, user=Depends(staff_user)):
     async with database(request).sessions() as session:
         await class_access(session, class_id, user)
-        rows = (await session.execute(select(Submission, Assessment).outerjoin(Assessment, Assessment.submission_id == Submission.id)
+        rows = (await session.execute(select(Submission, Assessment,User).join(User,User.id==Submission.user_id).outerjoin(Assessment, Assessment.submission_id == Submission.id)
             .where(Submission.class_id == class_id).order_by(Submission.created_at.desc()).limit(100))).all()
-        return {'items': [{'id': submission.id, 'user_id': submission.user_id, 'prompt': submission.prompt,
-                           'essay': submission.essay, 'status': submission.status,
-                           'grade': effective_grade(assessment) if assessment else None} for submission, assessment in rows]}
+        return {'items': [submission_row(s,a,u) for s,a,u in rows]}
 
 
 @router.put('/submissions/{submission_id}/override')

@@ -23,11 +23,11 @@ The six-screen UI specification supplied by the user supersedes the earlier edit
 
 ## Character rules
 
-See [PNG asset mapping](docs/MASCOT_ASSETS.md). There are no inline frog SVGs. Every character comes from a fixed local transparent PNG through FrogMascot.tsx. Never restore the old arm/head rigs or use a custom-drawn fallback. Keep sidebar content to its compact brand and five navigation links.
+See [PNG asset mapping](docs/MASCOT_ASSETS.md). There are no inline frog SVGs. Every character comes from a fixed local transparent PNG through FrogMascot.tsx. Never restore the old arm/head rigs or use a custom-drawn fallback. Keep the five primary studio links; signed-in accounts also see classes, authorized administration and the bottom profile menu.
 
 ## Product truth
 
-Sample assessments and sample exercises are labelled. Live feedback comes from the existing APIs. Criterion evidence is neutral unless its data explicitly identifies it as a strength or suggestion. The Sign in button explains that account sign-in is unavailable in the current browser-session pilot.
+Sample assessments and sample exercises are labelled. Live feedback comes from the existing APIs. Criterion evidence is neutral unless its data explicitly identifies it as a strength or suggestion. The pilot Sign in button opens Clerk. The separate local demo explains its browser-session storage.
 
 ## Verification limits
 

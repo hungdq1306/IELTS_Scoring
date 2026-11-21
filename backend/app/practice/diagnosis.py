@@ -23,13 +23,13 @@ def evidence_location(essay,quote,paragraph_number):
  return None
 
 
-def verify_errors(drafts,essay,submission_id):
+def verify_errors(drafts,essay,submission_id,allow_optional_style=False):
  verified=[];rejected=[];seen=set();mapping={};ids=Counter(e.error_id for e in drafts)
  for error in drafts:
   e=error.model_dump();reason=None
   if ids[e['error_id']]!=1:reason='duplicate model error_id'
   elif e['subtype'] not in TAXONOMY[e['category']] or e['criterion']!=CRITERION[e['category']]:reason='taxonomy mismatch'
-  elif e['optional_style']:reason='optional style is not a definite error'
+  elif e['optional_style'] and not allow_optional_style:reason='optional style is not a definite error'
   elif e['suggested_correction'] and normalize(e['suggested_correction'])==normalize(e['original_quote']):reason='no meaningful correction'
   start=evidence_location(essay,e['original_quote'],e['paragraph_number'])
   if start is None:reason=reason or 'missing or ambiguous student evidence'

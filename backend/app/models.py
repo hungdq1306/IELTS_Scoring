@@ -18,6 +18,10 @@ class User(Base):
     __tablename__ = 'users'
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
     external_auth_id: Mapped[str] = mapped_column(String(200), unique=True)
+    full_name: Mapped[str | None] = mapped_column(String(200))
+    email: Mapped[str | None] = mapped_column(String(320))
+    avatar_url: Mapped[str | None] = mapped_column(String(2000))
+    profile_synced_at: Mapped[float | None] = mapped_column(Float)
     role: Mapped[str] = mapped_column(String(16), default='student')
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     bonus_daily_credits: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
@@ -33,7 +37,7 @@ class ClassRoom(Base):
     name: Mapped[str] = mapped_column(String(120))
     teacher_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
     invite_hash: Mapped[str] = mapped_column(String(64), unique=True)
-    join_code: Mapped[str | None] = mapped_column(String(40), unique=True)
+    join_code: Mapped[str | None] = mapped_column(String(40), unique=True, index=True)
     daily_student_quota: Mapped[int] = mapped_column(Integer, default=3, server_default='3')
     invite_expires_at: Mapped[float] = mapped_column(Float)
     invite_max_uses: Mapped[int] = mapped_column(Integer, default=45)
@@ -104,6 +108,7 @@ class Submission(Base):
     status: Mapped[str] = mapped_column(String(24), default='QUEUED')
     config_snapshot: Mapped[dict] = mapped_column(JSON)
     created_at: Mapped[float] = mapped_column(Float, default=time.time, index=True)
+    credit_reserved_at: Mapped[float | None] = mapped_column(Float)
 
 
 class Assessment(Base):

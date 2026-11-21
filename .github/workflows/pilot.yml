@@ -25,6 +25,18 @@ jobs:
           python-version: "3.11"
       - run: pip install -r backend/requirements-dev.txt
       - run: python -m pytest -q backend/tests -m "not live"
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm install --prefix frontend --workspaces=false
+      - run: node scripts/build-frontend.cjs
+      - run: node --test scripts/fogwrite-model.test.mjs scripts/fogwrite-ui.test.cjs
+      - run: cd frontend && npx playwright install --with-deps chromium
+      - run: node scripts/fogwrite-auth.test.cjs
   image:
     runs-on: ubuntu-latest
     steps:

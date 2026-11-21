@@ -17,7 +17,7 @@ class ClerkVerifier:
         self.keys, self.fetched_at = {}, 0
         self.lock = asyncio.Lock()
 
-    async def verify(self, token):
+    async def verify(self, token, *, include_claims=False):
         settings = self.settings
         if not settings.clerk_issuer:
             raise HTTPException(503, 'Clerk authentication has not been configured.')
@@ -43,7 +43,7 @@ class ClerkVerifier:
                                          'verify_aud': bool(settings.clerk_audience)})
             if claims['azp'] not in settings.origins or not isinstance(claims['sub'], str) or len(claims['sub']) > 200:
                 raise jwt.InvalidTokenError()
-            return claims['sub']
+            return claims if include_claims else claims['sub']
         except (jwt.PyJWTError, ValueError, KeyError, TypeError):
             raise HTTPException(401, 'Phiên đăng nhập không hợp lệ hoặc đã hết hạn.') from None
         except httpx.HTTPError:
@@ -54,7 +54,13 @@ async def current_user(request: Request):
     authorization = request.headers.get('authorization', '')
     if not authorization.startswith('Bearer ') or len(authorization) > 12000:
         raise HTTPException(401, 'Vui lòng đăng nhập để tiếp tục.', headers={'WWW-Authenticate': 'Bearer'})
-    subject = await request.app.state.verifier.verify(authorization[7:])
+    verifier = request.app.state.verifier
+    if isinstance(verifier, ClerkVerifier):
+        claims = await verifier.verify(authorization[7:], include_claims=True)
+        subject = claims['sub']
+    else:
+        subject = await verifier.verify(authorization[7:])
+        claims = {}
     database = request.app.state.database
     async with database.sessions() as session:
         user = await session.scalar(select(User).where(User.external_auth_id == subject))
@@ -69,7 +75,8 @@ async def current_user(request: Request):
                 user = await session.scalar(select(User).where(User.external_auth_id == subject))
     if not user or not user.active:
         raise HTTPException(403, 'Tài khoản đã bị khóa.')
-    return user
+    from app.identity import sync_profile
+    return await sync_profile(database,user,claims,request.app.state.settings)
 
 
 async def staff_user(user=Depends(current_user)):

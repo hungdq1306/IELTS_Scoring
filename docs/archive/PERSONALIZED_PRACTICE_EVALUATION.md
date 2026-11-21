@@ -1,3 +1,5 @@
+> Historical snapshot. This document records an earlier implementation or proposal. For current behavior, see [documentation](../README.md) and [architecture](../ARCHITECTURE.md).
+
 # Personalized practice evaluation
 
 This pipeline is independent of grading MAE/QWK and changes no grading benchmark configuration. The frozen initial sample uses seven Lexibot and thirteen Writing9 essays with cached real FS1 grading feedback. Neither dataset supplies assumed human-verified error annotations. Selection uses a fixed seed and excludes locked grading data. Model feedback is weak context, not gold.

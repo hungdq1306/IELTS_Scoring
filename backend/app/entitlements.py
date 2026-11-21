@@ -35,7 +35,7 @@ async def get_user_quota_status(user, db, now=None):
     config = await system_settings(db)
     start, reset = vn_day(now)
     used = await db.scalar(select(func.count()).select_from(Submission).where(
-        Submission.user_id == user.id, Submission.created_at >= start, Submission.status != 'FAILED'))
+        Submission.user_id == user.id, func.coalesce(Submission.credit_reserved_at,Submission.created_at) >= start, Submission.status != 'FAILED'))
     if user.role == 'student':
         limit = max((r.daily_student_quota for r in rooms), default=0) + (user.bonus_daily_credits if rooms else 0)
     else:
@@ -45,7 +45,7 @@ async def get_user_quota_status(user, db, now=None):
             'classes': [{'id': r.id, 'name': r.name} for r in rooms]}
 
 
-async def admit_grading(session, user):
+async def admit_grading(session, user, *, retry=False):
     from app.queue import locked_bucket
     # A single order (global then user) serializes concurrent COUNT+INSERT admissions.
     await locked_bucket(session, 'grading-admission')
@@ -59,6 +59,12 @@ async def admit_grading(session, user):
     start, _ = vn_day()
     # Count ALL admissions globally, including failed jobs, to bound provider costs.
     total = await session.scalar(select(func.count()).select_from(Submission).where(Submission.created_at >= start))
-    if total >= (await system_settings(session))['global_daily_submission_cap']:
+    # Retries reuse a submission, so their additional admissions need a separate ledger.
+    # The global lock above also serializes this counter with ordinary submissions.
+    retries = await locked_bucket(session, 'grading-retry-admissions')
+    events = [at for at in retries.events if at >= start]
+    if total + len(events) >= (await system_settings(session))['global_daily_submission_cap']:
         raise HTTPException(429, {'code': 'GLOBAL_DAILY_CAP', 'message': 'Hệ thống đã đạt giới hạn chấm trong ngày.'})
+    if retry:
+        retries.events = [*events, time.time()]
     return status

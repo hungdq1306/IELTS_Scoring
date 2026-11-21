@@ -1,5 +1,7 @@
 # RBAC and AI v2 upgrade
 
+Follow-up completion and current verification: [System completion status](VERIFICATION.md).
+
 Implemented against `Pasted markdown.md` (21 November 2026).
 
 ## Behavior
@@ -57,6 +59,6 @@ $env:FOGWRITE_NODE_MODULES = Join-Path (Get-Location) ".cache/pilot-ui-deps/node
 node scripts/build-frontend.cjs
 ```
 
-Workspace verification: offline frontend bundle built successfully; Python compilation and offline Alembic SQL generation passed. Synchronous telemetry/schema/rounding/guardrail tests passed. Async integration tests are blocked at Windows `asyncio` event-loop socketpair creation in this sandbox, before application requests execute; run the full suite in an environment permitting local sockets or Linux CI.
+Historical implementation-session snapshot (current verification is linked above): offline frontend bundle built successfully; Python compilation and offline Alembic SQL generation passed. Synchronous telemetry/schema/rounding/guardrail tests passed. Async integration tests are blocked at Windows `asyncio` event-loop socketpair creation in this sandbox, before application requests execute; run the full suite in an environment permitting local sockets or Linux CI.
 
-Release preparation on 21 November 2026: production Neon migration `0002_rbac_v2` applied successfully in one transaction. Existing users, classes, prompts, eight anchors and three templates remain present. AI v2 sentence annotations now carry a criterion and feed grounded frontend highlights. The mocked scorer adapter smoke check passed without network calls. The code release to Render is pending publication to GitHub: local Git HTTPS fails DNS resolution for `github.com`; the current Render live commit is still `cf97fb4`. Do not treat the database migration as proof that the new application has been deployed.
+Historical release preparation snapshot on 21 November 2026 (not current deployment verification): production Neon migration `0002_rbac_v2` applied successfully in one transaction. Existing users, classes, prompts, eight anchors and three templates remain present. AI v2 sentence annotations now carry a criterion and feed grounded frontend highlights. The mocked scorer adapter smoke check passed without network calls. The code release to Render is pending publication to GitHub: local Git HTTPS fails DNS resolution for `github.com`; the current Render live commit is still `cf97fb4`. Do not treat the database migration as proof that the new application has been deployed.

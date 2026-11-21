@@ -1,28 +1,20 @@
-# Live Demo Guide
+# Demo and classroom acceptance
 
-## 1. Starting the Application
+## Local demo
 
-Ensure `GEMINI_API_KEY` is configured in `.env`, then start FastAPI from the repository root:
+Use `RUN_FOGWRITE.cmd` or run `python -m uvicorn app.main:app --host 127.0.0.1 --port 8000` with `PYTHONPATH=backend`. This uses cookie-owned local history and research assessment options. Configure Gemini server-side in `.env`.
 
-```powershell
-$env:PYTHONPATH = "backend"
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
+## Authenticated pilot
 
-Open **http://127.0.0.1:8000** in your browser (press `Ctrl+F5` if reloading over a cached build).
+Use `SETUP_CLERK.cmd` then `RUN_FOGWRITE_CLERK.cmd` for development. For Render/Neon and live Clerk configuration follow [deployment](../backend/README_DEPLOY.md); production runs `app.pilot:app`.
 
-## 2. Grading an Essay
+1. Sign in and explicitly accept participation/privacy conditions.
+2. As teacher/admin, create a class and copy an invitation. As student, join it and select the class.
+3. Choose Writing Practice for a timed prompt or Check My Essay to paste a question and essay. Confirm the submitting-to class and submit once.
+4. Review criterion bands, essay evidence and sentence feedback. Generate personalized exercises, answer the entire set and submit it for coaching.
+5. Reopen the assessment from History. Reload a timed draft and verify mode/countdown restoration.
+6. Switch between two test accounts, including while restoration is pending; confirm no previous account essay/history/draft appears.
+7. Verify TA access is read-only and limited to assigned classes; verify student requests cannot access admin resources.
+8. In admin, inspect usage, failures and audit; test quota updates and failed-job retry with explicit test data.
 
-1. Choose **Assessment method**:
-   - **`Calibrated v1 · 8 Examiner Anchors (5.0-9.0)`** (`V1_STRATIFIED`, **default**): Uses Prompt `v1` + 8 stratified examiner-verified anchors covering Bands 5.0–9.0.
-   - **`Rubric v1 Only`** (`FS0`): Zero-shot May 2023 calibrated rubric without few-shot anchors.
-   - **`Lecturer · 5-Shot (5.0-8.0)`** (`FS5_FULL`): Legacy 5-essay lecturer reference set.
-2. Paste an IELTS Writing Task 2 prompt and essay (use blank lines between paragraphs), or click **Load sample**.
-3. Click **Evaluate essay**.
-4. Review the **Estimated Task 2 band**, four criterion scores (`TR`, `CC`, `LR`, `GRA`), 16 writing diagnostics, verbatim grounded evidence, grammar corrections, optional language suggestions, and paragraph-by-paragraph feedback.
-
-> **Note on Reference Overlap Protection:** Pasting an essay or prompt that is already part of the 8 `V1_STRATIFIED` calibration anchors intentionally returns HTTP `409` (`reference_overlap`) to prevent self-grading reference contamination. Select `FS0` to evaluate those prompts directly.
-
-## 3. Personalized Practice & Revision
-
-After receiving an assessment, open the **Practice Your Mistakes** section below the score breakdown to generate targeted exercises from your weakest areas, request hints, submit revisions, or restore prior assessments from the current browser session.
+Use authorized test accounts and a staging database for acceptance. Real Gemini calls consume quota. A successful request verifies integration, not scoring accuracy. Historical demo records are in [archive](archive/README.md).

@@ -2,7 +2,9 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
 const root=path.resolve(__dirname,'..');
-const {chromium}=require(require.resolve(process.env.PLAYWRIGHT_MODULE||'playwright',{paths:[path.join(root,'frontend/node_modules')]}));
+const deps=process.env.FOGWRITE_NODE_MODULES||path.resolve(__dirname,'../frontend/node_modules');
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE||require.resolve('playwright',{paths:[deps]}));
+const localChromium='C:/Users/Lenovo/AppData/Local/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-win64/chrome-headless-shell.exe';
 const base=process.env.FOGWRITE_BASE_URL||'http://127.0.0.1:8000';
 const out=path.resolve(root,process.env.FOGWRITE_SCREENSHOT_DIR||'.cache/ui-checks');
 fs.mkdirSync(out,{recursive:true});
@@ -12,7 +14,7 @@ const grade={submission_id:'ui-contract',estimated_overall_band:6.5,word_count:4
 (async()=>{
  let browser;
  try{
-  browser=await chromium.launch({headless:true,timeout:10000,...(process.env.CHROMIUM_EXECUTABLE?{executablePath:process.env.CHROMIUM_EXECUTABLE}:{})});
+  browser=await chromium.launch({headless:true,timeout:10000,...(process.env.CHROMIUM_EXECUTABLE||fs.existsSync(localChromium)?{executablePath:process.env.CHROMIUM_EXECUTABLE||localChromium}:{})});
   for(const viewport of [{width:1440,height:900},{width:1280,height:800}]){
    const context=await browser.newContext({viewport});const page=await context.newPage();page.setDefaultTimeout(10000);const failures=[];
    page.on('pageerror',e=>failures.push(e.message));
@@ -22,7 +24,7 @@ const grade={submission_id:'ui-contract',estimated_overall_band:6.5,word_count:4
    await page.route('**/mascots/frog-writing.png',r=>r.fulfill({status:404,body:''}));await page.reload();await page.locator('[data-mascot-placeholder="writing"]').waitFor();assert.equal(await page.locator('[data-mascot-placeholder="writing"] svg').count(),0);await page.unroute('**/mascots/frog-writing.png');await page.reload();
    await page.getByRole('button',{name:'Start 40-minute practice'}).click();await page.getByRole('heading',{name:'What will you write today?'}).waitFor();assert.equal(await page.locator('.topic-card').count(),4);await capture('02-topics');
    await page.getByRole('button',{name:'Surprise me',exact:true}).click();await page.getByRole('button',{name:'Start writing',exact:true}).click();await page.locator('#essay').fill(essay);await page.reload();assert.equal(await page.locator('#essay').inputValue(),essay);await capture('03-writing');
-   const draft=await page.evaluate(()=>localStorage.getItem('fogwrite.draft.v1'));await page.getByRole('button',{name:'Overview',exact:true}).click();await page.getByRole('button',{name:'Explore sample feedback'}).click();await page.getByRole('button',{name:/error: students has/}).click();await page.getByRole('region',{name:'Selected passage feedback'}).waitFor();await capture('04-assessment');assert.equal(await page.evaluate(()=>localStorage.getItem('fogwrite.draft.v1')),draft);
+   const draft=await page.evaluate(()=>localStorage.getItem('fogwrite:draft:demo'));await page.getByRole('button',{name:'Overview',exact:true}).click();await page.getByRole('button',{name:'Explore sample feedback'}).click();await page.getByRole('button',{name:/error: students has/}).click();await page.getByRole('region',{name:'Selected passage feedback'}).waitFor();await capture('04-assessment');assert.equal(await page.evaluate(()=>localStorage.getItem('fogwrite:draft:demo')),draft);
    await page.getByRole('button',{name:'Close passage feedback'}).click();await page.getByRole('button',{name:/TR Task Response/}).click();await page.getByRole('button',{name:'Practise Task Response',exact:true}).waitFor();assert.match(page.url(),/assessment\/task-response$/);await capture('05-criterion');
    await page.getByRole('button',{name:'Practise Task Response',exact:true}).click();await page.getByRole('button',{name:'Check answer',exact:true}).click();await page.getByRole('heading',{name:'Partially correct',exact:true}).waitFor();await capture('06-skill-practice');
    // Real client contracts: fixture responses never call Gemini or spend quota.

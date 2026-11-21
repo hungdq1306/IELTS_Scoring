@@ -15,6 +15,7 @@ class PilotSettings(BaseSettings):
     frontend_origin: str = 'http://localhost:5173'
     clerk_issuer: str = ''
     clerk_publishable_key: str = ''
+    clerk_secret_key: SecretStr = SecretStr('')
     clerk_jwt_key: str = ''  # Optional public PEM for networkless verification.
     clerk_audience: str = ''
     worker_enabled: bool = True

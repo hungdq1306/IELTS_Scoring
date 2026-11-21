@@ -1,3 +1,5 @@
+> Historical snapshot. This document records an earlier implementation or proposal. For current behavior, see [documentation](../README.md) and [architecture](../ARCHITECTURE.md).
+
 # Personalized practice research and implementation audit
 
 Research checked 18 November 2026. This is a research-inspired engineering MVP, not a replication or an educational effectiveness study.

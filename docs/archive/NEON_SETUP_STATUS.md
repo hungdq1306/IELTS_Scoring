@@ -1,3 +1,5 @@
+> Historical snapshot. This document records an earlier implementation or proposal. For current behavior, see [documentation](../README.md) and [architecture](../ARCHITECTURE.md).
+
 # Clerk + Neon MVP setup — 20 November 2026
 
 ## Connected services
@@ -102,6 +104,6 @@ Do not fabricate a Clerk user ID or grant staff access based on an unverified em
 
 This configuration uses a **Clerk development key** and local origin. The production settings deliberately require a live Clerk instance, HTTPS frontend origin, and confirmed Gemini configuration.
 
-Use the Render Docker deployment steps in [backend/README_DEPLOY.md](../backend/README_DEPLOY.md). Render hosts FastAPI and the built frontend together. The existing Neon project is ready; do not create another database project or overwrite the current credentials. Configure production Clerk DNS/provider settings and copy the required environment variables through the host's secret settings.
+Use the Render Docker deployment steps in [backend/README_DEPLOY.md](../../backend/README_DEPLOY.md). Render hosts FastAPI and the built frontend together. The existing Neon project is ready; do not create another database project or overwrite the current credentials. Configure production Clerk DNS/provider settings and copy the required environment variables through the host's secret settings.
 
 `neon deploy` provisions Neon services; it does not host this Python FastAPI application. Neon Managed Auth is not an additional app login flow in this setup.

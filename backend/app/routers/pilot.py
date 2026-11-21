@@ -20,6 +20,7 @@ from app.queue import consume_quota, enqueue, find_request, locked_bucket, ticke
 from app.services.drill_gen import public_practice
 from app.services.scorer import assignment_safe_config, baseline_config
 from app.entitlements import get_user_quota_status, admit_grading, system_settings
+from app.identity import display_label
 
 router = APIRouter(prefix='/api')
 
@@ -76,8 +77,20 @@ async def me(request: Request, user=Depends(current_user)):
             .where(Membership.user_id == user.id, Membership.active.is_(True), ClassRoom.active.is_(True)))).all()
         quota_status = await get_user_quota_status(user, session)
     return {'id': user.id, 'role': user.role, 'consent_version': user.consent_version,
+            'full_name':user.full_name,'email':user.email,'avatar_url':user.avatar_url,'display_label':display_label(user),
             'quota_status': quota_status,
-            'classes': [{'id': classroom.id, 'name': classroom.name, 'role': membership.role} for membership, classroom in memberships]}
+            'classes': await class_summaries(session=None, memberships=memberships, user=user, db=database(request))}
+
+
+async def class_summaries(session, memberships, user, db):
+    async with db.sessions() as session:
+        items=[]
+        for membership,room in memberships:
+            teacher=await session.get(User,room.teacher_id)
+            count=await session.scalar(select(func.count()).select_from(Submission).where(Submission.user_id==user.id,Submission.class_id==room.id))
+            items.append({'id':room.id,'name':room.name,'role':membership.role,'teacher_name':display_label(teacher),
+                          'daily_student_quota':room.daily_student_quota,'submission_count':count,'active':room.active})
+        return items
 
 
 @router.get('/me/quota')

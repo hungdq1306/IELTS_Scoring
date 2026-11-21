@@ -1,3 +1,5 @@
+> Historical snapshot. This document records an earlier implementation or proposal. For current behavior, see [documentation](../README.md) and [architecture](../ARCHITECTURE.md).
+
 # Personalized practice demo
 
 ## Start

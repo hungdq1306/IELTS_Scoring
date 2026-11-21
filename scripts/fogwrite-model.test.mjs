@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {annotations,annotationSegments,clock,topics,wordCount,normalizeDraft} from '../frontend/src/fogwrite-model.js';
+import {annotations,annotationSegments,clock,topics,wordCount,normalizeDraft,draftStorageKey,draftRoute,serializeDraft,hydrateDraft,resolveActiveClass} from '../frontend/src/fogwrite-model.js';
 
 test('grounding rejects missing or repeated quotes instead of highlighting arbitrary text',()=>{
  const result={grammar_corrections:[{original:'has',corrected:'have'}]};
@@ -52,4 +52,22 @@ test('grammar errors remain selectable inside longer criterion evidence',()=>{
  const error=parts.find(p=>p.mark?.kind==='error');
  assert.equal(essay.slice(error.start,error.end),'students has');
  assert.equal(parts.filter(p=>p.mark?.kind==='evidence').length,2);
+});
+
+test('draft storage keys isolate users and restore practice mode and countdown timer',()=>{
+ assert.equal(draftStorageKey('user-a'),'fogwrite:draft:user-a');
+ assert.equal(draftStorageKey(null),null);
+ const saved=serializeDraft({prompt:'Topic A',essay:'My essay',mode:'practice',classId:'class-1',promptId:3,started:1000,timerDurationSec:2400},'user-a',61000);
+ assert.equal(saved.userId,'user-a');
+ assert.equal(saved.mode,'practice');
+ assert.equal(saved.remainingSec,2340);
+ assert.equal(draftRoute(saved),'write');
+ assert.equal(hydrateDraft(JSON.stringify(saved),'user-b').essay,'');
+ const restored=hydrateDraft(JSON.stringify({...saved,started:null}),'user-a',100000);
+ assert.equal(restored.essay,'My essay');
+ assert.equal(restored.classId,'class-1');
+ assert.equal(restored.started,40000);
+ assert.equal(draftRoute({mode:'check',essay:'Check essay'}),'check');
+ assert.equal(resolveActiveClass([{id:'c1',name:'Fog1',active:true}],'clerk-1')?.id,'c1');
+ assert.equal(resolveActiveClass([{id:'c1',name:'Fog1',active:true},{id:'c2',name:'Fog2',active:true}],'clerk-1'),null);
 });

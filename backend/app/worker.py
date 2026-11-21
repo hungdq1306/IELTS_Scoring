@@ -74,12 +74,16 @@ class Worker:
                 return False
             submission = await session.get(Submission, job.submission_id)
             if error:
+                now = time.time()
                 code = error.code if isinstance(error, ProviderError) else 'invalid_output' if isinstance(error, (ValidationError, ValueError)) else 'worker_error'
                 retryable = (isinstance(error, ProviderError) and error.retryable) or isinstance(error, (TimeoutError, ValidationError, ValueError))
                 stored.error_code = code
                 retry = retryable and stored.attempt_count < self.settings.job_max_attempts
                 stored.status = 'QUEUED' if retry else 'FAILED'
-                stored.next_attempt_at = time.time() + max(getattr(error, 'retry_after', 0) or 0, 5 * 2 ** stored.attempt_count + random.uniform(0, 1))
+                if retry:
+                    stored.next_attempt_at = now + max(getattr(error, 'retry_after', 0) or 0, 5 * 2 ** stored.attempt_count + random.uniform(0, 1))
+                else:
+                    stored.completed_at = now
                 if job.kind == 'score':
                     submission.status = 'QUEUED' if retry else 'FAILED'
                 if job.kind == 'practice':

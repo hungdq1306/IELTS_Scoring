@@ -7,9 +7,5 @@
   "scripts": {
     "build": "npm --workspace fogwrite run build",
     "test:frontend": "npm --workspace fogwrite run test"
-  },
-  "devDependencies": {
-    "@neon/config": "latest",
-    "@neon/env": "latest"
   }
 }

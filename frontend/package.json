@@ -2,7 +2,7 @@
   "name": "fogwrite",
   "private": true,
   "type": "module",
-  "scripts": {"dev": "vite --host 127.0.0.1", "build": "vite build", "test": "node --test ../scripts/fogwrite-model.test.mjs ../scripts/fogwrite-ui.test.cjs", "test:ui": "node ../scripts/fogwrite-smoke.cjs --offline"},
+  "scripts": {"dev": "vite --host 127.0.0.1", "build": "vite build", "test": "node --test ../scripts/fogwrite-model.test.mjs ../scripts/fogwrite-ui.test.cjs", "test:auth": "node ../scripts/fogwrite-auth.test.cjs", "test:ui": "node ../scripts/fogwrite-smoke.cjs --offline"},
   "dependencies": {"react": "19.2.0", "react-dom": "19.2.0", "lucide-react": "0.468.0"},
   "devDependencies": {
     "@tailwindcss/vite": "4.1.17",

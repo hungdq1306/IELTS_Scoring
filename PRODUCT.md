@@ -1,18 +1,15 @@
 # FogWrite
 
-FogWrite helps learners practise IELTS Academic Writing Task 2, understand an AI assessment and work on grounded weaknesses.
+FogWrite provides IELTS Academic Writing Task 2 assessment and personalized practice. Scores are AI practice estimates, not official IELTS results.
 
-## Core journey
+## Classroom pilot
 
-Choose an original practice prompt or supply a question; write for 40 minutes; submit to the existing calibrated Gemini assessment API; read evidence and language corrections; generate reviewed practice; answer exercises; revise an original paragraph.
+The deployed entry point is `app.pilot:app`. Clerk identifies accounts; PostgreSQL stores users, classes, submissions, leased jobs, results, practice and audit records. Roles are student, TA, teacher and admin, enforced by the backend. Consent is explicit.
 
-## Product truth
+Students join a class, write or paste an essay, submit it, review criterion scores and grounded feedback, then complete personalized practice. Drafts and timer state stay in browser storage scoped to the authenticated user. History is account-scoped; browser drafts are not synchronized across devices. Failed essay jobs release student credits; daily credits reset at midnight Vietnam time.
 
-- Scores are AI estimates, never official IELTS results.
-- The topic bank contains 12 original prompts, not claimed past exam questions.
-- Sample feedback and sample exercises are labelled demonstrations, never presented as live AI assessments.
-- Live grading and practice use existing backend APIs; no new scoring prompts, models or calibration changes.
-- Current drafts and timer timestamps are browser-local. Saved assessments use the existing cookie-owned server session.
-- Exercise selection can filter a generated batch by criterion and overlap with a selected source quote. Missing matches produce an honest empty state.
-- A successful exercise is practice progress, not a new band estimate.
-- No account login or cross-device sync is provided.
+The pilot accepts the calibrated reference configuration and snapshots the active v1/v2 prompt and calibration settings per submission. Existing v1 benchmark results do not establish v2 accuracy. Practice results do not assign a new IELTS band.
+
+## Local demo
+
+`app.main:app` remains a separate cookie-session research/demo server. It exposes benchmark and assessment options excluded from the classroom pilot. See [documentation](docs/README.md).

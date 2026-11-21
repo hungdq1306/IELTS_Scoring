@@ -1,3 +1,5 @@
+> Historical snapshot. This document records an earlier implementation or proposal. For current behavior, see [documentation](../README.md) and [architecture](../ARCHITECTURE.md).
+
 Contextual multiple choice and open-ended rewriting
 
 Update 2026-11-20: the current UI defers all answer checking until the entire practice set is submitted. It uses a separate Gemini 3.1 Flash-Lite evaluator. The frontend dependency/build blocker described in the original validation notes below has been resolved: 16 frontend tests and a real browser-to-backend practice demo have now passed. See PRACTICE_BATCH_DEMO.md and PRACTICE_BATCH_DEMO_RESULTS.json for current results; the older notes describe the earlier iteration.

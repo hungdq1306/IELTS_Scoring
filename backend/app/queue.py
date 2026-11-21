@@ -34,12 +34,16 @@ async def find_request(session, user_id, kind, key, payload):
     return prior
 
 
-async def enqueue(session, settings, user_id, submission_id, kind, key, payload):
+async def ensure_queue_capacity(session, settings):
     # All writers take the admission lock before checking backlog; there is no COUNT/INSERT race.
     await locked_bucket(session, 'queue-admission')
     backlog = await session.scalar(select(func.count()).select_from(Job).where(Job.status.in_(['QUEUED', 'RUNNING'])))
     if backlog >= settings.max_queued_jobs:
         raise HTTPException(503, 'Hàng đợi đang đầy. Bài viết của bạn vẫn được giữ trên trình duyệt.', headers={'Retry-After': '30'})
+
+
+async def enqueue(session, settings, user_id, submission_id, kind, key, payload):
+    await ensure_queue_capacity(session, settings)
     job = Job(user_id=user_id, submission_id=submission_id, kind=kind, request_key=key,
               fingerprint=fingerprint(payload), payload=payload, priority=0 if kind == 'score' else 10)
     session.add(job)
@@ -54,6 +58,8 @@ async def claim(database, settings):
                                              .order_by(Job.id).with_for_update(skip_locked=True).limit(20))).all())
         for job in stale:
             job.status = 'FAILED' if job.attempt_count >= settings.job_max_attempts else 'QUEUED'
+            if job.status == 'FAILED':
+                job.completed_at = now
             job.lease_token = None
             job.lease_expires_at = None
             job.error_code = 'worker_interrupted'

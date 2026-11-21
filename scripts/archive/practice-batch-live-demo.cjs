@@ -1,7 +1,8 @@
+// Archived cookie-session demo; not the Clerk pilot acceptance test.
 // Real backend/browser demo. Context is prepared from real Gemini grade/generation calls.
 // This script never intercepts API responses and never reads backend answer keys.
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
-const root=path.resolve(__dirname,'..'),out=path.join(root,'.cache/practice-batch-demo');
+const root=path.resolve(__dirname,'../..'),out=path.join(root,'.cache/practice-batch-demo');
 const data=JSON.parse(fs.readFileSync(path.join(out,'context.json'),'utf8'));
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
 const base=process.env.FOGWRITE_BASE_URL||'http://127.0.0.1:8000';

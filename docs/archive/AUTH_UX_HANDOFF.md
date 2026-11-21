@@ -1,3 +1,5 @@
+> Historical authentication handoff from remote commit `19799fd`. See [current documentation](../README.md). This snapshot predates the later hardening fixes.
+
 # FogWrite authentication UX handoff
 
 ## Root cause
@@ -78,7 +80,7 @@ Backend files that were already being edited elsewhere in this workspace were no
 
 ## Screenshots
 
-- [Public landing](../artifacts/auth-ui/public.png)
-- [Student classes/profile menu](../artifacts/auth-ui/student.png)
-- [Teacher classes/profile menu](../artifacts/auth-ui/teacher.png)
-- [Mobile student drawer/profile](../artifacts/auth-ui/mobile-student.png)
+- Public landing (historical screenshot not included in this checkout)
+- Student classes/profile menu (historical screenshot not included in this checkout)
+- Teacher classes/profile menu (historical screenshot not included in this checkout)
+- Mobile student drawer/profile (historical screenshot not included in this checkout)

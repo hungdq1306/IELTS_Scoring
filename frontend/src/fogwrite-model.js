@@ -15,19 +15,85 @@ const topics = [
 function wordCount(text) {
   return text.match(/[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*/gu)?.length ?? 0;
 }
+const LEGACY_DRAFT_KEYS = ["fogwrite.draft.v1", "draft", "writing_draft"];
+function draftStorageKey(userId) {
+  return typeof userId === "string" && userId ? `fogwrite:draft:${userId}` : null;
+}
 function normalizeDraft(value) {
   const data = value && typeof value === "object" ? value : {};
   const timestamp = (n) => Number.isFinite(n) && n > 0 ? n : null;
   const started = timestamp(data.started);
   const finished = timestamp(data.finished);
+  const prompt = typeof data.prompt === "string" ? data.prompt : typeof data.promptText === "string" ? data.promptText : "";
+  const essay = typeof data.essay === "string" ? data.essay : typeof data.essayText === "string" ? data.essayText : "";
+  const timerDurationSec = Number.isFinite(data.timerDurationSec) && data.timerDurationSec > 0 ? Math.floor(data.timerDurationSec) : 2400;
+  const remainingSec = Number.isFinite(data.remainingSec) ? Math.floor(data.remainingSec) : null;
+  const promptId = (Number.isInteger(data.promptId) && data.promptId > 0) || (typeof data.promptId === "string" && data.promptId) ? data.promptId : null;
   return {
-    prompt: typeof data.prompt === "string" ? data.prompt : "",
-    essay: typeof data.essay === "string" ? data.essay : "",
+    userId: typeof data.userId === "string" && data.userId ? data.userId : null,
+    mode: data.mode === "practice" || data.mode === "check" ? data.mode : null,
+    classId: typeof data.classId === "string" && data.classId ? data.classId : null,
+    promptId,
+    prompt,
+    essay,
     topic: typeof data.topic === "string" ? data.topic : "",
     started,
     finished: started && finished >= started ? finished : null,
     extraAllowed: data.extraAllowed === true,
+    timerDurationSec,
+    remainingSec,
+    updatedAt: timestamp(data.updatedAt),
   };
+}
+function draftMode(draft) {
+  return draft?.mode === "practice" || draft?.mode === "check" ? draft.mode : draft?.started ? "practice" : "check";
+}
+function draftRoute(draft) {
+  return draftMode(draft) === "practice" ? "write" : "check";
+}
+function serializeDraft(draft, userId, now = Date.now()) {
+  const normalized = normalizeDraft(draft);
+  const mode = draftMode(normalized);
+  const duration = normalized.timerDurationSec || 2400;
+  const used = normalized.started ? Math.max(0, Math.floor(((normalized.finished || now) - normalized.started) / 1000)) : 0;
+  const remainingSec = mode === "practice" && normalized.started ? duration - used : normalized.remainingSec;
+  return {
+    ...normalized,
+    userId: userId || normalized.userId || null,
+    mode,
+    promptText: normalized.prompt,
+    essayText: normalized.essay,
+    timerDurationSec: duration,
+    remainingSec,
+    updatedAt: now,
+  };
+}
+function hydrateDraft(raw, expectedUserId, now = Date.now()) {
+  if (!expectedUserId) return normalizeDraft(null);
+  const emptyForUser = { ...normalizeDraft(null), userId: expectedUserId };
+  let parsed = raw;
+  if (typeof raw === "string") {
+    try { parsed = JSON.parse(raw); } catch { return emptyForUser; }
+  }
+  const normalized = normalizeDraft(parsed);
+  if (!normalized.userId || normalized.userId !== expectedUserId) return emptyForUser;
+  if (draftMode(normalized) === "practice" && !normalized.started && normalized.remainingSec !== null) {
+    const elapsedSec = Math.max(0, normalized.timerDurationSec - normalized.remainingSec);
+    return { ...normalized, userId: expectedUserId, mode: "practice", started: now - elapsedSec * 1000 };
+  }
+  return { ...normalized, userId: expectedUserId, mode: draftMode(normalized) };
+}
+function resolveActiveClass(classes, clerkUserId) {
+  const active = (classes || []).filter((room) => room && room.active !== false);
+  if (!active.length) return null;
+  if (clerkUserId) {
+    try {
+      const saved = localStorage.getItem("fogwrite.class." + clerkUserId);
+      const match = saved && active.find((room) => room.id === saved);
+      if (match) return match;
+    } catch {}
+  }
+  return active.length === 1 ? active[0] : null;
 }
 function clock(seconds) {
   const n = Math.max(0, Math.floor(seconds));
@@ -72,11 +138,18 @@ function annotationSegments(marks, length) {
   return segments;
 }
 export {
+  LEGACY_DRAFT_KEYS,
   annotations,
   annotationSegments,
   clock,
+  draftMode,
+  draftRoute,
+  draftStorageKey,
+  hydrateDraft,
   locateUnique,
   normalizeDraft,
+  resolveActiveClass,
+  serializeDraft,
   topics,
   wordCount
 };

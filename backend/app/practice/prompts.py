@@ -89,3 +89,14 @@ def generation_input(question,essay,grade,preferred_level):
   'paragraph_feedback':grade.get('paragraph_reviews',[]),
   'criterion_feedback':grade.get('criterion_feedback',{}),
   'taxonomy':TAXONOMY,'preferred_level':preferred_level},ensure_ascii=False)
+
+HIGH_BAND_GENERATOR_ADDENDUM="""HIGH-BAND REFINEMENT MODE (Overall >= 8.0 with minimal errors):
+This essay already shows strong grammatical accuracy. Do NOT return an empty list if genuine Band 8.5-9.0 lexical precision or nuanced cohesion upgrades exist.
+Instead, generate 2 to 4 Band 8.5-9.0 Lexical Precision and Nuanced Cohesion Upgrade drills grounded on exact verbatim student quotes in the essay:
+- Use vocabulary subtypes ('word_choice', 'collocation', 'register', 'unnatural_phrasing') or coherence subtypes ('paragraph_progression', 'linking_devices', 'logical_gaps').
+- Set optional_style=false for these targeted Band 8.5-9.0 refinement opportunities, and provide a genuinely sharper, natural Band 8.5-9.0 alternative in suggested_correction.
+- Produce valid multiple_choice (in NEW contexts), sentence_rewriting (in NEW contexts), or paragraph_revision (exact original paragraph) exercises following all schema, grounding, and non-leakage rules."""
+
+HIGH_BAND_REVIEWER_ADDENDUM="""HIGH-BAND REFINEMENT AUDIT:
+These candidates are Band 8.5-9.0 Lexical Precision & Nuanced Cohesion Upgrade drills for a high-scoring essay.
+Mark real_error=true when the exact quote from the student essay genuinely supports a higher-precision lexical choice, register/collocation upgrade, or smoother cohesion transition at Band 8.5-9.0, and the suggested correction and exercise are accurate, unambiguous, and leak-free."""

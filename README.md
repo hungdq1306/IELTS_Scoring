@@ -1,16 +1,59 @@
-# FogWrite — IELTS Writing Studio
+# FogWrite - IELTS Writing Studio
 
-To open the local MVP on this Windows checkout, double-click **`RUN_FOGWRITE.cmd`** and open **http://127.0.0.1:8000** after `Application startup complete` appears. The built frontend calls the real scoring and complete-set practice APIs. This local entry point uses browser-session history; configure Clerk/Neon separately for the classroom deployment below.
+IELTS Academic Writing Task 2 practice, AI assessment and evidence-grounded personalized exercises. AI bands are estimates for learning, not official IELTS results.
 
-For the authenticated classroom pilot, use **`app.pilot:app`** and follow [the deployment guide](backend/README_DEPLOY.md). It includes Clerk, Neon PostgreSQL, durable leased jobs, class authorization, quotas, Docker/Render configuration and account setup. The local research/demo server below remains a separate entry point.
+## Run the correct application
 
-For Clerk development on Windows, create the FogWrite application in the Clerk Dashboard, then run **`SETUP_CLERK.cmd`**, paste its `pk_test_...` Publishable Key, and use **`RUN_FOGWRITE_CLERK.cmd`** to open the authenticated local MVP at **http://localhost:8000**. The setup helper preserves existing Gemini configuration and never requests a Clerk secret key.
+| Mode | Entry point | Identity and storage | Purpose |
+| --- | --- | --- | --- |
+| Classroom pilot | `app.pilot:app` | Clerk + PostgreSQL/Neon | Roles, classes, quotas, durable queue, admin and audit |
+| Local research/demo | `app.main:app` | Browser cookie + local SQLite | Research assessment options and benchmark APIs |
 
-The FogWrite UI includes a landing page, a 12-prompt topic library, 40-minute writing sessions with draft recovery, grounded highlights, criterion panels and a dedicated practice workspace. See [UI guide](docs/FOGWRITE_UI.md) for startup and build instructions. The prebuilt interface is served by FastAPI on http://127.0.0.1:8000.
+For the classroom pilot, follow [deployment and operations](backend/README_DEPLOY.md). Production is built with `backend/Dockerfile` and configured by `render.yaml`. For local Clerk development use `SETUP_CLERK.cmd` then `RUN_FOGWRITE_CLERK.cmd`. For the separate local demo use `RUN_FOGWRITE.cmd` (http://127.0.0.1:8000).
 
-Automated IELTS Academic Writing Task 2 assessment and targeted practice platform built with **FastAPI**, **React**, and **Google Gemini** (`gemini-3.5-flash-lite`), calibrated to the **May 2023 official IELTS Writing Band Descriptors** using an **8-anchor stratified examiner benchmark (`V1_STRATIFIED`)**.
+Keep API/database/Clerk secrets server-side. Configure `.env` from the relevant example without overwriting existing values: root `.env.example` covers research/demo settings; `backend/.env.example` covers pilot settings.
 
----
+## Source and tools
+
+| Path | Purpose |
+| --- | --- |
+| `frontend/src/fogwrite.jsx` | Sole React entry, authenticated shell and account-scoped browser state |
+| `backend/app/pilot.py`, `routers/`, `services/`, `worker.py` | Pilot API, authorization, grading/practice and leased jobs |
+| `backend/app/main.py`, `practice/` | Local research/demo API and shared practice schemas/validation |
+| `backend/alembic/` | PostgreSQL schema migration history |
+| `backend/benchmark/`, `src/data/`, `src/eval/` | Dataset preparation, benchmark/report CLIs and reproducibility |
+| `artifacts/dataset_v1/` | Frozen anchors, splits and v1 evaluation evidence; seed anchors are used at runtime |
+| `scripts/` | Build, browser tests and local launcher; historical demos are under `scripts/archive/` |
+| `frontend/dist/` | Tracked preview bundle; Docker rebuilds it from source |
+
+## Build and verify
+
+```powershell
+npm run build
+node --test scripts/fogwrite-model.test.mjs scripts/fogwrite-ui.test.cjs
+node scripts/fogwrite-auth.test.cjs
+node scripts/fogwrite-smoke.cjs --offline
+```
+
+For offline cached dependencies set `FOGWRITE_NODE_MODULES` and use `node scripts/build-frontend.cjs`. See [verification](docs/VERIFICATION.md) for backend/PostgreSQL tests, actual migration checks and known boundaries. Tests do not automatically establish live Clerk integration or AI scoring accuracy.
+
+## Documentation
+
+[Documentation index](docs/README.md), [architecture](docs/ARCHITECTURE.md), [UI](docs/FOGWRITE_UI.md), [product](PRODUCT.md), [demo/acceptance](docs/DEMO_GUIDE.md). Earlier proposals, setup notes and demo records are in [archive](docs/archive/README.md).
+
+## Research reproduction
+
+```powershell
+python -m src.data.splitter --config configs/dataset_split.yaml
+python -m src.eval.loo_audit --dry-run
+python -m src.eval.ab_compare
+```
+
+Research dependencies are declared in root `requirements.txt`; pilot runtime/test dependencies are in `backend/requirements.txt` and `backend/requirements-dev.txt`. Benchmark reporting is available as `python -m benchmark.report` with `PYTHONPATH=backend`. Do not regenerate frozen holdout outputs merely to start or deploy the app.
+
+## Historical v1 benchmark evidence
+
+The results below belong to the frozen v1 experiments. The pilot defaults to experimental v2 and may apply teacher anchors/calibration offsets; these numbers do not measure those variants. See [final holdout report](artifacts/dataset_v1/final_holdout/final_holdout_report.md).
 
 ## Verified Benchmark Summary (`Baseline v0` → `Calibrated v1`)
 
@@ -28,88 +71,3 @@ Evaluated deterministically with **Clustered Bootstrap 95% CI (1,000 resamples b
 - **Statistical Significance on Holdout (`v1_raw - v0_raw`):** $\Delta\text{QWK} = +0.0865$ (`95% CI [+0.0207, +0.1652]`, $p = 0.0060$ one-sided / $p = 0.0120$ two-sided), **5/5 dimensions pass `QWK >= 0.70` and `|SMD| <= 0.15`**, and **`-33.8%` token reduction**.
 
 ---
-
-## Repository Structure
-
-| Path | Purpose |
-|---|---|
-| `src/data/` | Deterministic dataset cleaning, May 2023 IELTS rounding, quality tiering (`tiering.py`), TF-IDF cosine cluster-disjoint splitting & audit reporting (`splitter.py`) |
-| `src/eval/` | Psychometric AES metrics (`metrics.py`), Prompt `v1` stratified anchors (`prompt_v1.py`), 13-fold Examiner LOO-CV (`loo_audit.py`), Dev/Holdout runners (`dev_baseline.py`, `holdout_final.py`, `ab_compare.py`) |
-| `configs/dataset_split.yaml` | Centralized split thresholds (`seed: 42`, `max_prompt_sim: 0.60`), schema mappings, and tail-protection settings |
-| `artifacts/dataset_v1/` | Frozen `seed.jsonl` (15), `dev.jsonl` (173), `holdout.jsonl` (63), `audit_report.md`, and complete `baseline_v0/`, `candidate_v1/`, `final_holdout/` evaluation logs |
-| `backend/app/` | FastAPI service, `task2-v1-calibrated` rubric (`grading/rubric.py`), `V1_STRATIFIED` 8-anchor loader (`grading/lecturer.py`), evidence/grammar grounding (`grading/task2.py`), Gemini provider (`providers/gemini.py`), and Personalized Practice engine (`practice/`) |
-| `frontend/` | React live demo UI (`src/main.jsx`, `src/practice.jsx`, `src/detailed.jsx`, `src/shared.jsx`, `src/api.js`) + prebuilt static bundle (`dist/`) served directly by FastAPI |
-| `tests/`, `backend/tests/` | Automated dataset integrity, leakage, psychometric metric, and FastAPI E2E wiring tests |
-| `docs/` | Architecture, Demo Guide, and Personalized Practice specifications |
-
----
-
-## Quick Start (Live E2E Demo)
-
-### 1. Install Dependencies & Configure API Key
-
-```powershell
-python -m pip install -r requirements.txt
-Copy-Item .env.example .env
-# Edit .env and set GEMINI_API_KEY=<your-google-ai-studio-key>
-```
-
-Verify Gemini model access:
-
-```powershell
-$env:PYTHONPATH = "backend"
-python -m app.providers.gemini
-```
-
-### 2. Run the Web Application
-
-```powershell
-$env:PYTHONPATH = "backend"
-python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-Open **http://127.0.0.1:8000** (FastAPI serves the prebuilt `frontend/dist/` bundle; API docs are at **http://127.0.0.1:8000/docs**).
-
-- **Default Assessment Method:** `Calibrated v1 · 8 Examiner Anchors (5.0-9.0)` (`V1_STRATIFIED`), using Prompt `v1` + 8 stratified examiner-verified anchors from `artifacts/dataset_v1/seed.jsonl`.
-- **Other Options:** `Rubric v1 Only` (`FS0`) and `Lecturer · 5-Shot (5.0-8.0)` (`FS5_FULL`).
-- **Personalized Practice:** After grading an essay, open **Practice Your Mistakes** to generate evidence-grounded exercises, hints, and paragraph revision checks.
-
-*(Optional frontend hot-reload if Node.js 20+ is installed: `cd frontend && npm install && npm run dev`, then open http://127.0.0.1:5173.)*
-
----
-
-## Reproducing Dataset Splitting, Evaluation & Tests
-
-### Run Automated Offline Test Suite (42 Tests, Zero API Calls)
-
-```powershell
-python -m pytest -v -m "not live"
-```
-
-### Rebuild `artifacts/dataset_v1/` Deterministically
-
-```powershell
-python -m src.data.splitter --config configs/dataset_split.yaml
-```
-
-### Run Evaluation Pipelines
-
-```powershell
-# 13-Fold Examiner LOO-CV (zero-cost dry run or live)
-python -m src.eval.loo_audit --dry-run
-python -m src.eval.loo_audit --live --prompt-version v1 --out-dir artifacts/dataset_v1/candidate_v1
-
-# Frozen Dev & Final Holdout reports
-python -m src.eval.ab_compare
-```
-
----
-
-## Further Documentation
-
-- [System Architecture](docs/ARCHITECTURE.md)
-- [Standalone Web Specification (V2)](docs/SPEC_V2_STANDALONE_WEB.md)
-- [Live Demo Guide](docs/DEMO_GUIDE.md)
-- [Dataset Audit Report](artifacts/dataset_v1/audit_report.md)
-- [Final Holdout Evaluation Report](artifacts/dataset_v1/final_holdout/final_holdout_report.md)
-- Personalized Practice: [Research](docs/PERSONALIZED_PRACTICE_RESEARCH.md) · [Architecture](docs/PERSONALIZED_PRACTICE_ARCHITECTURE.md) · [API](docs/PERSONALIZED_PRACTICE_API.md) · [Evaluation](docs/PERSONALIZED_PRACTICE_EVALUATION.md) · [Demo](docs/PERSONALIZED_PRACTICE_DEMO.md)

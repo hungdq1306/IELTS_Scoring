@@ -4,8 +4,8 @@ import { api } from "./api";
 import { Notice, Spinner, percent } from "./shared";
 import { ExerciseLayout } from "./components/StudioScreens";
 
-export function PracticeWorkspace({result,essay,criterion,sourceQuote,clearFilter}) {
- const sid=result.submission_id,draftKey=`fogwrite.practice.${sid}`;
+export function PracticeWorkspace({userId,result,essay,criterion,sourceQuote,clearFilter}) {
+ const sid=result.submission_id,draftKey=`fogwrite:practice:${userId||'anon'}:${sid}`;
  const [batch,setBatch]=useState(null),[progress,setProgress]=useState(null),[answers,setAnswers]=useState({}),[review,setReview]=useState(null);
  const [index,setIndex]=useState(0),[tab,setTab]=useState('practice'),[state,setState]=useState('draft');
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[hint,setHint]=useState(''),[elapsed,setElapsed]=useState(0);
@@ -55,8 +55,8 @@ export function PracticeWorkspace({result,essay,criterion,sourceQuote,clearFilte
    {!loading&&batch?.state==='ready'&&!exercises.length&&<Notice>No suitable exercises were found for this essay.</Notice>}
   </>}
   {tab==='progress'&&<section className="practice-progress surface" style={{padding:26}}><h1>Revision & progress</h1>{progress&&<><div className="metrics"><div><small>Completed correctly</small><strong>{progress.exercises_completed}/{progress.exercises_total}</strong></div><div><small>First-attempt accuracy</small><strong>{percent(progress.first_attempt_accuracy)}</strong></div><div><small>Hints used</small><strong>{progress.hints_used}</strong></div></div><p>Skills practised: {(progress.skills_practiced||[]).join(', ')||'None yet'}</p></>}
-   <h2>Revise my paragraph</h2><label>Original paragraph<select value={paragraph} disabled={busy} onChange={e=>{setParagraph(e.target.value);setRevision('');setRevisionFeedback(null);}}><option value="">Select a paragraph</option>{paragraphOptions.map(n=><option key={n} value={n}>Paragraph {n}</option>)}</select></label>{paragraph&&<blockquote className="essay-text">{paragraphs[Number(paragraph)-1]}</blockquote>}
-   <label>Your revision<textarea rows={6} maxLength={5000} value={revision} disabled={busy||!paragraph} onChange={e=>setRevision(e.target.value)}/></label><button className="primary" disabled={busy||!paragraph||!revision.trim()} onClick={()=>run(async()=>{const r=await api(`/writing/task2/${sid}/revision`,{method:'POST',body:JSON.stringify({paragraph_number:Number(paragraph),answer:revision,request_id:crypto.randomUUID()})});if(active.current)setRevisionFeedback(r);await reload();})}>Check revision <ArrowRight size={17}/></button>{revisionFeedback&&<Notice>{revisionFeedback.feedback.outcome}: {revisionFeedback.feedback.explanation}</Notice>}
+   <h2>Revise my paragraph</h2><label htmlFor="revision-paragraph">Original paragraph<select id="revision-paragraph" name="paragraph" value={paragraph} disabled={busy} onChange={e=>{setParagraph(e.target.value);setRevision('');setRevisionFeedback(null);}}><option value="">Select a paragraph</option>{paragraphOptions.map(n=><option key={n} value={n}>Paragraph {n}</option>)}</select></label>{paragraph&&<blockquote className="essay-text">{paragraphs[Number(paragraph)-1]}</blockquote>}
+   <label htmlFor="revision-text">Your revision<textarea id="revision-text" name="revision" rows={6} maxLength={5000} value={revision} disabled={busy||!paragraph} onChange={e=>setRevision(e.target.value)}/></label><button className="primary" disabled={busy||!paragraph||!revision.trim()} onClick={()=>run(async()=>{const r=await api(`/writing/task2/${sid}/revision`,{method:'POST',body:JSON.stringify({paragraph_number:Number(paragraph),answer:revision,request_id:crypto.randomUUID()})});if(active.current)setRevisionFeedback(r);await reload();})}>Check revision <ArrowRight size={17}/></button>{revisionFeedback&&<Notice>{revisionFeedback.feedback.outcome}: {revisionFeedback.feedback.explanation}</Notice>}
    {progress?.revisions?.map(r=><details key={r.revision_id}><summary>Paragraph {r.paragraph_number}: {r.feedback.outcome}</summary><h3>Before</h3><p className="essay-text">{r.before}</p><h3>After</h3><p className="essay-text">{r.after}</p><p>{r.feedback.explanation}</p></details>)}
   </section>}
  </div>;
