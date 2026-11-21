@@ -23,7 +23,7 @@ Keep API/database/Clerk secrets server-side. Configure `.env` from the relevant 
 | `backend/alembic/` | PostgreSQL schema migration history |
 | `backend/benchmark/`, `src/data/`, `src/eval/` | Dataset preparation, benchmark/report CLIs and reproducibility |
 | `artifacts/dataset_v1/` | Frozen anchors, splits and v1 evaluation evidence; seed anchors are used at runtime |
-| `scripts/` | Build, browser tests and local launcher; historical demos are under `scripts/archive/` |
+| `scripts/` | Build, browser tests and local launchers |
 | `frontend/dist/` | Tracked preview bundle; Docker rebuilds it from source |
 
 ## Build and verify
@@ -39,7 +39,7 @@ For offline cached dependencies set `FOGWRITE_NODE_MODULES` and use `node script
 
 ## Documentation
 
-[Documentation index](docs/README.md), [architecture](docs/ARCHITECTURE.md), [UI](docs/FOGWRITE_UI.md), [product](PRODUCT.md), [demo/acceptance](docs/DEMO_GUIDE.md). Earlier proposals, setup notes and demo records are in [archive](docs/archive/README.md).
+[Documentation index](docs/README.md), [architecture](docs/ARCHITECTURE.md), [UI](docs/FOGWRITE_UI.md), [product](PRODUCT.md), [demo/acceptance](docs/DEMO_GUIDE.md). Historical research and demo records are in [archive](docs/archive/README.md).
 
 ## Research reproduction
 
