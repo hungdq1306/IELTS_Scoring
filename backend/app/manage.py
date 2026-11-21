@@ -1,4 +1,4 @@
-"""Trusted operator commands; no HTTP route can grant global staff privileges."""
+"""Trusted operator commands, including initial administrator bootstrap."""
 import argparse
 import asyncio
 import time

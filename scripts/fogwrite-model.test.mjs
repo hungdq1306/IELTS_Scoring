@@ -14,6 +14,17 @@ test('criterion filter excludes unrelated corrections and preserves neutral evid
  assert.equal(list.length,1);assert.equal(list[0].kind,'evidence');
  assert.equal(list[0].quote,'more detail');
 });
+
+test('v2 sentence annotations feed grounded highlights and preserve criterion ownership',()=>{
+ const sentence='Technology help students learn.';
+ const result={sentence_annotations:[{criterion:'grammatical_range_accuracy',original_sentence:sentence,minimal_fix:'Technology helps students learn.',explanation:'Agreement',band_upgrade:'Use an accurate verb form.'}]};
+ const marks=annotations(result,sentence,'grammatical_range_accuracy');
+ assert.equal(marks.length,1);assert.equal(marks[0].kind,'error');assert.equal(marks[0].corrected,'Technology helps students learn.');
+ assert.equal(annotations(result,sentence,'task_response').length,0);
+ assert.equal(annotations(result,'A different essay.').length,0);
+ const duplicate={...result,grammar_corrections:[{original:sentence,corrected:'Technology helps students learn.'}]};
+ assert.equal(annotations(duplicate,sentence).filter(m=>m.kind==='error').length,1);
+});
 test('timer formats zero, expiry and a full session; words support apostrophes',()=>{
  assert.equal(clock(2400),'40:00');assert.equal(clock(-10),'00:00');assert.equal(clock(65),'01:05');
  assert.equal(wordCount("Students' time isn't unlimited."),4);

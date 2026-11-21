@@ -111,6 +111,8 @@ def _scores_last(schema: dict) -> dict:
 
 def gemini_schema(response_schema):
     schema = response_schema.model_json_schema()
+    if response_schema.__name__ == 'AssessmentOutputV2':
+        return compact_schema(schema, preserve_enums=True)
     if response_schema.__module__.startswith("app.practice."):
         return compact_schema(schema, preserve_enums=True)
     if response_schema is DetailedModelGrade:

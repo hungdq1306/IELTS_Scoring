@@ -31,7 +31,7 @@ class PublicFrontend(StaticFiles):
         try:
             return await super().get_response(path, scope)
         except HTTPException as error:
-            if error.status_code == 404 and path.split('/')[0] in {'overview', 'topics', 'practice', 'check', 'skill-practice', 'history', 'assessment'}:
+            if error.status_code == 404 and path.split('/')[0] in {'join', 'classes', 'profile', 'admin', 'overview', 'topics', 'practice', 'check', 'skill-practice', 'history', 'assessment'}:
                 return await super().get_response('index.html', scope)
             raise
 
@@ -51,7 +51,7 @@ class SecurityMiddleware:
             return await JSONResponse({'detail': 'Invalid Content-Length.'}, status_code=400)(scope, receive, send)
         if content_length > 65536:
             return await JSONResponse({'detail': 'Request body is too large.'}, status_code=413)(scope, receive, send)
-        if scope['method'] in ('POST', 'PUT', 'DELETE'):
+        if scope['method'] in ('POST', 'PUT', 'PATCH', 'DELETE'):
             ip = (scope.get('client') or ('unknown',))[0]
             now = time.monotonic()
             recent = [at for at in self.write_bursts.pop(ip, []) if at > now - 60]
@@ -136,7 +136,7 @@ def create_pilot_app(settings=None, *, database=None, provider_factory=None, ver
                   redoc_url=None, openapi_url=None if settings.app_env == 'production' else '/openapi.json')
     app.add_middleware(SecurityMiddleware, production=settings.app_env == 'production', clerk_issuer=settings.clerk_issuer)
     app.add_middleware(CORSMiddleware, allow_origins=settings.origins, allow_credentials=False,
-                       allow_methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                       allow_methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
                        allow_headers=['Authorization', 'Content-Type', 'Idempotency-Key'])
 
     @app.exception_handler(RequestValidationError)
@@ -169,6 +169,8 @@ def create_pilot_app(settings=None, *, database=None, provider_factory=None, ver
 
     app.include_router(router)
     app.include_router(teacher_router)
+    from app.routers.admin import router as admin_router
+    app.include_router(admin_router)
     dist = ROOT / 'frontend' / 'dist'
     if (dist / 'index.html').is_file():
         app.mount('/', PublicFrontend(directory=dist, html=True), name='frontend')

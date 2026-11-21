@@ -3,8 +3,10 @@ export function runtimeConfig() {
   if (!runtimePromise) runtimePromise=fetch('/api/auth/config',{cache:'no-store'}).then(async r=>{
     if(r.status===404)return {mode:'demo'};
     if(!r.ok)throw new Error('Backend configuration is unavailable.');
-    return r.json();
-  });
+    const config=await r.json();
+    if(!['clerk','demo'].includes(config.mode))throw new Error('Authentication configuration is invalid. Please try again later.');
+    return config;
+  }).catch(error=>{runtimePromise=undefined;throw error;});
   return runtimePromise;
 }
 export async function clerkClient(){
@@ -23,8 +25,8 @@ export async function clerkClient(){
     await load('/npm/@clerk/clerk-js@6/dist/clerk.browser.js',config.publishable_key);
     await window.Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});
     return window.Clerk;
-  })();
+  })().catch(error=>{clerkPromise=undefined;throw error;});
   return clerkPromise;
 }
 export async function sessionToken(){const clerk=await clerkClient();return clerk?.session?clerk.session.getToken():null;}
-export async function openSignIn(){const clerk=await clerkClient();if(clerk)clerk.openSignIn();}
+export async function openSignIn(){const clerk=await clerkClient();if(clerk&&!clerk.session)clerk.openSignIn();else if(clerk?.session)dispatchEvent(new Event('fogwrite:account'));}

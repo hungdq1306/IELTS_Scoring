@@ -140,8 +140,8 @@ def test_concurrent_quota_and_idempotency(tmp_path):
             conflict = await submit(context, key='same_request', essay=ESSAY + ' Additional evidence improves this argument.')
             assert conflict.status_code == 409
             responses = await asyncio.gather(*(submit(context, key='quota_key_' + str(index)) for index in range(9)))
-            assert sum(response.status_code == 202 for response in responses) == 4
-            assert sum(response.status_code == 429 for response in responses) == 5
+            assert sum(response.status_code == 202 for response in responses) == 2
+            assert sum(response.status_code == 429 for response in responses) == 7
             assert all('retry-after' in response.headers for response in responses if response.status_code == 429)
     asyncio.run(scenario())
 
@@ -195,7 +195,7 @@ def test_join_invite_and_bruteforce_budget(tmp_path):
             response = await context.client.post('/api/teacher/classes', headers=teacher, json={'name':'YP03','invite_max_uses':1})
             assert response.status_code == 201
             code = response.json()['join_code']
-            assert len(code) >= 24 and code != 'YP03'
+            assert len(code) == 8 and code != 'YP03'
             body = {'join_code':code,'adult_confirmed':True,'accepted_privacy':True}
             assert (await context.client.post('/api/classes/join', headers=headers(),json=body)).status_code == 200
             assert (await context.client.post('/api/classes/join', headers=headers(1),json=body)).status_code == 400
@@ -280,6 +280,10 @@ def test_scoring_practice_batch_and_teacher_override_e2e(tmp_path):
     class Provider(PracticeProvider):
         settings = SimpleNamespace(model='offline-small-model')
         async def generate_structured(self, system, user, schema):
+            from app.grading.v2 import AssessmentOutputV2
+            if schema is AssessmentOutputV2:
+                from test_rbac_and_ai_v2 import v2_output
+                return Generation(json.dumps(v2_output()),self.settings.model,None,1,{},[])
             if schema is BatchAssessment:
                 data = json.loads(user)
                 items = [{'exercise_id': row['exercise']['exercise_id'], 'outcome':'correct',

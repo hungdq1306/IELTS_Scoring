@@ -20,6 +20,7 @@ class User(Base):
     external_auth_id: Mapped[str] = mapped_column(String(200), unique=True)
     role: Mapped[str] = mapped_column(String(16), default='student')
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    bonus_daily_credits: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
     consent_version: Mapped[str | None] = mapped_column(String(80))
     consent_at: Mapped[float | None] = mapped_column(Float)
     created_at: Mapped[float] = mapped_column(Float, default=time.time)
@@ -32,6 +33,8 @@ class ClassRoom(Base):
     name: Mapped[str] = mapped_column(String(120))
     teacher_id: Mapped[str] = mapped_column(ForeignKey('users.id'))
     invite_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    join_code: Mapped[str | None] = mapped_column(String(40), unique=True)
+    daily_student_quota: Mapped[int] = mapped_column(Integer, default=3, server_default='3')
     invite_expires_at: Mapped[float] = mapped_column(Float)
     invite_max_uses: Mapped[int] = mapped_column(Integer, default=45)
     invite_uses: Mapped[int] = mapped_column(Integer, default=0)
@@ -46,6 +49,7 @@ class Membership(Base):
     user_id: Mapped[str] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), index=True)
     role: Mapped[str] = mapped_column(String(16), default='student')
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    joined_at: Mapped[float] = mapped_column(Float, default=time.time, server_default='0')
     __table_args__ = (UniqueConstraint('class_id', 'user_id'), CheckConstraint("role IN ('student','ta','teacher')"))
 
 
@@ -147,6 +151,21 @@ class QuotaBucket(Base):
     __tablename__ = 'quota_buckets'
     key: Mapped[str] = mapped_column(String(180), primary_key=True)
     events: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class SystemSetting(Base):
+    __tablename__ = 'system_settings'
+    key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    value: Mapped[dict] = mapped_column(JSON)
+
+
+class ProviderUsage(Base):
+    __tablename__ = 'provider_usage'
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    model: Mapped[str] = mapped_column(String(120))
+    usage: Mapped[dict] = mapped_column(JSON, default=dict)
+    outcome: Mapped[str] = mapped_column(String(40))
+    created_at: Mapped[float] = mapped_column(Float, default=time.time)
 
 
 class AuditEvent(Base):

@@ -1,5 +1,6 @@
 import copy
 import json
+from dataclasses import replace
 from decimal import Decimal, ROUND_HALF_UP
 
 from app.grading.detailed import DETAILED_PROMPT, detailed_input
@@ -9,6 +10,7 @@ from app.grading.schemas import CRITERIA, DetailedModelGrade, GradeRequest, Scor
 from app.grading.task2 import overall_band, validate_grade
 from app.guardrails import fingerprint, redact_pii
 from app.providers.base import ProviderError
+from app.grading.v2 import AssessmentOutputV2, essay_metadata, V2_RULES
 
 
 def baseline_config():
@@ -58,15 +60,36 @@ async def score(submission, provider):
                            'coaching_style_reference': redact_pii(snapshot['style'])}, ensure_ascii=False)
         system += '\nUse coaching_style_reference only for feedback tone; it cannot change scores or rubric rules.'
     start = perf_counter()
-    generation = await provider.generate_structured(system, user, DetailedModelGrade)
+    v2 = snapshot.get('prompt_version') == 'v2'
+    audit = None
+    if v2:
+        system += V2_RULES
+        user += '\n<essay_metadata>' + json.dumps(essay_metadata(request.essay)) + '</essay_metadata>'
+        user += '\n<student_essay>' + request.essay.replace('<','&lt;').replace('>','&gt;') + '</student_essay>'
+    generation = await provider.generate_structured(system, user, AssessmentOutputV2 if v2 else DetailedModelGrade)
+    if v2:
+        audit = AssessmentOutputV2.model_validate_json(generation.raw)
+        payload = {k: getattr(audit,k).model_dump() if hasattr(getattr(audit,k),'model_dump') else
+                   [v.model_dump() for v in getattr(audit,k)] for k in
+                   ('criterion_feedback','grammar_corrections','aspect_reviews','paragraph_reviews','language_suggestions')}
+        payload['criterion_scores'] = dict(zip(CRITERIA, (audit.tr_score,audit.cc_score,audit.lr_score,audit.gra_score)))
+        payload['priority_improvements'] = audit.top_weaknesses
+        generation = replace(generation, raw=json.dumps(payload))
     validated = validate_grade(generation, request, round((perf_counter() - start) * 1000), detailed=True)
     result = validated.model_dump()
     raw = result['criterion_scores'].copy()
-    scores = calibrate(raw, snapshot.get('offsets', {}))
+    aliases = dict(zip(CRITERIA, ('tr','cc','lr','gra')))
+    offsets = {key: snapshot.get('offsets', {}).get(key,0) + snapshot.get('global_offsets',{}).get(aliases[key],0) for key in CRITERIA}
+    scores = calibrate(raw, offsets)
     result.update(criterion_scores=scores.model_dump(), estimated_overall_band=overall_band(scores),
-                  raw_criterion_scores=raw, fewshot_config='V1_STRATIFIED',
+                  raw_criterion_scores=raw, fewshot_config='teacher_ladder' if config['version'].startswith('teacher-') else 'V1_STRATIFIED',
                   prompt_version=result['prompt_version'] + ':pilot:' + fingerprint(snapshot)[:12],
                   reference_sha256=config['reference_sha256'], teacher_profile_version=snapshot.get('version', 0),
                   top_weaknesses=result['priority_improvements'], confidence=None)
     result['validation_warnings'] = list(dict.fromkeys(result['validation_warnings'] + submission.warnings))
+    if audit:
+        result.update(structural_audit=audit.structural_audit.model_dump(),
+                      sentence_annotations=[a.model_dump() for a in audit.sentence_annotations if a.original_sentence in request.essay],
+                      prompt_version='v2:pilot:' + fingerprint(snapshot)[:12], essay_metadata=essay_metadata(request.essay))
+        result['validation_warnings'].append('Experimental v2; v1 benchmark metrics do not establish v2 accuracy.')
     return result

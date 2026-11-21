@@ -46,6 +46,13 @@ function annotations(result, essay, criterion) {
   };
   if (!criterion || criterion === "grammatical_range_accuracy") (result.grammar_corrections ?? []).forEach((x) => add(x, "error", "grammatical_range_accuracy"));
   if (!criterion || criterion === "lexical_resource") (result.language_suggestions ?? []).forEach((x) => add(x, "suggestion", "lexical_resource"));
+  (result.sentence_annotations ?? []).forEach((item) => {
+    const key = item.criterion;
+    if (!['task_response','coherence_cohesion','lexical_resource','grammatical_range_accuracy'].includes(key)) return;
+    if (criterion && criterion !== key) return;
+    if (rows.some(row => row.quote === item.original_sentence && row.criterion === key)) return;
+    add({...item, original:item.original_sentence, corrected:item.minimal_fix}, key === 'grammatical_range_accuracy' ? 'error' : 'suggestion', key, item.original_sentence);
+  });
   Object.entries(result.criterion_feedback ?? {}).filter(([key]) => !criterion || criterion === key).forEach(([key, detail]) => (detail.evidence ?? []).forEach((x) => add(x, ["strength", "suggestion"].includes(x.kind) ? x.kind : "evidence", key)));
   return rows.sort((a, b) => a.start - b.start || { error: 0, suggestion: 1, strength: 2, evidence: 3 }[a.kind] - { error: 0, suggestion: 1, strength: 2, evidence: 3 }[b.kind]);
 }

@@ -1,4 +1,4 @@
-import {openSignIn,sessionToken} from './pilot-auth';
+import {sessionToken} from './pilot-auth';
 const pause=(ms,signal)=>new Promise((resolve,reject)=>{
   if(signal?.aborted)return reject(new DOMException('Aborted','AbortError'));
   const abort=()=>{clearTimeout(timer);reject(new DOMException('Aborted','AbortError'));};
@@ -14,7 +14,7 @@ export async function pilotApi(path,options={}){
     const account=await pilotApi('/auth/me');
     if(account.classes.length>1){
       let classId;try{classId=localStorage.getItem('fogwrite.class.'+identity);}catch{}
-      if(!account.classes.some(room=>room.id===classId))throw new Error('Select a class in the account panel before submitting.');
+      if(!account.classes.some(room=>room.id===classId))throw new Error('Choose a class in My Classes before submitting.');
       options={...options,body:JSON.stringify({...JSON.parse(options.body),class_id:classId})};
     }
   }
@@ -29,9 +29,9 @@ export async function pilotApi(path,options={}){
   catch(e){if(e.name==='AbortError')throw e;throw new Error('The backend is unreachable. Your draft is preserved.');}
   const body=await response.json().catch(()=>null);
   if(!response.ok||body===null){
-    if(response.status===401&&method!=='GET')openSignIn().catch(()=>{});
+    if(response.status===401)window.dispatchEvent(new Event('fogwrite:unauthorized'));
     const detail=body?.detail;
-    throw new Error(Array.isArray(detail)?detail.map(item=>item.msg).join(' '):detail?.message||(typeof detail==='string'?detail:'Unexpected backend response.'));
+    const error=new Error(Array.isArray(detail)?detail.map(item=>item.msg).join(' '):detail?.message||(typeof detail==='string'?detail:'Unexpected backend response.'));error.status=response.status;throw error;
   }
   if(response.status===202&&body.poll_url){
     const deadline=Date.now()+25*60*1000;window.dispatchEvent(new CustomEvent('fogwrite:queue',{detail:body}));

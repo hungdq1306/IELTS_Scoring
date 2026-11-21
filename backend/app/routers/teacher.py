@@ -3,7 +3,7 @@ import secrets
 import time
 
 from fastapi import APIRouter, Depends, HTTPException, Request
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.auth import staff_user
 from app.grading.schemas import CRITERIA
@@ -12,9 +12,15 @@ from app.guardrails import redact_pii
 from app.models import Assessment, AuditEvent, ClassRoom, ExerciseTemplate, Membership, Prompt, Submission, TeacherAnchor, TeacherProfile, User, uid
 from app.pilot_schemas import AnchorInput, AssignMember, CreateClass, ProfileUpdate, PromptInput, ScoreOverride, TemplateInput
 from app.queue import locked_bucket
+from app.entitlements import system_settings
+from app.pilot_schemas import ClassPatch
 from app.routers.pilot import class_access, database, effective_grade
 
 router = APIRouter(prefix='/api/teacher')
+
+
+def invite_code():
+    return ''.join(secrets.choice('ABCDEFGHJKLMNPQRSTUVWXYZ23456789') for _ in range(8))
 
 
 def teacher_only(user):
@@ -27,18 +33,28 @@ async def classes(request: Request, user=Depends(staff_user)):
     async with database(request).sessions() as session:
         query = select(ClassRoom)
         if user.role != 'admin':
-            query = query.where((ClassRoom.teacher_id == user.id) | ClassRoom.id.in_(
+            query = query.where(((ClassRoom.teacher_id == user.id) & (user.role == 'teacher')) | ClassRoom.id.in_(
                 select(Membership.class_id).where(Membership.user_id == user.id, Membership.role == 'ta', Membership.active.is_(True))))
         rows = (await session.scalars(query.order_by(ClassRoom.created_at.desc()).limit(100))).all()
-        return {'items': [{'id': row.id, 'name': row.name, 'active': row.active, 'invite_uses': row.invite_uses} for row in rows]}
+        items = []
+        for row in rows:
+            count = await session.scalar(select(func.count()).select_from(Membership).where(
+                Membership.class_id == row.id, Membership.active.is_(True), Membership.role == 'student'))
+            item = {'id': row.id, 'name': row.name, 'active': row.active, 'invite_uses': row.invite_uses,
+                    'student_count': count, 'daily_student_quota': row.daily_student_quota}
+            if user.role == 'admin' or (user.role == 'teacher' and row.teacher_id == user.id):
+                item.update(join_code=row.join_code, invite_expires_at=row.invite_expires_at)
+            items.append(item)
+        return {'items': items}
 
 
 @router.post('/classes', status_code=201)
 async def create_class(body: CreateClass, request: Request, user=Depends(staff_user)):
     teacher_only(user)
-    code = secrets.token_urlsafe(24)
+    code = invite_code()
     async with database(request).transaction() as session:
-        classroom = ClassRoom(name=body.name, teacher_id=user.id, invite_hash=hashlib.sha256(code.encode()).hexdigest(),
+        daily_limit = body.daily_student_quota if body.daily_student_quota is not None else (await system_settings(session))['enrolled_student_daily_limit']
+        classroom = ClassRoom(name=body.name, teacher_id=user.id, join_code=code, daily_student_quota=daily_limit, invite_hash=hashlib.sha256(code.encode()).hexdigest(),
                               invite_expires_at=time.time() + body.invite_days * 86400, invite_max_uses=body.invite_max_uses)
         session.add(classroom)
         await session.flush()
@@ -48,26 +64,44 @@ async def create_class(body: CreateClass, request: Request, user=Depends(staff_u
 
 
 @router.post('/classes/{class_id}/rotate-invite')
+@router.post('/classes/{class_id}/rotate-code')
 async def rotate(class_id: str, request: Request, user=Depends(staff_user)):
-    code = secrets.token_urlsafe(24)
+    code = invite_code()
     async with database(request).transaction() as session:
         classroom = await class_access(session, class_id, user, manage=True)
         classroom.invite_hash, classroom.invite_expires_at = hashlib.sha256(code.encode()).hexdigest(), time.time() + 7 * 86400
+        classroom.join_code = code
         classroom.invite_uses = 0
         session.add(AuditEvent(actor_id=user.id, action='invite_rotated', target_id=class_id))
     return {'join_code': code}
 
 
+@router.patch('/classes/{class_id}')
+async def edit_class(class_id: str, body: ClassPatch, request: Request, user=Depends(staff_user)):
+    async with database(request).transaction() as session:
+        room = await class_access(session,class_id,user,manage=True)
+        for key,value in body.model_dump(exclude_none=True).items():
+            setattr(room,'active' if key=='is_active' else key,value)
+        session.add(AuditEvent(actor_id=user.id,action='class_updated',target_id=class_id,detail=body.model_dump(exclude_none=True)))
+    return {'saved':True}
+
+
 @router.get('/classes/{class_id}/members')
+@router.get('/classes/{class_id}/students')
 async def members(class_id: str, request: Request, user=Depends(staff_user)):
     async with database(request).sessions() as session:
         await class_access(session, class_id, user)
         rows = (await session.execute(select(Membership, User).join(User, User.id == Membership.user_id).where(Membership.class_id == class_id).limit(100))).all()
-        return {'items': [{'user_id': member.user_id, 'role': member.role, 'active': member.active} for member, account in rows]}
+        return {'items': [{'user_id': member.user_id, 'role': member.role, 'active': member.active,
+                           'member_role':member.role,'status':'ACTIVE' if member.active else 'REMOVED',
+                           'joined_at':member.joined_at} for member, account in rows]}
 
 
 @router.put('/classes/{class_id}/members')
+@router.post('/classes/{class_id}/assign-ta')
 async def assign(class_id: str, body: AssignMember, request: Request, user=Depends(staff_user)):
+    if request.url.path.endswith('/assign-ta') and body.role != 'ta':
+        raise HTTPException(422, 'assign-ta requires role=ta.')
     async with database(request).transaction() as session:
         await locked_bucket(session, 'membership:' + class_id)
         classroom = await class_access(session, class_id, user, manage=True)
@@ -86,6 +120,23 @@ async def assign(class_id: str, body: AssignMember, request: Request, user=Depen
     return {'saved': True}
 
 
+@router.delete('/classes/{class_id}/students/{user_id}')
+async def remove_student(class_id: str, user_id: str, request: Request, user=Depends(staff_user)):
+    return await assign(class_id, AssignMember(user_id=user_id, active=False), request, user)
+
+
+@router.get('/submissions')
+async def all_submissions(request: Request, user=Depends(staff_user)):
+    async with database(request).sessions() as session:
+        query = select(Submission, Assessment).join(ClassRoom, ClassRoom.id==Submission.class_id).outerjoin(Assessment, Assessment.submission_id==Submission.id)
+        if user.role != 'admin':
+            query = query.where(((ClassRoom.teacher_id==user.id) & (user.role=='teacher')) | ClassRoom.id.in_(select(Membership.class_id).where(
+                Membership.user_id==user.id, Membership.active.is_(True), Membership.role=='ta')))
+        rows = (await session.execute(query.order_by(Submission.created_at.desc()).limit(100))).all()
+        return {'items':[{'id':s.id,'class_id':s.class_id,'user_id':s.user_id,'prompt':s.prompt,'essay':s.essay,
+                          'status':s.status,'grade':effective_grade(a) if a else None} for s,a in rows]}
+
+
 @router.get('/classes/{class_id}/submissions')
 async def submissions(class_id: str, request: Request, user=Depends(staff_user)):
     async with database(request).sessions() as session:
@@ -98,6 +149,7 @@ async def submissions(class_id: str, request: Request, user=Depends(staff_user))
 
 
 @router.put('/submissions/{submission_id}/override')
+@router.patch('/assessments/{submission_id}/override')
 async def override(submission_id: str, body: ScoreOverride, request: Request, user=Depends(staff_user)):
     async with database(request).transaction() as session:
         submission = await session.get(Submission, submission_id)

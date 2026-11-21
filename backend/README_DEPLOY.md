@@ -1,3 +1,7 @@
+# RBAC / AI v2 update
+
+For the current quota rules, migration `0002_rbac_v2`, admin bootstrap and deployment order, see [RBAC_AI_V2_UPGRADE.md](../docs/RBAC_AI_V2_UPGRADE.md). Grading credits now use calendar days in Vietnam: enrolled student 3, TA 5, teacher 20, admin 50. `DAILY_SUBMISSION_LIMIT` is retained for configuration compatibility; live grading limits come from class/system settings. Earlier rolling-24h grading instructions elsewhere are superseded by this update.
+
 # FogWrite — hướng dẫn chạy pilot và deploy
 
 Backend cho pilot dùng **Clerk + Neon PostgreSQL + FastAPI**. Frontend React được build trong Docker và phục vụ cùng backend. Vì vậy phương án mặc định **không cần tài khoản Vercel**, không có cookie chéo domain và không cần đặt API URL trong frontend.

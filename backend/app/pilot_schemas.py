@@ -16,20 +16,29 @@ class Consent(StrictModel):
     accepted_privacy: Literal[True]
 
 
-class JoinClass(Consent):
-    join_code: str = Field(min_length=20, max_length=100)
+class JoinClass(StrictModel):
+    join_code: str = Field(min_length=8, max_length=100)
+    adult_confirmed: bool = False
+    accepted_privacy: bool = False
 
 
 class CreateClass(StrictModel):
     name: str = Field(min_length=1, max_length=120)
     invite_max_uses: int = Field(45, ge=1, le=100)
     invite_days: int = Field(7, ge=1, le=30)
+    daily_student_quota: int | None = Field(None, ge=1, le=100)
 
 
 class AssignMember(StrictModel):
     user_id: str = Field(max_length=36)
     role: Literal['student', 'ta'] = 'student'
     active: bool = True
+
+
+class ClassPatch(StrictModel):
+    name: str | None = Field(None, min_length=1, max_length=120)
+    is_active: bool | None = None
+    daily_student_quota: int | None = Field(None, ge=1, le=100)
 
 
 class ProfileUpdate(StrictModel):

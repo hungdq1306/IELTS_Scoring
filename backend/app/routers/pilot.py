@@ -19,6 +19,7 @@ from app.practice.schemas import AnswerRequest, PracticeAnswers, PracticeSubmit,
 from app.queue import consume_quota, enqueue, find_request, locked_bucket, ticket
 from app.services.drill_gen import public_practice
 from app.services.scorer import assignment_safe_config, baseline_config
+from app.entitlements import get_user_quota_status, admit_grading, system_settings
 
 router = APIRouter(prefix='/api')
 
@@ -54,7 +55,8 @@ async def class_access(session, class_id, user, manage=False):
     classroom = await session.get(ClassRoom, class_id)
     membership = await session.scalar(select(Membership).where(Membership.class_id == class_id,
                                                                Membership.user_id == user.id, Membership.active.is_(True)))
-    if not classroom or not (user.role == 'admin' or classroom.teacher_id == user.id or (not manage and membership and membership.role == 'ta')):
+    if not classroom or not (user.role == 'admin' or (user.role == 'teacher' and classroom.teacher_id == user.id) or
+                            (not manage and user.role in ('ta','teacher') and membership and membership.role == 'ta')):
         raise HTTPException(404, 'Class not found.')
     return classroom
 
@@ -72,8 +74,16 @@ async def me(request: Request, user=Depends(current_user)):
     async with database(request).sessions() as session:
         memberships = (await session.execute(select(Membership, ClassRoom).join(ClassRoom, ClassRoom.id == Membership.class_id)
             .where(Membership.user_id == user.id, Membership.active.is_(True), ClassRoom.active.is_(True)))).all()
+        quota_status = await get_user_quota_status(user, session)
     return {'id': user.id, 'role': user.role, 'consent_version': user.consent_version,
+            'quota_status': quota_status,
             'classes': [{'id': classroom.id, 'name': classroom.name, 'role': membership.role} for membership, classroom in memberships]}
+
+
+@router.get('/me/quota')
+async def quota(request: Request, user=Depends(current_user)):
+    async with database(request).sessions() as session:
+        return await get_user_quota_status(user, session)
 
 
 @router.post('/auth/consent')
@@ -86,9 +96,14 @@ async def consent(body: Consent, request: Request, user=Depends(current_user)):
 
 @router.post('/classes/join')
 async def join(body: JoinClass, request: Request, user=Depends(current_user)):
+    if user.consent_version != settings(request).privacy_version and not (body.adult_confirmed and body.accepted_privacy):
+        raise HTTPException(403, 'Please accept the adult-only pilot privacy conditions.')
     async with database(request).transaction() as session:
         await consume_quota(session, 'join:' + user.id, 10, 3600)
-        classroom = await session.scalar(select(ClassRoom).where(ClassRoom.invite_hash == hashlib.sha256(body.join_code.encode()).hexdigest()).with_for_update())
+        code = body.join_code.strip()
+        # Legacy hashes remain usable until the teacher rotates them.
+        classroom = await session.scalar(select(ClassRoom).where((ClassRoom.join_code == code.upper()) |
+            (ClassRoom.invite_hash == hashlib.sha256(code.encode()).hexdigest())).with_for_update())
         if not classroom or not classroom.active or classroom.invite_expires_at < time.time():
             # Return after commit so failed guesses still consume the brute-force budget.
             invalid = True
@@ -102,11 +117,18 @@ async def join(body: JoinClass, request: Request, user=Depends(current_user)):
                     classroom.invite_uses += 1
                     session.add(Membership(class_id=classroom.id, user_id=user.id))
             elif not membership.active:
-                invalid = True  # A revoked student cannot rejoin with an old class code.
+                if classroom.invite_uses >= classroom.invite_max_uses:
+                    invalid = True
+                else:
+                    membership.active, membership.role = True, 'student'
+                    membership.joined_at = time.time()
+                    classroom.invite_uses += 1
             if not invalid:
                 stored = await session.get(User, user.id)
                 stored.consent_version, stored.consent_at = settings(request).privacy_version, time.time()
                 result = {'id': classroom.id, 'name': classroom.name}
+                await session.flush()
+                result['quota_status'] = await get_user_quota_status(user, session)
     if invalid:
         raise HTTPException(400, 'Mã mời không hợp lệ, đã hết hạn hoặc không còn chỗ.')
     return result
@@ -124,14 +146,15 @@ async def prompts(request: Request, user=Depends(current_user)):
 async def submit(body: SubmitEssay, request: Request, idempotency_key: str | None = Header(None), user=Depends(current_user)):
     key = request_key(idempotency_key)
     config = settings(request)
-    if user.consent_version != config.privacy_version:
-        raise HTTPException(403, 'Please accept the adult-only pilot and privacy notice before submitting.')
     payload = body.model_dump()
     async with database(request).transaction() as session:
         await locked_bucket(session, 'submit:' + user.id)
         prior = await find_request(session, user.id, 'score', key, payload)
         if prior:
             return ticket(prior)
+        await admit_grading(session, user)
+        if user.consent_version != config.privacy_version:
+            raise HTTPException(403, 'Please accept the adult-only pilot and privacy notice before submitting.')
         memberships = list((await session.scalars(select(Membership).join(ClassRoom, ClassRoom.id == Membership.class_id)
             .where(Membership.user_id == user.id, Membership.active.is_(True), ClassRoom.active.is_(True)))).all())
         membership = next((member for member in memberships if member.class_id == body.class_id), None) if body.class_id else memberships[0] if len(memberships) == 1 else None
@@ -145,17 +168,25 @@ async def submit(body: SubmitEssay, request: Request, idempotency_key: str | Non
                 raise HTTPException(404, 'Prompt not found.')
             prompt = entry.prompt_text
         count, warnings = validate_input(prompt, body.essay)
-        await consume_quota(session, 'submission:' + user.id, config.daily_submission_limit)
         profile = await session.get(TeacherProfile, classroom.teacher_id)
         fewshot = copy.deepcopy(baseline_config())
-        anchors = list((await session.scalars(select(TeacherAnchor).where(TeacherAnchor.teacher_id == classroom.teacher_id, TeacherAnchor.active.is_(True)).order_by(TeacherAnchor.id).limit(8))).all())
+        anchors = list((await session.scalars(select(TeacherAnchor).where(TeacherAnchor.teacher_id == classroom.teacher_id, TeacherAnchor.active.is_(True)).order_by(TeacherAnchor.id).limit(100))).all())
         if anchors:
+            protected_anchors = anchors
+            # Keep one complete essay for each overall half-band, avoiding a 100-essay prompt.
+            ladder = {}
+            for anchor in anchors:
+                band = anchor.payload.get('scores', {}).get('overall')
+                if band is not None: ladder.setdefault(band, anchor)
+            if ladder: anchors = [ladder[band] for band in sorted(ladder)]
             fewshot['examples'] = [anchor.payload for anchor in anchors]
             fewshot['reference_sha256'] = fingerprint(fewshot['examples'])
-            fewshot['_protected_references'] = [{'essay': anchor.payload['student_essay'], 'question': anchor.payload['question']} for anchor in anchors]
+            fewshot['_protected_references'] = [{'essay': anchor.payload['student_essay'], 'question': anchor.payload['question']} for anchor in protected_anchors]
             fewshot['version'] = 'teacher-' + fewshot['reference_sha256'][:12]
         fewshot = assignment_safe_config(fewshot, prompt)
+        global_config = await system_settings(session)
         snapshot = {'fewshot': fewshot, 'style': profile.style if profile else '', 'offsets': profile.offsets if profile else {},
+                    'global_offsets': global_config['calibration_offsets_json'], 'prompt_version': global_config['active_prompt_version'],
                     'version': profile.version if profile else 0}
         submission = Submission(user_id=user.id, class_id=classroom.id, prompt_id=body.prompt_id,
                                 prompt=prompt, essay=body.essay, word_count=count, warnings=warnings, config_snapshot=snapshot)
