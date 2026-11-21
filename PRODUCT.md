@@ -13,3 +13,6 @@ The pilot accepts the calibrated reference configuration and snapshots the activ
 ## Local demo
 
 `app.main:app` remains a separate cookie-session research/demo server. It exposes benchmark and assessment options excluded from the classroom pilot. See [documentation](docs/README.md).
+
+
+The next enrollment-policy checkout adds one active student enrollment, explicit voluntary leave, a 24-hour join cooldown, removal-based rejoin blocking and teacher-controlled enrollment locks. LEFT keeps the owner writing history; REMOVED retains revocation. Browser-supplied profile data is separately labeled self-reported. See [reviewed policy and release gates](docs/SINGLE_CLASS_ENROLLMENT.md); this document is not a deployment receipt.

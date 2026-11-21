@@ -4,7 +4,7 @@ import httpx
 from urllib.parse import quote
 
 def display_label(user):
-    return user.full_name or user.email or 'User #' + user.id[:8]
+    return user.full_name or user.reported_full_name or user.email or user.reported_email or 'User #' + user.id[:8]
 
 def profile_fields(claims):
     fields = {}
@@ -43,3 +43,12 @@ async def sync_profile(database,user,claims,settings,force=False):
         if due:stored.profile_synced_at=time.time()
         await db.flush()
         return stored
+
+
+def public_profile(user):
+    # Browser data is display-only and never overwrites provider-verified values.
+    return {'full_name': user.full_name or user.reported_full_name,
+            'email': user.email or user.reported_email, 'avatar_url': user.avatar_url,
+            'name_source': 'provider' if user.full_name else 'self_reported' if user.reported_full_name else None,
+            'email_source': 'provider' if user.email else 'self_reported' if user.reported_email else None,
+            'display_label': display_label(user)}

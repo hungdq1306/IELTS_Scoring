@@ -20,7 +20,9 @@ from app.queue import consume_quota, enqueue, find_request, locked_bucket, ticke
 from app.services.drill_gen import public_practice
 from app.services.scorer import assignment_safe_config, baseline_config
 from app.entitlements import get_user_quota_status, admit_grading, system_settings
-from app.identity import display_label
+from app.identity import display_label, public_profile
+from app.enrollment import lock_student, check_join, member_role
+from app.pilot_schemas import DisplayProfile
 
 router = APIRouter(prefix='/api')
 
@@ -45,9 +47,9 @@ async def owned_submission(session, submission_id, user):
     if not submission or submission.user_id != user.id:
         raise HTTPException(404, 'Submission not found.')
     membership = await session.scalar(select(Membership).where(Membership.class_id == submission.class_id,
-                                                              Membership.user_id == user.id, Membership.active.is_(True)))
+                                                              Membership.user_id == user.id))
     classroom = await session.get(ClassRoom, submission.class_id)
-    if not membership or not classroom.active:
+    if not membership or (not membership.active and membership.status != 'LEFT') or (not classroom.active and membership.status != 'LEFT'):
         raise HTTPException(403, 'Membership is no longer active.')
     return submission
 
@@ -74,10 +76,10 @@ async def auth_config(request: Request):
 async def me(request: Request, user=Depends(current_user)):
     async with database(request).sessions() as session:
         memberships = (await session.execute(select(Membership, ClassRoom).join(ClassRoom, ClassRoom.id == Membership.class_id)
-            .where(Membership.user_id == user.id, Membership.active.is_(True), ClassRoom.active.is_(True)))).all()
+            .where(Membership.user_id == user.id, Membership.active.is_(True)))).all()
         quota_status = await get_user_quota_status(user, session)
     return {'id': user.id, 'role': user.role, 'consent_version': user.consent_version,
-            'full_name':user.full_name,'email':user.email,'avatar_url':user.avatar_url,'display_label':display_label(user),
+            **public_profile(user),
             'quota_status': quota_status,
             'classes': await class_summaries(session=None, memberships=memberships, user=user, db=database(request))}
 
@@ -89,7 +91,7 @@ async def class_summaries(session, memberships, user, db):
             teacher=await session.get(User,room.teacher_id)
             count=await session.scalar(select(func.count()).select_from(Submission).where(Submission.user_id==user.id,Submission.class_id==room.id))
             items.append({'id':room.id,'name':room.name,'role':membership.role,'teacher_name':display_label(teacher),
-                          'daily_student_quota':room.daily_student_quota,'submission_count':count,'active':room.active})
+                          'daily_student_quota':room.daily_student_quota,'submission_count':count,'active':room.active,'enrollment_open':room.enrollment_open})
         return items
 
 
@@ -107,44 +109,78 @@ async def consent(body: Consent, request: Request, user=Depends(current_user)):
     return {'accepted': True}
 
 
+@router.patch('/auth/me')
+async def display_profile(body: DisplayProfile, request: Request, user=Depends(current_user)):
+    async with database(request).transaction() as session:
+        stored = await lock_student(session, user.id)
+        changes = {}
+        for field, value in body.model_dump(exclude_unset=True).items():
+            dest = 'reported_' + field
+            if value and not getattr(stored, field) and getattr(stored, dest) != value:
+                setattr(stored, dest, value)
+                changes[field] = value
+        if changes:
+            session.add(AuditEvent(actor_id=user.id, action='display_profile_updated', target_id=user.id,
+                                  detail={'fields': list(changes), 'source':'self_reported'}))
+        return public_profile(stored)
+
+
 @router.post('/classes/join')
 async def join(body: JoinClass, request: Request, user=Depends(current_user)):
     if user.consent_version != settings(request).privacy_version and not (body.adult_confirmed and body.accepted_privacy):
         raise HTTPException(403, 'Please accept the adult-only pilot privacy conditions.')
+    error = None
+    result = None
     async with database(request).transaction() as session:
+        user = await lock_student(session, user.id)
         await consume_quota(session, 'join:' + user.id, 10, 3600)
         code = body.join_code.strip()
-        # Legacy hashes remain usable until the teacher rotates them.
         classroom = await session.scalar(select(ClassRoom).where((ClassRoom.join_code == code.upper()) |
             (ClassRoom.invite_hash == hashlib.sha256(code.encode()).hexdigest())).with_for_update())
-        if not classroom or not classroom.active or classroom.invite_expires_at < time.time():
-            # Return after commit so failed guesses still consume the brute-force budget.
-            invalid = True
+        if not classroom or classroom.invite_expires_at < time.time():
+            error = HTTPException(400, 'Invite code is invalid or expired.')
         else:
-            invalid = False
             membership = await session.scalar(select(Membership).where(Membership.class_id == classroom.id, Membership.user_id == user.id))
-            if not membership:
-                if classroom.invite_uses >= classroom.invite_max_uses:
-                    invalid = True
-                else:
+            try:
+                if not classroom.active or not classroom.enrollment_open:
+                    raise HTTPException(403, {'code':'CLASS_ENROLLMENT_LOCKED', 'message':'This class is currently closed to new students. Contact your teacher.'})
+                await check_join(session, user, classroom, membership)
+                if not membership or not membership.active:
+                    if classroom.invite_uses >= classroom.invite_max_uses:
+                        raise HTTPException(400, 'Invite code has no remaining uses.')
+                    if not membership:
+                        membership = Membership(class_id=classroom.id, user_id=user.id)
+                        session.add(membership)
+                    membership.active, membership.role = True, member_role(user.role)
+                    membership.joined_at, membership.left_at, membership.removed_at = time.time(), None, None
                     classroom.invite_uses += 1
-                    session.add(Membership(class_id=classroom.id, user_id=user.id))
-            elif not membership.active:
-                if classroom.invite_uses >= classroom.invite_max_uses:
-                    invalid = True
-                else:
-                    membership.active, membership.role = True, 'student'
-                    membership.joined_at = time.time()
-                    classroom.invite_uses += 1
-            if not invalid:
-                stored = await session.get(User, user.id)
-                stored.consent_version, stored.consent_at = settings(request).privacy_version, time.time()
-                result = {'id': classroom.id, 'name': classroom.name}
+                    session.add(AuditEvent(actor_id=user.id, action='student_joined_class', target_id=classroom.id,
+                        detail={'user_id':user.id}))
+                user.consent_version, user.consent_at = settings(request).privacy_version, time.time()
                 await session.flush()
-                result['quota_status'] = await get_user_quota_status(user, session)
-    if invalid:
-        raise HTTPException(400, 'Mã mời không hợp lệ, đã hết hạn hoặc không còn chỗ.')
+                result = {'id':classroom.id, 'name':classroom.name, 'quota_status':await get_user_quota_status(user, session)}
+            except HTTPException as exc:
+                error = exc  # Commit the brute-force budget even on a policy rejection.
+    if error:
+        raise error
     return result
+
+
+@router.post('/classes/{class_id}/leave')
+async def leave_class(class_id: str, request: Request, user=Depends(current_user)):
+    async with database(request).transaction() as session:
+        user = await lock_student(session, user.id)
+        if user.role != 'student':
+            raise HTTPException(403, 'Only students use voluntary leave.')
+        member = await session.scalar(select(Membership).where(Membership.class_id==class_id, Membership.user_id==user.id))
+        if not member:
+            raise HTTPException(404, 'Membership not found.')
+        if member.active:
+            member.active, member.left_at, member.removed_at = False, time.time(), None
+            session.add(AuditEvent(actor_id=user.id, action='student_left_class', target_id=class_id,
+                detail={'user_id':user.id,'left_at':member.left_at}))
+        await session.flush()
+        return {'status':member.status, 'left_at':member.left_at, 'quota_status':await get_user_quota_status(user, session)}
 
 
 @router.get('/prompts')
@@ -261,7 +297,7 @@ async def history(request: Request, user=Depends(current_user)):
     async with database(request).sessions() as session:
         rows = (await session.scalars(select(Submission).join(Membership, (Membership.class_id == Submission.class_id) & (Membership.user_id == Submission.user_id))
             .join(ClassRoom, ClassRoom.id == Submission.class_id)
-            .where(Submission.user_id == user.id, Membership.active.is_(True), ClassRoom.active.is_(True))
+            .where(Submission.user_id == user.id, ((Membership.active.is_(True) & ClassRoom.active.is_(True)) | (Membership.active.is_(False) & Membership.left_at.is_not(None))))
             .order_by(Submission.created_at.desc(), Submission.id).limit(100))).all()
         return {'items': [{'submission_id': row.id, 'prompt': row.prompt, 'created': row.created_at, 'status': row.status} for row in rows]}
 

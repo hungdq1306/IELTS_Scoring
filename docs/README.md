@@ -2,6 +2,8 @@
 
 ## Current implementation
 
+- [Single-class policy and reviewed implementation plan](SINGLE_CLASS_ENROLLMENT.md)
+
 - [Architecture](ARCHITECTURE.md)
 - [UI, routes and browser state](FOGWRITE_UI.md)
 - [Demo and classroom acceptance](DEMO_GUIDE.md)

@@ -9,6 +9,7 @@ from app.database import Database
 from app.models import AuditEvent, Job, Submission, User
 from app.pilot_config import PilotSettings
 from app.seed import seed_defaults
+from app.enrollment import change_role
 
 
 async def manage(args):
@@ -26,7 +27,7 @@ async def manage(args):
                     session.add(user)
                     await session.flush()
                 previous = user.role
-                user.role = args.role
+                await change_role(session, user, args.role)
                 session.add(AuditEvent(actor_id=user.id, action='operator_role_grant', target_id=user.id,
                                        detail={'previous': previous, 'role': args.role}))
             print('Role saved. Sign out/in or refresh the account panel.')

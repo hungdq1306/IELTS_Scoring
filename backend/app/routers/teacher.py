@@ -13,7 +13,8 @@ from app.models import Assessment, AuditEvent, ClassRoom, ExerciseTemplate, Memb
 from app.pilot_schemas import AnchorInput, AssignMember, CreateClass, ProfileUpdate, PromptInput, ScoreOverride, TemplateInput
 from app.queue import locked_bucket
 from app.entitlements import system_settings
-from app.identity import display_label
+from app.identity import display_label, public_profile
+from app.enrollment import lock_student, check_join, member_role
 from app.pilot_schemas import ClassPatch
 from app.routers.pilot import class_access, database, effective_grade
 
@@ -43,7 +44,7 @@ async def classes(request: Request, user=Depends(staff_user)):
                 Membership.class_id == row.id, Membership.active.is_(True), Membership.role == 'student'))
             item = {'id': row.id, 'name': row.name, 'active': row.active, 'invite_uses': row.invite_uses,
                     'can_manage': user.role == 'admin' or (user.role == 'teacher' and row.teacher_id == user.id),
-                    'student_count': count, 'daily_student_quota': row.daily_student_quota,
+                    'student_count': count, 'daily_student_quota': row.daily_student_quota, 'enrollment_open':row.enrollment_open,
                     'teacher_name':display_label(await session.get(User,row.teacher_id))}
             if user.role == 'admin' or (user.role == 'teacher' and row.teacher_id == user.id):
                 item.update(join_code=row.join_code, invite_expires_at=row.invite_expires_at)
@@ -56,6 +57,8 @@ async def create_class(body: CreateClass, request: Request, user=Depends(staff_u
     teacher_only(user)
     code = invite_code()
     async with database(request).transaction() as session:
+        user = await lock_student(session, user.id)
+        teacher_only(user)
         daily_limit = body.daily_student_quota if body.daily_student_quota is not None else (await system_settings(session))['enrolled_student_daily_limit']
         classroom = ClassRoom(name=body.name, teacher_id=user.id, join_code=code, daily_student_quota=daily_limit, invite_hash=hashlib.sha256(code.encode()).hexdigest(),
                               invite_expires_at=time.time() + body.invite_days * 86400, invite_max_uses=body.invite_max_uses)
@@ -83,6 +86,8 @@ async def rotate(class_id: str, request: Request, user=Depends(staff_user)):
 async def edit_class(class_id: str, body: ClassPatch, request: Request, user=Depends(staff_user)):
     async with database(request).transaction() as session:
         room = await class_access(session,class_id,user,manage=True)
+        if body.enrollment_open is not None and body.enrollment_open != room.enrollment_open:
+            session.add(AuditEvent(actor_id=user.id,action='class_enrollment_toggled',target_id=class_id,detail={'previous':room.enrollment_open,'current':body.enrollment_open}))
         for key,value in body.model_dump(exclude_none=True).items():
             setattr(room,'active' if key=='is_active' else key,value)
         session.add(AuditEvent(actor_id=user.id,action='class_updated',target_id=class_id,detail=body.model_dump(exclude_none=True)))
@@ -97,9 +102,9 @@ async def members(class_id: str, request: Request, user=Depends(staff_user)):
         rows = (await session.execute(select(Membership, User).join(User, User.id == Membership.user_id).where(Membership.class_id == class_id).limit(100))).all()
         counts=dict((await session.execute(select(Submission.user_id,func.count()).where(Submission.class_id==class_id).group_by(Submission.user_id))).all())
         return {'items': [{'user_id': member.user_id, 'role': member.role, 'active': member.active,
-                           'full_name':account.full_name,'email':account.email,'display_label':display_label(account),
+                           **public_profile(account),
                            'submission_count':counts.get(account.id,0),
-                           'member_role':member.role,'status':'ACTIVE' if member.active else 'REMOVED',
+                           'member_role':member.role,'status':member.status,'left_at':member.left_at,'removed_at':member.removed_at,
                            'joined_at':member.joined_at} for member, account in rows]}
 
 
@@ -109,6 +114,7 @@ async def assign(class_id: str, body: AssignMember, request: Request, user=Depen
     if request.url.path.endswith('/assign-ta') and body.role != 'ta':
         raise HTTPException(422, 'assign-ta requires role=ta.')
     async with database(request).transaction() as session:
+        account = await lock_student(session, body.user_id)
         await locked_bucket(session, 'membership:' + class_id)
         classroom = await class_access(session, class_id, user, manage=True)
         account = await session.get(User, body.user_id)
@@ -117,10 +123,16 @@ async def assign(class_id: str, body: AssignMember, request: Request, user=Depen
         if body.role == 'ta' and account.role not in ('ta', 'teacher', 'admin'):
             raise HTTPException(422, 'Grant staff role through the trusted admin CLI first.')
         membership = await session.scalar(select(Membership).where(Membership.class_id == class_id, Membership.user_id == body.user_id))
+        if body.active:
+            await check_join(session, account, classroom, membership, staff_override=True)
         if not membership:
             membership = Membership(class_id=class_id, user_id=body.user_id)
             session.add(membership)
-        membership.role, membership.active = body.role, body.active
+        membership.role, membership.active = (member_role(account.role) if account.role != 'student' and body.role=='student' else body.role), body.active
+        if body.active:
+            membership.left_at, membership.removed_at = None, None
+        else:
+            membership.removed_at, membership.left_at = time.time(), None
         session.add(AuditEvent(actor_id=user.id, action='membership_updated', target_id=body.user_id,
                                detail={'class_id': class_id, 'role': body.role, 'active': body.active}))
     return {'saved': True}
@@ -144,7 +156,7 @@ async def all_submissions(request: Request, user=Depends(staff_user)):
 
 def submission_row(s,a,u):
     return {'id':s.id,'class_id':s.class_id,'user_id':s.user_id,'prompt':s.prompt,'essay':s.essay,'status':s.status,
-            'student_name':display_label(u),'student_email':u.email,'submitted_at':s.created_at,
+            'student_name':display_label(u),'student_email':public_profile(u)['email'],'email_source':public_profile(u)['email_source'],'submitted_at':s.created_at,
             'submission_code':s.id[:8].upper(),'grade':effective_grade(a) if a else None}
 
 

@@ -10,13 +10,8 @@ export async function pilotApi(path,options={}){
   if(token)headers.Authorization='Bearer '+token;
   const method=options.method||'GET';let storageKey;
   if(method==='POST'&&['/writing/task2/evaluate','/submissions'].includes(path)){
-    const identity=window.Clerk?.user?.id||'';
-    const account=await pilotApi('/auth/me');
-    if(account.classes.length>1){
-      let classId;try{classId=localStorage.getItem('fogwrite.class.'+identity);}catch{}
-      if(!account.classes.some(room=>room.id===classId))throw new Error('Choose a class in My Classes before submitting.');
-      options={...options,body:JSON.stringify({...JSON.parse(options.body),class_id:classId})};
-    }
+    const data=JSON.parse(options.body||'{}');
+    if(!data.class_id)throw new Error('Join or select an active class in My Classes before submitting.');
   }
   if(method==='POST'&&['/writing/task2/evaluate','/submissions'].includes(path)){
     const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(path+(options.body||'')+(window.Clerk?.user?.id||'')));
@@ -31,7 +26,7 @@ export async function pilotApi(path,options={}){
   if(!response.ok||body===null){
     if(response.status===401)window.dispatchEvent(new Event('fogwrite:unauthorized'));
     const detail=body?.detail;
-    const error=new Error(Array.isArray(detail)?detail.map(item=>item.msg).join(' '):detail?.message||(typeof detail==='string'?detail:'Unexpected backend response.'));error.status=response.status;throw error;
+    const error=new Error(Array.isArray(detail)?detail.map(item=>item.msg).join(' '):detail?.message||(typeof detail==='string'?detail:'Unexpected backend response.'));error.status=response.status;error.detail=detail;throw error;
   }
   if(response.status===202&&body.poll_url){
     const deadline=Date.now()+25*60*1000;window.dispatchEvent(new CustomEvent('fogwrite:queue',{detail:body}));

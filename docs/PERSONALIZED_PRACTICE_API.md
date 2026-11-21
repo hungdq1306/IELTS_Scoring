@@ -2,7 +2,7 @@
 
 ## Classroom pilot contract
 
-All paths below are prefixed with `/api`. Requests use a Clerk bearer token. Backend ownership requires the submission owner and an active class membership; staff review uses separate teacher routes. Client-supplied user IDs do not grant access.
+All paths below are prefixed with `/api`. Requests use a Clerk bearer token. Backend ownership requires the submission owner and an active membership or a recorded voluntary leave (LEFT); teacher removal still revokes access; staff review uses separate teacher routes. Client-supplied user IDs do not grant access.
 
 | Method | Path | Purpose |
 | --- | --- | --- |

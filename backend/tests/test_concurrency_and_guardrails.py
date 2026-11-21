@@ -191,6 +191,8 @@ def test_stale_lease_fences_old_worker_and_claim_order(tmp_path):
 def test_join_invite_and_bruteforce_budget(tmp_path):
     async def scenario():
         async with application(tmp_path) as context:
+            async with context.database.transaction() as db:
+                await db.execute(update(Membership).where(Membership.user_id.in_([u.id for u in context.accounts])).values(active=False))
             teacher = headers(subject='user_teacher')
             response = await context.client.post('/api/teacher/classes', headers=teacher, json={'name':'YP03','invite_max_uses':1})
             assert response.status_code == 201

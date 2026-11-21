@@ -182,6 +182,8 @@ def test_identity_backfill_settings_preservation_retry_assessment_guard_and_audi
                 student = await db.get(User, c.accounts[0].id)
                 student.full_name = 'Minh Student'
                 student.email = 'minh@example.test'
+            async with c.database.transaction() as db:
+                await db.execute(update(Membership).where(Membership.user_id==c.accounts[0].id).values(active=False))
             admin = headers(subject='user_teacher')
             student_hdr = headers()
             room_res = await c.client.post('/api/teacher/classes', headers=admin, json={'name': 'Fog1'})

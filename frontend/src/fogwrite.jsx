@@ -123,6 +123,8 @@ function App(){
    else{setError('No grading credits remain today. Credits reset at midnight in Vietnam.');}
    return;
   }
+  const selectedClass=auth.status==='ready'?resolveActiveClass(auth.account?.classes||[],auth.user?.id||''):null;
+  if(auth.status==='ready'&&!selectedClass){setError('Join an active class in My Classes before submitting.');return;}
   const {gen,userId}=activeSessionRef.current;
   const controller=new AbortController();
   inflightController.current=controller;
@@ -131,7 +133,7 @@ function App(){
   if(activeDraft.started)setDraft(snapshot);
   const method=auth.status==='ready'||auth.config?.mode==='clerk'?'V1_STRATIFIED':experiment;
   try{
-   const grade=await api('/writing/task2/evaluate',{method:'POST',signal:controller.signal,body:JSON.stringify({prompt:snapshot.prompt,essay:snapshot.essay,topic:snapshot.topic,source:null,experiment:method})});
+   const grade=await api('/writing/task2/evaluate',{method:'POST',signal:controller.signal,body:JSON.stringify({prompt:snapshot.prompt,essay:snapshot.essay,topic:snapshot.topic,source:null,experiment:method,...(selectedClass?{class_id:selectedClass.id}:{})})});
    if(activeSessionRef.current.gen!==gen||activeSessionRef.current.userId!==userId)return;
    try{sessionStorage.setItem('fogwrite.assessment',grade.submission_id);localStorage.setItem('fogwrite.timing.'+grade.submission_id,JSON.stringify({started:snapshot.started,finished:snapshot.finished}));}catch{}
    setResult(grade);setAssessmentDraft(snapshot);setTarget({});setRevision(n=>n+1);feedbackScroll.current=0;navigate('feedback');

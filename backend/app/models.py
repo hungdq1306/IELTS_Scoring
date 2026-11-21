@@ -2,7 +2,7 @@
 import time
 from uuid import uuid4
 
-from sqlalchemy import Boolean, CheckConstraint, Float, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint
+from sqlalchemy import Boolean, CheckConstraint, Float, ForeignKey, Index, Integer, JSON, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -22,6 +22,8 @@ class User(Base):
     email: Mapped[str | None] = mapped_column(String(320))
     avatar_url: Mapped[str | None] = mapped_column(String(2000))
     profile_synced_at: Mapped[float | None] = mapped_column(Float)
+    reported_full_name: Mapped[str | None] = mapped_column(String(120))
+    reported_email: Mapped[str | None] = mapped_column(String(254))
     role: Mapped[str] = mapped_column(String(16), default='student')
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     bonus_daily_credits: Mapped[int] = mapped_column(Integer, default=0, server_default='0')
@@ -39,6 +41,7 @@ class ClassRoom(Base):
     invite_hash: Mapped[str] = mapped_column(String(64), unique=True)
     join_code: Mapped[str | None] = mapped_column(String(40), unique=True, index=True)
     daily_student_quota: Mapped[int] = mapped_column(Integer, default=3, server_default='3')
+    enrollment_open: Mapped[bool] = mapped_column(Boolean, default=True, server_default='true')
     invite_expires_at: Mapped[float] = mapped_column(Float)
     invite_max_uses: Mapped[int] = mapped_column(Integer, default=45)
     invite_uses: Mapped[int] = mapped_column(Integer, default=0)
@@ -54,7 +57,16 @@ class Membership(Base):
     role: Mapped[str] = mapped_column(String(16), default='student')
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     joined_at: Mapped[float] = mapped_column(Float, default=time.time, server_default='0')
-    __table_args__ = (UniqueConstraint('class_id', 'user_id'), CheckConstraint("role IN ('student','ta','teacher')"))
+    left_at: Mapped[float | None] = mapped_column(Float)
+    removed_at: Mapped[float | None] = mapped_column(Float)
+
+    @property
+    def status(self):
+        return 'ACTIVE' if self.active else 'LEFT' if self.left_at is not None else 'REMOVED'
+
+    __table_args__ = (UniqueConstraint('class_id', 'user_id'), CheckConstraint("role IN ('student','ta','teacher')"),
+        Index('uq_one_active_class_per_student', 'user_id', unique=True,
+              postgresql_where=text("role = 'student' AND active"), sqlite_where=text("role = 'student' AND active")))
 
 
 class Prompt(Base):

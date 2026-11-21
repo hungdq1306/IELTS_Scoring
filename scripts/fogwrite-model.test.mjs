@@ -69,5 +69,17 @@ test('draft storage keys isolate users and restore practice mode and countdown t
  assert.equal(restored.started,40000);
  assert.equal(draftRoute({mode:'check',essay:'Check essay'}),'check');
  assert.equal(resolveActiveClass([{id:'c1',name:'Fog1',active:true}],'clerk-1')?.id,'c1');
- assert.equal(resolveActiveClass([{id:'c1',name:'Fog1',active:true},{id:'c2',name:'Fog2',active:true}],'clerk-1'),null);
+ assert.equal(resolveActiveClass([{id:'c1',name:'Fog1',active:true},{id:'c2',name:'Fog2',active:true}],'clerk-1')?.id,'c1');
+});
+
+
+test('class selection excludes inactive rooms and falls back from stale preferences',()=>{
+ const prior=globalThis.localStorage;
+ try{
+  globalThis.localStorage={getItem:()=> 'gone'};
+  assert.equal(resolveActiveClass([], 'u'),null);
+  assert.equal(resolveActiveClass([{id:'off',active:false},{id:'first',active:true},{id:'second',active:true}],'u').id,'first');
+  globalThis.localStorage={getItem:()=> 'second'};
+  assert.equal(resolveActiveClass([{id:'first'},{id:'second'}],'u').id,'second');
+ }finally{globalThis.localStorage=prior;}
 });

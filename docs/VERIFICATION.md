@@ -13,6 +13,13 @@ After removing the unused shared feedback UI/helpers and archiving historical do
 
 Deployment status must be confirmed from the remote service; this document is not a claim that the checkout has been published.
 
+## Single-class policy verification, 21 November 2026
+
+- User reported the full backend offline suite passed: **89 passed, 1 live test deselected**, after restoring the isolated PostgreSQL test service. Some fixtures intentionally use independent SQLite adapters.
+- Agent validation: 48 synchronous backend cases; frontend build `b384bd8cc108`; 19 model/component checks; all 20 role/viewport browser cases, account-switch regressions, added leave/search/admin checks and six-screen offline smoke passed.
+- Exact migration 0004 SQL was tested only on the isolated Neon schema-check branch, including role synchronization and index enforcement against spoofed membership roles and multi-class demotion. No production migration/deploy is claimed for this plan.
+- Verify an actual Alembic upgrade/head/check on the separate migration-test database before release. Live Clerk and end-to-end real-provider practice remain separate acceptance checks.
+
 ## Commands
 
 Run from the repository root. Never point backend reset fixtures at real pilot data.

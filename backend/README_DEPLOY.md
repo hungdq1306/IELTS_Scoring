@@ -40,7 +40,7 @@ $env:PYTHONPATH='backend'
 .\.venv\Scripts\python.exe -m app.manage seed
 ```
 
-Current head is `0003_operator_identity`. The migrations add RBAC/settings and profile metadata while preserving existing application rows. The nullable join-code field uses the unique index `ix_classes_join_code` in both migration and model. Existing memberships with unknown historical join dates may retain zero.
+This checkout adds `0004_single_class`; the previous deployed release used `0003_operator_identity`. Before upgrading, read the [reviewed enrollment plan](../docs/SINGLE_CLASS_ENROLLMENT.md). Migration 0004 stops if existing students have multiple active memberships; resolve those explicitly before deployment. The migrations add RBAC/settings and profile metadata while preserving existing application rows. The nullable join-code field uses the unique index `ix_classes_join_code` in both migration and model. Existing memberships with unknown historical join dates may retain zero.
 
 Before deploying changed schema to real data, verify backup/restore and migration compatibility. Do not run pytest reset fixtures against the pilot database. Use `fogwrite_test` for reset tests and a separate `fogwrite_migration_test` for actual migration verification. Do not downgrade the live database as an automatic rollback step.
 

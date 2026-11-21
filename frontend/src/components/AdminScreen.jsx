@@ -6,6 +6,8 @@ import {Notice, Spinner} from '../shared';
 const PAGE_SIZE = 25;
 const roles = ['student', 'ta', 'teacher', 'admin'];
 const auditActions = [
+  'operator_role_grant','operator_account_status','operator_deleted_writing',
+  'student_joined_class','student_left_class','class_enrollment_toggled','display_profile_updated',
   'admin_user_updated',
   'system_settings_updated',
   'job_retried',
@@ -144,6 +146,7 @@ export function AdminScreen({go}) {
     </form>}
     {busy && !data && <Spinner>Loading administration.</Spinner>}
     {tab === 'users' && data && <>
+      <button type="button" className="secondary" disabled={busy} onClick={()=>mutate(()=>api('/admin/users/sync-profiles',{method:'POST'}),res=>res.note||'Profile sync requested.')}>Sync Clerk profiles</button>
       {!data.items.length && <p>No matching accounts.</p>}
       {data.items.map(user => {
         const isSelf = user.id === auth.account.id;
@@ -157,7 +160,8 @@ export function AdminScreen({go}) {
           if (nextRole !== user.role) lines.push(`Role: ${user.role} → ${nextRole}`);
           if (nextBonus !== user.bonus_daily_credits) lines.push(`Bonus daily credits: ${user.bonus_daily_credits} → ${nextBonus}`);
           if (nextActive !== user.is_active) lines.push(`Status: ${user.is_active ? 'Active' : 'Suspended'} → ${nextActive ? 'Active' : 'Suspended'}`);
-          if (!lines.length) lines.push(`Bonus daily credits: ${user.bonus_daily_credits} → ${nextBonus}`);
+          if (!lines.length) { setMessage('No account changes to save.'); return; }
+
           setConfirmReason(String(fields.get('reason') || ''));
           setPendingAction({
             kind: 'user',
@@ -169,11 +173,11 @@ export function AdminScreen({go}) {
         }}>
           <div className="admin-record-heading">
             <div className="class-card-header">
-              <h2>{label}</h2>
+              <h2>{label}</h2>{user.name_source==='self_reported'&&<span className="topic-badge">Self-reported name</span>}
               {isSelf && <span className="topic-badge">Current account (You)</span>}
               <span className={`topic-badge ${user.is_active ? '' : 'amber'}`}>{user.is_active ? 'Active' : 'Suspended'}</span>
             </div>
-            {user.email && <p>{user.email}</p>}
+            {user.email && <p>{user.email}{user.email_source==='self_reported'?' (self-reported)':''}</p>}
             {user.external_auth_id && <p>Clerk ID: <code>{user.external_auth_id}</code></p>}
             <p>{user.remaining_today ?? '—'} / {user.daily_limit ?? '—'} credits remaining today</p>
             <p>{user.classes?.map(c => c.name).join(', ') || 'No active classes'}</p>
@@ -204,14 +208,14 @@ export function AdminScreen({go}) {
     })()}
     {tab === 'jobs' && data && <>
       {!data.items.length && <p>No matching jobs.</p>}
-      {data.items.map(job => <article className="admin-record" key={job.job_id}><h2>{job.student_name} · {job.submission_code}</h2><p>{job.student_email ? `${job.student_email} · ` : ''}{job.class_name} · {job.kind} · {job.status}</p><p>Submitted {date(job.created_at)} · {job.attempt_count} attempts · {job.wait_duration_sec}s elapsed</p>{job.error_code && <Notice error>{job.error_code}: {job.error_message}</Notice>}{job.credit_refunded && <span className="topic-badge">Credit refunded</span>}{job.status === 'FAILED' && job.kind === 'score' && <form onSubmit={e => {
+      {data.items.map(job => <article className="admin-record" key={job.job_id}><h2>{job.student_name} · {job.submission_code}</h2><p>{job.email_source==='self_reported'?'Self-reported email: ':''}{job.student_email ? `${job.student_email} · ` : ''}{job.class_name} · {job.kind} · {job.status}</p><p>Submitted {date(job.created_at)} · {job.attempt_count} attempts · {job.wait_duration_sec}s elapsed</p>{job.error_code && <Notice error>{job.error_code}: {job.error_message}</Notice>}{job.credit_refunded && <span className="topic-badge">Credit refunded</span>}{job.status === 'FAILED' && job.kind === 'score' && <form onSubmit={e => {
         e.preventDefault(); const fields = new FormData(e.currentTarget);
         mutate(() => api('/admin/jobs/' + job.submission_id + '/retry', {method:'POST', body:JSON.stringify({reason:fields.get('reason')})}), 'Assessment queued again. A daily credit has been reserved.');
       }}><label htmlFor={`retry-reason-${job.job_id}`}>Reason for retry<input id={`retry-reason-${job.job_id}`} name="reason" required maxLength={1500}/></label><button className="secondary" disabled={busy}>Retry failed assessment</button></form>}</article>)}
     </>}
     {tab === 'audit-logs' && data && <>
       {!data.items.length && <p>No matching audit events.</p>}
-      {data.items.map(event => <article className="admin-record" key={event.id}><h2>{event.action_type.replaceAll('_',' ')}</h2><p>{event.actor_name}{event.actor_email ? ` (${event.actor_email})` : ''} → {event.target_label}</p><p>{date(event.created_at)}{event.reason ? ' · ' + event.reason : ''}</p><details><summary>Change details</summary><h3>Before</h3><pre>{JSON.stringify(event.before_json,null,2)}</pre><h3>After</h3><pre>{JSON.stringify(event.after_json,null,2)}</pre></details></article>)}
+      {data.items.map(event => <article className="admin-record" key={event.id}><h2>{event.action_type.replaceAll('_',' ')}</h2><p>{event.actor_name}{event.email_source==='self_reported'?' (self-reported identity)':''}{event.actor_email ? ` (${event.actor_email})` : ''} → {event.target_label}</p><p>{date(event.created_at)}{event.reason ? ' · ' + event.reason : ''}</p><details><summary>Change details</summary><h3>Before</h3><pre>{JSON.stringify(event.before_json,null,2)}</pre><h3>After</h3><pre>{JSON.stringify(event.after_json,null,2)}</pre></details></article>)}
     </>}
     {tab === 'settings' && settings && <form onSubmit={e => {
       e.preventDefault(); const fields = new FormData(e.currentTarget);

@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from app.grading.schemas import GradeRequest, Scores, StrictModel
 
 
@@ -36,6 +36,7 @@ class AssignMember(StrictModel):
 
 
 class ClassPatch(StrictModel):
+    enrollment_open: bool | None = None
     name: str | None = Field(None, min_length=1, max_length=120)
     is_active: bool | None = None
     daily_student_quota: int | None = Field(None, ge=1, le=100)
@@ -64,3 +65,25 @@ class PromptInput(StrictModel):
     prompt_text: str = Field(min_length=10, max_length=3000)
     topic_tag: str = Field(min_length=1, max_length=100)
     is_published: bool = True
+
+
+class DisplayProfile(StrictModel):
+    full_name: str | None = Field(None, max_length=120)
+    email: str | None = Field(None, max_length=254)
+
+    @field_validator('full_name', 'email', mode='before')
+    @classmethod
+    def clean(cls, value, info):
+        if value is None:
+            return None
+        if not isinstance(value, str):
+            raise ValueError('Expected text.')
+        value = value.strip()
+        if any(ord(c) < 32 or ord(c) == 127 for c in value):
+            raise ValueError('Control characters are not allowed.')
+        if info.field_name == 'email' and value:
+            import re
+            if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', value):
+                raise ValueError('Invalid email address.')
+            value = value.lower()
+        return value or None

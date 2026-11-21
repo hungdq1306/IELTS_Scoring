@@ -25,6 +25,7 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
    if(p==='/api/auth/me')return route.fulfill({json:{id:'backend-test-only',role,consent_version:consent,classes:rooms,quota_status:{remaining_today:3,daily_limit:3,is_enrolled:rooms.length>0}}});
    if(p==='/api/auth/consent'){const body=route.request().postDataJSON();assert.equal(body.accepted_privacy,true);assert.equal(body.adult_confirmed,true);consent='v1';consents++;return route.fulfill({json:{accepted:true}});}
    if(p==='/api/teacher/classes'){assert.ok(['teacher','admin','ta'].includes(role));if(method==='POST'){creates++;rooms.push({id:'room-test',name:route.request().postDataJSON().name,student_count:0,join_code:'TESTCODE',active:true,can_manage:true});}return route.fulfill({json:method==='POST'?rooms.at(-1):{items:rooms}});}
+   if(p==='/api/classes/room-test/leave'&&method==='POST'){rooms=[];return route.fulfill({json:{status:'LEFT'}});}
    if(p==='/api/classes/join'){joins++;if(route.request().postDataJSON().join_code!=='TESTCODE')return route.fulfill({status:400,json:{detail:'Invite code is invalid or expired.'}});rooms.push({id:'room-test',name:'Writing class',role:'student',teacher_name:'Teacher Nguyen',daily_student_quota:3,submission_count:1,active:true});return route.fulfill({json:rooms.at(-1)});}
    if(p==='/api/writing/task2/saved-assessment/submission'){const keys=['task_response','coherence_cohesion','lexical_resource','grammatical_range_accuracy'];return route.fulfill({json:{submission_id:'saved-assessment',prompt:'Discuss both views and give your opinion.',essay:'A saved teacher essay.',grade:{estimated_overall_band:6,criterion_scores:Object.fromEntries(keys.map(k=>[k,6])),criterion_feedback:Object.fromEntries(keys.map(k=>[k,{explanation:'Feedback',strengths:[],weaknesses:[],evidence:[]}])),grammar_corrections:[],language_suggestions:[],priority_improvements:[],validation_warnings:[]}}});}
    if(p==='/api/teacher/classes/room-test'&&method==='PATCH'){classSaves++;const patch=route.request().postDataJSON();Object.assign(rooms[0],{name:patch.name,daily_student_quota:patch.daily_student_quota,active:patch.is_active});return route.fulfill({json:{saved:true}});}
@@ -57,7 +58,7 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
    await assertFormA11y(page,'classes-create');
    await page.getByLabel('Create a class').fill('Writing class');await page.getByRole('button',{name:'Create Class',exact:true}).dblclick();await page.getByRole('heading',{name:'Writing class',exact:true}).waitFor();assert.equal(creates,1);
    await page.getByLabel('Class name',{exact:true}).fill('Updated writing class');await page.getByRole('button',{name:'Save class settings',exact:true}).click();await page.getByRole('heading',{name:'Updated writing class',exact:true}).waitFor();assert.equal(classSaves,1);
-   await page.getByRole('button',{name:'View class'}).click();await page.getByRole('heading',{name:'Class members',exact:true}).waitFor();
+   await page.getByRole('button',{name:'View class'}).click();await page.getByRole('heading',{name:'Class members',exact:true}).waitFor();await page.getByLabel('Search class members').fill('no-such-member');await page.getByText('No matching class members.',{exact:true}).waitFor();await page.getByRole('button',{name:'All classes',exact:true}).click();await page.getByRole('button',{name:'View class',exact:true}).click();assert.equal(await page.getByLabel('Search class members').evaluate(el=>el.value),'');
    await page.getByText('jamie@example.test',{exact:true}).waitFor();await page.getByText(/2 submissions/).waitFor();
    await page.getByText(/SUB00001/).first().click();await page.getByText('SUB00001',{exact:true}).waitFor();
    await assertFormA11y(page,'class-detail');
@@ -74,15 +75,32 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
    await page.getByLabel('Teacher invite code').fill('WRONGCODE');await page.getByRole('button',{name:'Join Class',exact:true}).click();await page.getByRole('alert').filter({hasText:'invalid'}).waitFor();
    await page.getByLabel('Teacher invite code').fill('TESTCODE');await page.getByRole('button',{name:'Join Class',exact:true}).click();await page.getByRole('heading',{name:'Writing class',exact:true}).waitFor();
    assert.equal(joins,2);assert.equal(await page.getByRole('button',{name:'Create Class',exact:true}).count(),0);
-   await page.getByText('Active · Đang chọn').waitFor();await page.getByText('Teacher Nguyen').waitFor();await page.getByText('3 credits/day').waitFor();
+   await page.locator('.active-class-badge').waitFor();await page.getByText('Teacher Nguyen').waitFor();await page.getByText('3 credits/day').waitFor();
    await page.goto(base+'/check');await page.getByText('Submitting to:').waitFor();await assertFormA11y(page,'check-editor');
    assert.equal(await page.locator('.assessment-options').count(),0,'Pilot mode must not expose unsupported FS0/FS5_FULL options');
    await page.goto(base+'/admin');await page.getByText('Administrator permissions are required.').waitFor();await page.locator('#main').getByRole('button',{name:'Back to Studio',exact:true}).waitFor();await page.locator('#main').getByRole('button',{name:'My Classes',exact:true}).click();await page.getByRole('heading',{name:'My Classes',exact:true}).waitFor();
+   await page.getByRole('button',{name:'Leave class',exact:true}).click();
+   await page.getByRole('heading',{name:'Leave class?',exact:true}).waitFor();
+   await page.getByText(/Credits used today do not reset/).waitFor();
+   await page.getByRole('button',{name:'Cancel',exact:true}).click();
+   await page.getByRole('button',{name:'Leave class',exact:true}).click();
+   await page.getByRole('dialog').getByRole('button',{name:'Leave class',exact:true}).click();
+   await page.getByText(/You left the class/).waitFor();
+   await page.goto(base+'/check');await page.getByText('Join a class to submit',{exact:true}).waitFor();
+   await page.locator('#task-question').fill('Discuss whether cities should improve public transport.');
+   await page.locator('#essay').fill('Cities should improve their bus networks to help people reach work.');
+   assert.equal(await page.getByRole('button',{name:'Submit essay',exact:true}).isDisabled(),true);
+   await page.goto(base+'/classes');await page.getByRole('heading',{name:'My Classes',exact:true}).waitFor();
+
   }
   if(role==='admin'){
    await page.goto(base+'/admin');await page.getByRole('heading',{name:'Administration',exact:true}).waitFor();
    await page.getByText('Current account (You)').waitFor();await page.getByText('clerk-test-only').waitFor();
    await assertFormA11y(page,'admin-users');
+   await page.getByRole('button',{name:'Save account',exact:true}).click();
+   await page.getByText('No account changes to save.',{exact:true}).waitFor();
+   assert.equal(await page.getByRole('heading',{name:'Confirm account update'}).count(),0);
+   await page.getByLabel('Bonus daily credits',{exact:true}).fill('2');
    await page.getByRole('button',{name:'Save account',exact:true}).click();
    await page.getByRole('heading',{name:'Confirm account update'}).waitFor();
    await page.getByRole('button',{name:'Confirm changes',exact:true}).click();
@@ -97,6 +115,7 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
    await page.getByText('Assessment queued again. A daily credit has been reserved.',{exact:true}).waitFor();assert.equal(retries,1);
    await page.getByRole('button',{name:'Audit logs',exact:true}).click();await page.getByRole('heading',{name:'job retried',exact:true}).waitFor();
    await assertFormA11y(page,'admin-audit-logs');
+   for(const value of ['operator_role_grant','operator_account_status','operator_deleted_writing','student_joined_class','student_left_class','class_enrollment_toggled'])assert.equal(await page.locator('#admin-audit-action option[value="'+value+'"]').count(),1);
    await page.getByLabel('Target (name, email or ID)',{exact:true}).fill('Jamie');
    await page.locator('#admin-audit-action').selectOption('job_retried');
    await page.getByRole('button',{name:'Search',exact:true}).click();

@@ -93,7 +93,7 @@ function resolveActiveClass(classes, clerkUserId) {
       if (match) return match;
     } catch {}
   }
-  return active.length === 1 ? active[0] : null;
+  return active[0];
 }
 function clock(seconds) {
   const n = Math.max(0, Math.floor(seconds));
