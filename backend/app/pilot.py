@@ -31,7 +31,7 @@ class PublicFrontend(StaticFiles):
         try:
             return await super().get_response(path, scope)
         except HTTPException as error:
-            if error.status_code == 404 and path.split('/')[0] in {'join', 'classes', 'profile', 'admin', 'overview', 'topics', 'practice', 'check', 'skill-practice', 'history', 'assessment'}:
+            if error.status_code == 404 and path.split('/')[0] in {'guide', 'join', 'classes', 'profile', 'admin', 'overview', 'topics', 'practice', 'check', 'skill-practice', 'history', 'assessment'}:
                 return await super().get_response('index.html', scope)
             raise
 

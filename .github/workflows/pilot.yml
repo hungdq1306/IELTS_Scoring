@@ -37,6 +37,8 @@ jobs:
       - run: node --test scripts/fogwrite-model.test.mjs scripts/fogwrite-ui.test.cjs
       - run: cd frontend && npx playwright install --with-deps chromium
       - run: node scripts/fogwrite-auth.test.cjs
+      - run: node scripts/fogwrite-guide.test.cjs
+      - run: node scripts/fogwrite-tour.test.cjs
   image:
     runs-on: ubuntu-latest
     steps:

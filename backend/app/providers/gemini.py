@@ -183,12 +183,23 @@ class GeminiProvider:
             await self.client.aio.aclose()
             self.client.close()
 
-    async def generate_structured(self, system_prompt, user_prompt, response_schema) -> Generation:
+    def thinking_budget_for(self, response_schema, thinking_budget: int | None = None) -> int:
+        """Select a task-appropriate thinking budget (scoring=512, practice=0 by default)."""
+        if thinking_budget is not None:
+            return int(thinking_budget)
+        name = getattr(response_schema, "__name__", "")
+        if name in ("AssessmentOutputV2", "AssessmentOutput", "DetailedModelGrade"):
+            return int(getattr(self.settings, "score_thinking_budget", 512))
+        return int(getattr(self.settings, "practice_thinking_budget", 0))
+
+    async def generate_structured(self, system_prompt, user_prompt, response_schema, *, thinking_budget: int | None = None) -> Generation:
         client = self._client()
+        budget = self.thinking_budget_for(response_schema, thinking_budget)
         config = types.GenerateContentConfig(
             system_instruction=system_prompt, response_mime_type="application/json",
             response_json_schema=gemini_schema(response_schema),
             temperature=0, max_output_tokens=8192,
+            thinking_config=types.ThinkingConfig(thinking_budget=budget),
         )
         attempts = []
         budget_wait = getattr(self, 'budget_wait_seconds', max(30, 60 / self.settings.requests_per_minute + 5))

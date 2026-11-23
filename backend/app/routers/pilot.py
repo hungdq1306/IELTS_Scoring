@@ -7,6 +7,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 
 from app.auth import current_user, staff_user
 from app.grading.detailed import essay_paragraphs
@@ -110,15 +111,24 @@ async def consent(body: Consent, request: Request, user=Depends(current_user)):
 
 
 @router.patch('/auth/me')
+@router.patch('/auth/profile')
+@router.post('/auth/profile')
 async def display_profile(body: DisplayProfile, request: Request, user=Depends(current_user)):
+    """Backfill null display fields for the authenticated session user only."""
     async with database(request).transaction() as session:
         stored = await lock_student(session, user.id)
         changes = {}
         for field, value in body.model_dump(exclude_unset=True).items():
             dest = 'reported_' + field
-            if value and not getattr(stored, field) and getattr(stored, dest) != value:
-                setattr(stored, dest, value)
-                changes[field] = value
+            if value and not getattr(stored, field) and not (getattr(stored, dest) or '').strip():
+                try:
+                    async with session.begin_nested():
+                        setattr(stored, dest, value)
+                        await session.flush()
+                    changes[field] = value
+                except IntegrityError:
+                    # Safely ignore email uniqueness collisions; refresh un-expires ORM state after savepoint rollback.
+                    await session.refresh(stored)
         if changes:
             session.add(AuditEvent(actor_id=user.id, action='display_profile_updated', target_id=user.id,
                                   detail={'fields': list(changes), 'source':'self_reported'}))
@@ -236,6 +246,7 @@ async def submit(body: SubmitEssay, request: Request, idempotency_key: str | Non
         global_config = await system_settings(session)
         snapshot = {'fewshot': fewshot, 'style': profile.style if profile else '', 'offsets': profile.offsets if profile else {},
                     'global_offsets': global_config['calibration_offsets_json'], 'prompt_version': global_config['active_prompt_version'],
+                    'feedback_language': config.feedback_language,
                     'version': profile.version if profile else 0}
         submission = Submission(user_id=user.id, class_id=classroom.id, prompt_id=body.prompt_id,
                                 prompt=prompt, essay=body.essay, word_count=count, warnings=warnings, config_snapshot=snapshot)

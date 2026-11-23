@@ -31,6 +31,24 @@ export function PracticeWorkspace({userId,result,essay,criterion,sourceQuote,cle
  },[sid]);
  useEffect(()=>{setHint('');},[chosen?.exercise_id]);
  useEffect(()=>{if(!busy)return;const start=Date.now();setElapsed(0);const t=setInterval(()=>setElapsed(Math.floor((Date.now()-start)/1000)),1000);return()=>clearInterval(t);},[busy]);
+ useEffect(()=>{
+  if(batch?.state!=='generating')return;
+  let stopped=false;
+  const poll=async()=>{
+   try{
+    const next=await api(`/writing/task2/${sid}/exercises`);
+    if(stopped||!active.current)return;
+    setBatch(next);
+    if(next.state==='ready'){
+     const p=await api(`/writing/task2/${sid}/progress`).catch(()=>null);
+     if(!stopped&&active.current&&p)setProgress(p);
+     setAnswers(prev=>Object.fromEntries((next.exercises||[]).map(e=>[e.exercise_id,prev[e.exercise_id]||''])));
+    }
+   }catch(e){if(!stopped&&active.current)setError(e.message);}
+  };
+  const timer=setInterval(poll,1500);
+  return()=>{stopped=true;clearInterval(timer);};
+ },[batch?.state,sid]);
  async function run(action){if(pending.current)return;pending.current=true;setBusy(true);setError('');try{await action();}catch(e){if(active.current)setError(e.message);}finally{pending.current=false;if(active.current)setBusy(false);}}
  function edit(value){const next={...answers,[chosen.exercise_id]:value};setAnswers(next);setReview(null);setState('draft');request.current=null;try{localStorage.setItem(draftKey,JSON.stringify(next));}catch{setError('Browser storage is unavailable. Save responses before leaving.');}}
  async function save(){await api(`/writing/task2/${sid}/practice-attempt`,{method:'PUT',body:JSON.stringify(payload())});}
@@ -47,7 +65,8 @@ export function PracticeWorkspace({userId,result,essay,criterion,sourceQuote,cle
   {error&&<Notice error>{error}</Notice>}{(loading||busy)&&<Spinner>{loading?'Loading your practice.':`Working — ${elapsed}s`}</Spinner>}
   {state==='pending'&&!busy&&<Notice>Your complete set is being evaluated. Reload to check its status; do not submit again.</Notice>}
   {tab==='practice'&&<>
-   {!loading&&batch?.state!=='ready'&&<section className="empty-state surface"><h1>Practice that follows your feedback.</h1><p>Complete every exercise, then submit the whole set for feedback.</p><button className="primary" disabled={busy} onClick={()=>run(async()=>{const b=await api(`/writing/task2/${sid}/exercises`,{method:'POST'});if(active.current){setBatch(b);setIndex(0);setAnswers({});setReview(null);}await reload();})}>Generate Practice Exercises <ArrowRight size={17}/></button></section>}
+   {!loading&&batch?.state==='generating'&&<section className="empty-state surface"><h1>Preparing your practice exercises.</h1><p>Practice drills are being generated automatically in the background from your feedback.</p><Spinner>Generating practice exercises…</Spinner></section>}
+   {!loading&&batch?.state!=='ready'&&batch?.state!=='generating'&&<section className="empty-state surface"><h1>Practice that follows your feedback.</h1><p>Complete every exercise, then submit the whole set for feedback.</p>{batch?.state==='failed'&&<Notice error>Automatic practice generation could not finish. You can try generating again.</Notice>}<button className="primary" disabled={busy} onClick={()=>run(async()=>{const b=await api(`/writing/task2/${sid}/exercises`,{method:'POST'});if(active.current){setBatch(b);setIndex(0);setAnswers({});setReview(null);}await reload();})}>Generate Practice Exercises <ArrowRight size={17}/></button></section>}
    {!!exercises.length&&<section className="practice-set-status surface" style={{padding:20,marginBottom:20}}><p><strong>{answered}/{exercises.length} responses written</strong> · Complete every exercise before submitting.</p><button className="secondary" disabled={readonly} onClick={()=>run(save)}>Save responses</button>{' '}<button className="primary" disabled={readonly||!complete} onClick={submit}>Submit all responses <ArrowRight size={17}/></button>{review&&<div aria-live="polite"><h2>Practice results: {review.correct_count}/{review.total} correct</h2><p>{review.summary}</p><p>Review the feedback for each exercise below.</p></div>}</section>}
    {chosen&&<ExerciseLayout deferCheck index={current} total={exercises.length} title={chosen.type==='sentence_rewriting'?'Rephrase in your own words':chosen.type==='multiple_choice'?'Choose the best fit':'Practise your writing'} source={source?.original_quote||sourceQuote||''} instruction={chosen.instruction} question={chosen.question} structurePrompt={chosen.structure_prompt} options={chosen.options} type={chosen.type} answer={answers[chosen.exercise_id]||''} setAnswer={edit} hint={hint} showHint={()=>run(async()=>{const r=await api(`/exercises/${chosen.exercise_id}/hint`,{method:'POST'});if(active.current)setHint(r.hint);})} feedback={review?.items?.find(r=>r.exercise_id===chosen.exercise_id)} busy={readonly} revision={review?()=>{setParagraph(String(source?.paragraph_number||''));setTab('progress');}:undefined}>
     <div className="exercise-navigation"><button className="secondary" disabled={readonly||current===0} onClick={()=>move(current-1)}><ChevronLeft size={16}/>Previous exercise</button><button className="secondary" disabled={readonly||current>=exercises.length-1} onClick={()=>move(current+1)}>Next exercise <ChevronRight size={16}/></button></div>

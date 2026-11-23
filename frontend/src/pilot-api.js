@@ -31,7 +31,7 @@ export async function pilotApi(path,options={}){
   if(response.status===202&&body.poll_url){
     const deadline=Date.now()+25*60*1000;window.dispatchEvent(new CustomEvent('fogwrite:queue',{detail:body}));
     try{while(Date.now()<deadline){
-      await pause(2500,options.signal);
+      await pause(1200,options.signal);
       const state=await pilotApi(body.poll_url.replace(/^\/api/,''),{signal:options.signal});
       window.dispatchEvent(new CustomEvent('fogwrite:queue',{detail:state}));
       if(state.status==='COMPLETED'){if(storageKey)try{sessionStorage.removeItem(storageKey);}catch{}return state.result;}

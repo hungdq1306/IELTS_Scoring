@@ -20,19 +20,23 @@ class PilotSettings(BaseSettings):
     clerk_audience: str = ''
     worker_enabled: bool = True
     worker_count: int = Field(2, ge=1, le=4)
-    worker_poll_seconds: float = Field(1, ge=.05, le=30)
+    worker_poll_seconds: float = Field(0.25, ge=.05, le=30)
     worker_lease_seconds: int = Field(120, ge=10, le=900)
     job_timeout_seconds: int = Field(600, ge=10, le=1800)
     job_max_attempts: int = Field(3, ge=1, le=5)
     daily_submission_limit: int = Field(5, ge=1, le=100)
     daily_practice_limit: int = Field(30, ge=1, le=200)
     enable_practice_gen: bool = True
+    auto_practice_mode: Literal['idle_only', 'always', 'on_demand'] = 'idle_only'
     practice_items_per_set: int = Field(4, ge=1, le=5)
+    feedback_language: Literal['vi', 'en'] = 'vi'
     gemini_max_rpm: int = Field(5, ge=1, le=1000)
     gemini_api_key: SecretStr = SecretStr('')
     gemini_max_tpm: int = Field(100000, ge=1000)
     gemini_max_rpd: int = Field(200, ge=1)
     gemini_max_concurrent: int = Field(2, ge=1, le=4)
+    gemini_score_thinking_budget: int = Field(512, ge=0, le=24576)
+    gemini_practice_thinking_budget: int = Field(0, ge=0, le=24576)
     retention_days: int = Field(30, ge=1, le=365)
     max_queued_jobs: int = Field(200, ge=40, le=5000)
     privacy_version: str = 'pilot-2026-11-v1'

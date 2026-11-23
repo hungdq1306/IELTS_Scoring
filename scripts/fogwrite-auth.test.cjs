@@ -17,6 +17,7 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
  const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage();page.setDefaultTimeout(8000);const errors=[];page.on('pageerror',e=>errors.push(e.message));
  let classSaves=0,userSaves=0,settingSaves=0,retries=0,removals=0,auditQueries=[],overviewConfigured=false;
  let consent=role==='teacher'?null:'v1',rooms=role==='ta'?[{id:'room-test',name:'Writing class',student_count:1,active:true,can_manage:false}]:[],creates=0,joins=0,consents=0,protectedCalls=0;
+ await context.addInitScript(()=>{for(const id of ['backend-test-only','backend-user-a','backend-user-b','guide-user'])localStorage.setItem('fogwrite:tour_done:'+id,'completed');});
  await context.addInitScript(({visitor})=>{let listeners=[];window.__profileOpened=false;window.Clerk={user:visitor?null:{id:'clerk-test-only',fullName:'Alex Writer',primaryEmailAddress:{emailAddress:'alex@example.test'},imageUrl:''},session:visitor?null:{getToken:async()=> 'test-session-token'},load:async()=>{},addListener:fn=>{listeners.push(fn);return()=>{listeners=listeners.filter(x=>x!==fn);};},openSignIn:()=>{window.__signInOpened=true;},openUserProfile:()=>{window.__profileOpened=true;},signOut:async()=>{window.Clerk.session=null;window.Clerk.user=null;listeners.forEach(fn=>fn({}));}};},{visitor:role==='visitor'});
  await context.route('https://clerk.example.test/**',r=>r.fulfill({body:'',contentType:'text/javascript'}));await context.route('https://fonts.googleapis.com/**',r=>r.abort());
  await context.route(base+'/**',async route=>{const url=new URL(route.request().url()),p=url.pathname,method=route.request().method();
@@ -97,10 +98,10 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
    await page.goto(base+'/admin');await page.getByRole('heading',{name:'Administration',exact:true}).waitFor();
    await page.getByText('Current account (You)').waitFor();await page.getByText('clerk-test-only').waitFor();
    await assertFormA11y(page,'admin-users');
-   await page.getByRole('button',{name:'Save account',exact:true}).click();
-   await page.getByText('No account changes to save.',{exact:true}).waitFor();
-   assert.equal(await page.getByRole('heading',{name:'Confirm account update'}).count(),0);
+   await page.getByLabel('Bonus daily credits',{exact:true}).waitFor();
+   assert.equal(await page.getByRole('button',{name:'Save account',exact:true}).isDisabled(),true);
    await page.getByLabel('Bonus daily credits',{exact:true}).fill('2');
+   assert.equal(await page.getByRole('button',{name:'Save account',exact:true}).isDisabled(),false);
    await page.getByRole('button',{name:'Save account',exact:true}).click();
    await page.getByRole('heading',{name:'Confirm account update'}).waitFor();
    await page.getByRole('button',{name:'Confirm changes',exact:true}).click();
@@ -140,6 +141,7 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
 // Cross-account draft isolation + Continue draft mode/timer restoration test.
 {
  const context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage();page.setDefaultTimeout(8000);
+ await context.addInitScript(()=>{for(const id of ['backend-test-only','backend-user-a','backend-user-b','guide-user'])localStorage.setItem('fogwrite:tour_done:'+id,'completed');});
  await context.addInitScript(()=>{
   localStorage.setItem('fogwrite.draft.v1',JSON.stringify({prompt:'Legacy leak',essay:'Legacy essay text'}));
   let listeners=[];window.__setMockUser=(id,name)=>{window.Clerk.user={id,fullName:name,primaryEmailAddress:{emailAddress:id+'@example.test'},imageUrl:''};window.Clerk.session={getToken:async()=> 'token-'+id};listeners.forEach(fn=>fn({}));};
@@ -192,6 +194,7 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
 {
  const context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage();page.setDefaultTimeout(8000);
  let releaseRestoreA;const restoreGateA=new Promise(resolve=>{releaseRestoreA=resolve;});
+ await context.addInitScript(()=>{for(const id of ['backend-test-only','backend-user-a','backend-user-b','guide-user'])localStorage.setItem('fogwrite:tour_done:'+id,'completed');});
  await context.addInitScript(()=>{
   let listeners=[];window.__setMockUser=(id,name)=>{window.Clerk.user={id,fullName:name,primaryEmailAddress:{emailAddress:id+'@example.test'},imageUrl:''};window.Clerk.session={getToken:async()=> 'token-'+id};listeners.forEach(fn=>fn({}));};
   window.Clerk={user:{id:'clerk-a',fullName:'User A',primaryEmailAddress:{emailAddress:'a@example.test'},imageUrl:''},session:{getToken:async()=> 'token-a'},load:async()=>{},addListener:fn=>{listeners.push(fn);return()=>{};},openSignIn:()=>{},openUserProfile:()=>{},signOut:async()=>{window.Clerk.session=null;window.Clerk.user=null;listeners.forEach(fn=>fn({}));}};
@@ -225,5 +228,47 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
  await page.getByText('PRIVATE HISTORY B',{exact:true}).waitFor();
  await context.close();
  console.log('PASS in-flight restore & History isolation on direct A->B switch');
+}
+
+// Multi-class default & /check quick switch for Teacher + auto-polling practice generation.
+{
+ const context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage();page.setDefaultTimeout(8000);
+ let submittedClassId=null,exercisePolls=0;
+ await context.addInitScript(()=>{localStorage.setItem('fogwrite:tour_done:backend-teacher','completed');});
+ await context.addInitScript(()=>{
+  window.Clerk={user:{id:'clerk-teacher-multi',fullName:'Teacher Multi',primaryEmailAddress:{emailAddress:'t@example.test'},imageUrl:''},session:{getToken:async()=> 'token-t'},load:async()=>{},addListener:()=>()=>{},openSignIn:()=>{},openUserProfile:()=>{},signOut:async()=>{}};
+ });
+ await context.route('https://clerk.example.test/**',r=>r.fulfill({body:'',contentType:'text/javascript'}));await context.route('https://fonts.googleapis.com/**',r=>r.abort());
+ await context.route(base+'/**',async route=>{const url=new URL(route.request().url()),p=url.pathname,method=route.request().method();
+  if(p==='/api/auth/config')return route.fulfill({json:{mode:'clerk',issuer:'https://clerk.example.test',publishable_key:'pk_test_fixture',privacy_version:'v1',retention_days:30,gemini_data_policy:'free_product_improvement'}});
+  if(p==='/api/auth/me')return route.fulfill({json:{id:'backend-teacher',role:'teacher',consent_version:'v1',classes:[{id:'fog1',name:'Fog1',role:'teacher',active:true},{id:'qa-test',name:'QA Test',role:'teacher',active:true}],quota_status:{remaining_today:20,daily_limit:20,is_enrolled:true}}});
+  if(p==='/api/writing/task2/evaluate'&&method==='POST'){
+   submittedClassId=route.request().postDataJSON().class_id;
+   return route.fulfill({json:{submission_id:'sub-multi-1',estimated_overall_band:7,criterion_scores:{task_response:7,coherence_cohesion:7,lexical_resource:7,grammatical_range_accuracy:7},criterion_feedback:{task_response:{explanation:'Feedback.',strengths:[],weaknesses:[],evidence:[]},coherence_cohesion:{explanation:'Feedback.',strengths:[],weaknesses:[],evidence:[]},lexical_resource:{explanation:'Feedback.',strengths:[],weaknesses:[],evidence:[]},grammatical_range_accuracy:{explanation:'Feedback.',strengths:[],weaknesses:[],evidence:[]}},grammar_corrections:[],language_suggestions:[],priority_improvements:['Develop body ideas.'],validation_warnings:[]}});
+  }
+  if(p==='/api/writing/task2/sub-multi-1/exercises'){
+   exercisePolls++;
+   if(exercisePolls===1)return route.fulfill({json:{submission_id:'sub-multi-1',state:'generating',errors:[],exercises:[]}});
+   return route.fulfill({json:{submission_id:'sub-multi-1',state:'ready',errors:[{error_id:'e1',criterion:'TR',category:'task_response',subtype:'development',original_quote:'Cities need better buses.',paragraph_number:1,start:0,end:24,severity:'medium',evidence_verified:true,exercise_eligible:true,semantic_status:'machine_reviewed'}],exercises:[{exercise_id:'ex1',source_error_id:'e1',type:'sentence_rewriting',skill:'task_response',difficulty:1,instruction:'Rewrite to add clear cause and effect.',question:'Expand why buses help commuters.',structure_prompt:'',options:[],learning_objective:'Extend arguments',validation_status:'machine_reviewed_not_human_verified'}]}});
+  }
+  if(p.startsWith('/api/'))return route.fulfill({json:{items:[]}});
+  const asset=/\.(js|css|png)$/.test(p);const file=path.join(root,'frontend/dist',asset?p.slice(1):'index.html');return route.fulfill({path:file,contentType:file.endsWith('.js')?'text/javascript':file.endsWith('.css')?'text/css':file.endsWith('.png')?'image/png':'text/html'});
+ });
+ await page.goto(base+'/check');
+ await page.locator('#active-class-select').waitFor();
+ assert.equal(await page.locator('#active-class-select').inputValue(),'fog1');
+ await page.locator('#active-class-select').selectOption('qa-test');
+ await page.locator('#task-question').fill('Discuss whether cities should invest more in public buses.');
+ await page.locator('#essay').fill('Cities need better buses. Public buses reduce congestion and emissions for daily commuters across large cities.');
+ await page.getByRole('button',{name:'Submit essay',exact:true}).click();
+ await page.getByRole('button',{name:'Assess my essay',exact:true}).click();
+ await page.getByRole('heading',{name:'Your writing, clearer.'}).waitFor();
+ assert.equal(submittedClassId,'qa-test');
+ await page.getByRole('button',{name:'Practise priority skills',exact:true}).click();
+ await page.getByText('Preparing your practice exercises.',{exact:true}).waitFor();
+ await page.getByText('Rewrite to add clear cause and effect.',{exact:true}).waitFor();
+ assert.ok(exercisePolls>=2,'expected auto-poll until ready');
+ await context.close();
+ console.log('PASS multi-class Teacher /check switch & generating practice auto-poll');
 }
 }finally{await browser.close();}})().catch(e=>{console.error(e.message);process.exitCode=1;});

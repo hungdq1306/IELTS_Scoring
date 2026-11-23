@@ -111,6 +111,7 @@ def test_40_submissions_no_duplicate_claims_or_pool_errors(tmp_path):
             assert all(response.status_code == 202 for response in responses), [response.text for response in responses if response.status_code != 202]
             ids = {response.json()['submission_id'] for response in responses}
             assert len(ids) == 40
+            context.settings.auto_practice_mode = 'on_demand'
             seen = set()
             async def score(job):
                 assert job.submission_id not in seen

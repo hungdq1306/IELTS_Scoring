@@ -38,6 +38,52 @@ function Pager({offset, total, busy, change}) {
   return <div className="actions admin-pager"><span>{total ? `Showing ${offset + 1}–${Math.min(offset + PAGE_SIZE, total)} of ${total}` : 'No results'}</span><button className="secondary" disabled={busy || !offset} onClick={() => change(offset - PAGE_SIZE)}>Previous page</button><button className="secondary" disabled={busy || offset + PAGE_SIZE >= total} onClick={() => change(offset + PAGE_SIZE)}>Next page</button></div>;
 }
 
+function AdminUserCard({user, isSelf, busy, setMessage, setConfirmReason, setPendingAction}) {
+  const [role, setRole] = useState(user.role);
+  const [bonus, setBonus] = useState(String(user.bonus_daily_credits));
+  const [isActive, setIsActive] = useState(Boolean(user.is_active));
+  const [reason, setReason] = useState('');
+  const label = user.display_label || user.full_name || user.email || 'User #' + user.id.slice(0, 8);
+  const nextRole = isSelf ? user.role : role;
+  const nextBonus = Number(bonus);
+  const nextActive = isSelf ? user.is_active : isActive;
+  const dirty = nextRole !== user.role || nextBonus !== user.bonus_daily_credits || nextActive !== user.is_active;
+
+  return <form className="admin-user" onSubmit={e => {
+    e.preventDefault();
+    const lines = [];
+    if (nextRole !== user.role) lines.push(`Role: ${user.role} → ${nextRole}`);
+    if (nextBonus !== user.bonus_daily_credits) lines.push(`Bonus daily credits: ${user.bonus_daily_credits} → ${nextBonus}`);
+    if (nextActive !== user.is_active) lines.push(`Status: ${user.is_active ? 'Active' : 'Suspended'} → ${nextActive ? 'Active' : 'Suspended'}`);
+    if (!lines.length) { setMessage('No account changes to save.'); return; }
+    setConfirmReason(reason);
+    setPendingAction({
+      kind: 'user',
+      userId: user.id,
+      subject: `${label}${user.email ? ` (${user.email})` : ''}`,
+      lines,
+      payload: {role: nextRole, bonus_daily_credits: nextBonus, is_active: nextActive},
+    });
+  }}>
+    <div className="admin-record-heading">
+      <div className="class-card-header">
+        <h2>{label}</h2>{user.name_source==='self_reported'&&<span className="topic-badge">Self-reported name</span>}
+        {isSelf && <span className="topic-badge">Current account (You)</span>}
+        <span className={`topic-badge ${user.is_active ? '' : 'amber'}`}>{user.is_active ? 'Active' : 'Suspended'}</span>
+      </div>
+      {user.email && <p>{user.email}{user.email_source==='self_reported'?' (self-reported)':''}</p>}
+      {user.external_auth_id && <p>Clerk ID: <code>{user.external_auth_id}</code></p>}
+      <p>{user.remaining_today ?? '—'} / {user.daily_limit ?? '—'} credits remaining today</p>
+      <p>{user.classes?.map(c => c.name).join(', ') || 'No active classes'}</p>
+    </div>
+    <label htmlFor={`user-role-${user.id}`}>Role<select id={`user-role-${user.id}`} name="role" value={role} onChange={e => setRole(e.target.value)} disabled={busy || isSelf}>{roles.map(r => <option key={r}>{r}</option>)}</select></label>
+    <label htmlFor={`user-bonus-${user.id}`}>Bonus daily credits<input id={`user-bonus-${user.id}`} name="bonus" type="number" min="0" max="100" value={bonus} onChange={e => setBonus(e.target.value)} required/></label>
+    <label className="consent-choice" htmlFor={`user-active-${user.id}`}><input id={`user-active-${user.id}`} name="active" type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} disabled={busy || isSelf}/>Active</label>
+    <label htmlFor={`user-reason-${user.id}`}>Reason for change<input id={`user-reason-${user.id}`} name="reason" value={reason} onChange={e => setReason(e.target.value)} maxLength={1500}/></label>
+    <button className="secondary" disabled={busy || !dirty}>Save account</button>
+  </form>;
+}
+
 function AdminConfirmDialog({title, subject, lines, reason, setReason, showReason = true, confirmLabel = 'Confirm changes', busy = false, onCancel, onConfirm}) {
   const ref = useRef(null);
   useEffect(() => {
@@ -148,47 +194,7 @@ export function AdminScreen({go}) {
     {tab === 'users' && data && <>
       <button type="button" className="secondary" disabled={busy} onClick={()=>mutate(()=>api('/admin/users/sync-profiles',{method:'POST'}),res=>res.note||'Profile sync requested.')}>Sync Clerk profiles</button>
       {!data.items.length && <p>No matching accounts.</p>}
-      {data.items.map(user => {
-        const isSelf = user.id === auth.account.id;
-        const label = user.display_label || user.full_name || user.email || 'User #' + user.id.slice(0,8);
-        return <form key={user.id + ':' + user.role + ':' + user.is_active + ':' + user.bonus_daily_credits} className="admin-user" onSubmit={e => {
-          e.preventDefault(); const fields = new FormData(e.currentTarget);
-          const nextRole = isSelf ? user.role : fields.get('role');
-          const nextBonus = Number(fields.get('bonus'));
-          const nextActive = isSelf ? user.is_active : fields.get('active') === 'on';
-          const lines = [];
-          if (nextRole !== user.role) lines.push(`Role: ${user.role} → ${nextRole}`);
-          if (nextBonus !== user.bonus_daily_credits) lines.push(`Bonus daily credits: ${user.bonus_daily_credits} → ${nextBonus}`);
-          if (nextActive !== user.is_active) lines.push(`Status: ${user.is_active ? 'Active' : 'Suspended'} → ${nextActive ? 'Active' : 'Suspended'}`);
-          if (!lines.length) { setMessage('No account changes to save.'); return; }
-
-          setConfirmReason(String(fields.get('reason') || ''));
-          setPendingAction({
-            kind: 'user',
-            userId: user.id,
-            subject: `${label}${user.email ? ` (${user.email})` : ''}`,
-            lines,
-            payload: {role: nextRole, bonus_daily_credits: nextBonus, is_active: nextActive},
-          });
-        }}>
-          <div className="admin-record-heading">
-            <div className="class-card-header">
-              <h2>{label}</h2>{user.name_source==='self_reported'&&<span className="topic-badge">Self-reported name</span>}
-              {isSelf && <span className="topic-badge">Current account (You)</span>}
-              <span className={`topic-badge ${user.is_active ? '' : 'amber'}`}>{user.is_active ? 'Active' : 'Suspended'}</span>
-            </div>
-            {user.email && <p>{user.email}{user.email_source==='self_reported'?' (self-reported)':''}</p>}
-            {user.external_auth_id && <p>Clerk ID: <code>{user.external_auth_id}</code></p>}
-            <p>{user.remaining_today ?? '—'} / {user.daily_limit ?? '—'} credits remaining today</p>
-            <p>{user.classes?.map(c => c.name).join(', ') || 'No active classes'}</p>
-          </div>
-          <label htmlFor={`user-role-${user.id}`}>Role<select id={`user-role-${user.id}`} name="role" defaultValue={user.role} disabled={busy || isSelf}>{roles.map(role => <option key={role}>{role}</option>)}</select></label>
-          <label htmlFor={`user-bonus-${user.id}`}>Bonus daily credits<input id={`user-bonus-${user.id}`} name="bonus" type="number" min="0" max="100" defaultValue={user.bonus_daily_credits} required/></label>
-          <label className="consent-choice" htmlFor={`user-active-${user.id}`}><input id={`user-active-${user.id}`} name="active" type="checkbox" defaultChecked={user.is_active} disabled={busy || isSelf}/>Active</label>
-          <label htmlFor={`user-reason-${user.id}`}>Reason for change<input id={`user-reason-${user.id}`} name="reason" maxLength={1500}/></label>
-          <button className="secondary" disabled={busy}>Save account</button>
-        </form>;
-      })}
+      {data.items.map(user => <AdminUserCard key={user.id + ':' + user.role + ':' + user.is_active + ':' + user.bonus_daily_credits} user={user} isSelf={user.id === auth.account.id} busy={busy} setMessage={setMessage} setConfirmReason={setConfirmReason} setPendingAction={setPendingAction}/>)}
     </>}
     {tab === 'overview' && data && (() => {
       const l24 = data.grading_latency?.['24h'], l7 = data.grading_latency?.['7d'];

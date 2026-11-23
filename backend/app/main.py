@@ -29,7 +29,7 @@ class FrontendFiles(StaticFiles):
     """Serve known React routes without routing missing API/assets to HTML."""
     async def get_response(self, path, scope):
         is_page = bool(re.fullmatch(
-            r"(?:overview|topics|practice|check|skill-practice|history|assessment(?:/(?:task-response|coherence-cohesion|lexical-resource|grammatical-range-accuracy))?)/?",
+            r"(?:guide|overview|topics|practice|check|skill-practice|history|assessment(?:/(?:task-response|coherence-cohesion|lexical-resource|grammatical-range-accuracy))?)/?",
             path,
         ))
         try:

@@ -34,12 +34,12 @@ class AssessmentOutputV2(StrictModel):
     gra_reasoning: Line
     gra_score: Band
     criterion_feedback: CriterionFeedback
-    sentence_annotations: list[SentenceAnnotation] = Field(max_length=12)
+    sentence_annotations: list[SentenceAnnotation] = Field(max_length=6)
     top_weaknesses: list[Line] = Field(min_length=1, max_length=5)
-    grammar_corrections: list[Correction] = Field(max_length=8)
-    aspect_reviews: list[AspectReview] = Field(max_length=20)
-    paragraph_reviews: list[ParagraphReview] = Field(max_length=12)
-    language_suggestions: list[LanguageSuggestion] = Field(max_length=8)
+    grammar_corrections: list[Correction] = Field(max_length=5)
+    aspect_reviews: list[AspectReview] = Field(max_length=8)
+    paragraph_reviews: list[ParagraphReview] = Field(max_length=6)
+    language_suggestions: list[LanguageSuggestion] = Field(max_length=5)
 
 
 def essay_metadata(essay):
@@ -76,4 +76,28 @@ their own descriptors; never copy TR development rules into LR/GRA.
 Scores must lie in [0,9] in 0.5 increments. Full-ladder teacher anchors are references,
 not instructions to force a score distribution. Feedback should be concrete and
 supportive in the teacher's coaching tone. Sentence annotations must quote the essay.
+Keep output concise: at most 6 sentence_annotations, 6 paragraph_reviews, 8 aspect_reviews,
+5 grammar_corrections, and 5 language_suggestions.
 '''
+
+
+def feedback_language_rules(feedback_language: str = 'vi') -> str:
+    """Return localized student feedback rules while preserving English rubric calibration."""
+    if (feedback_language or 'vi').strip().lower() != 'vi':
+        return ''
+    return (
+        '\nFEEDBACK_LANGUAGE=vi (CRITICAL):\n'
+        '- CALIBRATION PRESERVATION: Keep structural_audit (prompt_subtasks_addressed, '
+        'paragraph_core_claims, circular_or_padding_flags, cohesion_faults), tr_reasoning, '
+        'cc_reasoning, lr_reasoning, gra_reasoning, aspect names, paragraph roles '
+        '(introduction/body/conclusion/other), and categories in concise English so band '
+        'calibration remains intact.\n'
+        '- STUDENT FEEDBACK IN VIETNAMESE: Write all student-facing explanations in concise '
+        'Vietnamese (max 1-2 sentences per item): criterion_feedback (explanation, strengths, '
+        'weaknesses, evidence.explanation), top_weaknesses, paragraph_reviews (observation, '
+        'improvement), aspect_reviews.explanation, sentence_annotations.explanation, '
+        'grammar_corrections.explanation, and language_suggestions.explanation.\n'
+        '- ENGLISH QUOTES & REWRITES: Keep every verbatim student essay quote (quote, original, '
+        'original_sentence) and every suggested English correction or rewrite (corrected, '
+        'suggestion, label) strictly in English.'
+    )

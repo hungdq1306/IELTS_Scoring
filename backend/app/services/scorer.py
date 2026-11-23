@@ -9,8 +9,9 @@ from app.grading.lecturer import configuration
 from app.grading.schemas import CRITERIA, DetailedModelGrade, GradeRequest, Scores
 from app.grading.task2 import overall_band, validate_grade
 from app.guardrails import fingerprint, redact_pii
+from app.config import load_settings
 from app.providers.base import ProviderError
-from app.grading.v2 import AssessmentOutputV2, essay_metadata, V2_RULES
+from app.grading.v2 import AssessmentOutputV2, essay_metadata, feedback_language_rules, V2_RULES
 
 
 def baseline_config():
@@ -63,7 +64,12 @@ async def score(submission, provider):
     v2 = snapshot.get('prompt_version') == 'v2'
     audit = None
     if v2:
-        system += V2_RULES
+        feedback_language = (
+            snapshot.get('feedback_language')
+            or getattr(getattr(provider, 'settings', None), 'feedback_language', None)
+            or load_settings().feedback_language
+        )
+        system += V2_RULES + feedback_language_rules(feedback_language)
         user += '\n<essay_metadata>' + json.dumps(essay_metadata(request.essay)) + '</essay_metadata>'
         user += '\n<student_essay>' + request.essay.replace('<','&lt;').replace('>','&gt;') + '</student_essay>'
     generation = await provider.generate_structured(system, user, AssessmentOutputV2 if v2 else DetailedModelGrade)
