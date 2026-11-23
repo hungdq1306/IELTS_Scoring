@@ -8,7 +8,7 @@ install missing dependencies with `python -m pip install -r benchmarks/task1_ext
 
 ```cmd
 benchmarks\task1_extraction\run_all.cmd --limit 5
-benchmarks\task1_extraction\run_all.cmd --limit 0 --model gemini-2.5-flash --concurrency 3
+benchmarks\task1_extraction\run_all.cmd --limit 0 --model gemini-3.1-flash-lite --concurrency 3
 benchmarks\task1_extraction\run_all.cmd --limit 5 --local-file path\to\essays.json
 .venv\Scripts\python.exe -m unittest benchmarks.task1_extraction.test_pipeline -v
 ```
@@ -72,8 +72,8 @@ without checking the source dataset terms.
 - Default five-image end-to-end command stops at inaccessible EssayJudge source.
 - A separate five-image synthetic bar-chart fixture exercises local preparation.
   It is not EssayJudge and cannot measure quality on real IELTS visuals.
-- `gemini-2.5-flash` returned HTTP 404 (unavailable to new users). The default is
-  retained to follow the plan; use `--model` to select an accessible model.
+- `gemini-2.5-flash` returned HTTP 404 (unavailable to new users).
+  The default is now `gemini-3.1-flash-lite`, as requested.
 - `gemini-3.8-flash`: three recorded 504 errors before stopping the slow run.
 - `gemini-3-flash-preview`: 2/5 synthetic images extracted; 3/5 returned 504.
   Both successful extractions were audited as consistent, and the portable report
@@ -86,3 +86,12 @@ without checking the source dataset terms.
 The full requested EssayJudge benchmark remains unverified until an accessible
 real dataset is supplied. The synthetic fixture, checkpoints and failed requests
 are retained locally under ignored `data/` and `outputs/` folders.
+
+## Default-model update
+
+`gemini-3.1-flash-lite` is now the default for extraction and audit.
+Five of five synthetic prompt images extracted successfully. Checkpoints are in
+`outputs/gemini_3_1_flash_lite_smoke/extraction_results.jsonl`.
+The live audit was stopped after a prolonged wait without a completed audit record;
+no new HTML report is claimed for this run. Resume the audit with the same model,
+data directory and output directory. Eight offline tests and compilation passed.

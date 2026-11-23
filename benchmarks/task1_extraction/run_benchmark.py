@@ -12,7 +12,7 @@ from .schemas import BenchmarkRecord, PromptRecord
 def arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=10)
-    parser.add_argument("--model", default="gemini-2.5-flash")
+    parser.add_argument("--model", default="gemini-3.1-flash-lite")
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--data-dir", type=Path, default=ROOT / "data")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "outputs")
