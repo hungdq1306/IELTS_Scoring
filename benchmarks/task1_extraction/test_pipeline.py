@@ -135,6 +135,50 @@ class PipelineTests(unittest.TestCase):
                 asyncio.run(audit_consistency.main())
                 self.assertEqual(generate.await_count, 1)
             self.assertTrue((args.output_dir / "review_report.html").is_file())
+            (args.output_dir / "audits.jsonl").unlink()
+            with patch.object(audit_consistency, "arguments", return_value=args), patch.object(audit_consistency, "client", return_value=api), patch.object(audit_consistency, "generate", new_callable=AsyncMock, side_effect=RuntimeError("provider offline")):
+                with self.assertRaisesRegex(RuntimeError, "1 audits failed"):
+                    asyncio.run(audit_consistency.main())
+            self.assertIn("audit_failed", (args.output_dir / "review_report.html").read_text(encoding="utf-8"))
+            self.assertEqual(len(read_jsonl(args.output_dir / "audit_errors.jsonl")), 1)
+            (args.output_dir / "extraction_results.jsonl").write_text("", encoding="utf-8")
+            args.allow_partial = True
+            with patch.object(audit_consistency, "arguments", return_value=args), patch.object(audit_consistency, "client", return_value=api), patch.object(audit_consistency, "generate", new_callable=AsyncMock) as generate:
+                with self.assertRaisesRegex(RuntimeError, "1 missing extractions"):
+                    asyncio.run(audit_consistency.main())
+                self.assertEqual(generate.await_count, 0)
+            self.assertIn("Extraction unavailable", (args.output_dir / "review_report.html").read_text(encoding="utf-8"))
+
+    def test_official_source_provenance_and_trait_scores(self):
+        from unittest.mock import patch
+        from .prepare_essayjudge import load_official_dataset
+        image = io.BytesIO()
+        Image.new("RGB", (80, 80), "white").save(image, format="PNG")
+        csv_data = ("graph,Question,Essay,argument_clarity(ground_truth),coherence(ground_truth)\n"
+            "https://raw.githubusercontent.com/jsu360/example/chart.png,Question,Lower,2,3\n"
+            "https://raw.githubusercontent.com/jsu360/example/chart.png,Question,Higher,4,5\n").encode("gb18030")
+        def fetch(url):
+            if "/commits/" in url:
+                return b'{"sha":"pinned-revision"}'
+            return csv_data if url.endswith("data.csv") else image.getvalue()
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch("benchmarks.task1_extraction.prepare_essayjudge.fetch_bytes", side_effect=fetch) as network:
+                dataset = load_official_dataset(root)
+                self.assertEqual(network.call_count, 3)
+                load_official_dataset(root)
+                self.assertEqual(network.call_count, 3)
+            records = prepare(dataset, root, root)
+            self.assertEqual(len(records), 1)
+            self.assertEqual(records[0]["silver_reference_essay"], "Higher")
+            self.assertEqual(records[0]["silver_score"], 4.5)
+            provenance = json.loads((root / "source/provenance.json").read_text(encoding="utf-8"))
+            self.assertEqual(provenance["revision"], "pinned-revision")
+            self.assertEqual(provenance["unique_source_images"], 1)
+            image_path = Path(provenance["images"][0]["path"])
+            image_path.write_bytes(b"corrupted")
+            with self.assertRaisesRegex(ValueError, "checksum mismatch"):
+                load_official_dataset(root)
 
     def test_corrupt_checkpoint_rejected(self):
         with tempfile.TemporaryDirectory() as directory:

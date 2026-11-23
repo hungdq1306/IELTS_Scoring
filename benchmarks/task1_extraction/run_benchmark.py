@@ -16,6 +16,7 @@ def arguments():
     parser.add_argument("--concurrency", type=int, default=3)
     parser.add_argument("--data-dir", type=Path, default=ROOT / "data")
     parser.add_argument("--output-dir", type=Path, default=ROOT / "outputs")
+    parser.add_argument("--allow-partial", action="store_true", help="Audit: render missing extractions explicitly; still exit nonzero")
     args, _ = parser.parse_known_args()
     if args.limit < 0 or args.concurrency < 1:
         parser.error("limit >= 0 and concurrency >= 1 required")

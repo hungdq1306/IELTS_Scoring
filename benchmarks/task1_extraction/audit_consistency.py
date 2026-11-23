@@ -43,6 +43,15 @@ def render_card(prompt, result, audit):
 <p class="essay">{esc(prompt['silver_reference_essay'])}</p></details></article>"""
 
 
+def render_missing(prompt):
+    image = base64.b64encode((ROOT / prompt["image_path"]).read_bytes()).decode("ascii")
+    return f"""<article data-category="extraction_failed"><h2>Extraction unavailable</h2>
+<p><code>{html.escape(prompt['image_hash'])}</code></p>
+<img src="data:image/jpeg;base64,{image}" alt="Prompt awaiting extraction">
+<p>No extraction or audit verdict is available for this prompt. Inspect extraction_errors.jsonl and rerun to resume.</p>
+<p>{html.escape(prompt['prompt'])}</p></article>"""
+
+
 def write_report(path, cards, model):
     if not cards:
         raise RuntimeError("No extraction results to report")
@@ -58,7 +67,7 @@ Confidence is a routing heuristic, not measured extraction accuracy. auto_verifi
 under the configured policy; it does not establish human verification.</p>"""
     document += f"<p>Model: {html.escape(model)}; pipeline version: {VERSION}; prompts: {len(cards)}</p>"
     document += """<label>Category <select id="category"><option value="all">All</option>
-<option>chart_time_series</option><option>chart_static</option><option>map</option><option>process</option><option>mixed</option>
+<option>chart_time_series</option><option>chart_static</option><option>map</option><option>process</option><option>mixed</option><option>extraction_failed</option>
 </select></label>""" + "".join(cards)
     document += """<script>document.getElementById('category').addEventListener('change',function(){
 document.querySelectorAll('article').forEach(card=>{card.hidden=this.value!=='all'&&card.dataset.category!==this.value;});
@@ -75,31 +84,56 @@ async def main():
     results = {row["image_hash"]: row for row in read_jsonl(args.output_dir / "extraction_results.jsonl")
         if row["model"] == args.model and row["pipeline_version"] == VERSION and row["image_hash"] in prompts}
     missing = set(prompts) - set(results)
-    if missing:
+    if missing and not getattr(args, "allow_partial", False):
         raise RuntimeError(f"{len(missing)} prompts have no extraction; finish benchmark before audit")
     path = args.output_dir / "audits.jsonl"
     cached = {row["key"]: row["audit"] for row in read_jsonl(path)}
-    cards = []
+    audits = {}
+    errors = []
+    semaphore = asyncio.Semaphore(args.concurrency)
     api = client()
-    try:
-        for image_hash in prompts:
-            result, prompt = results[image_hash], prompts[image_hash]
-            payload = json.dumps(dict(facts=result["extraction"]["structured_facts"],
-                essay=prompt["silver_reference_essay"]), ensure_ascii=False, sort_keys=True)
-            key = hashlib.sha256((args.model + VERSION + AUDIT_PROMPT + payload).encode("utf-8")).hexdigest()
-            if key not in cached:
+
+    async def audit_one(image_hash):
+        result, prompt = results[image_hash], prompts[image_hash]
+        payload = json.dumps(dict(facts=result["extraction"]["structured_facts"],
+            essay=prompt["silver_reference_essay"]), ensure_ascii=False, sort_keys=True)
+        key = hashlib.sha256((args.model + VERSION + AUDIT_PROMPT + payload).encode("utf-8")).hexdigest()
+        if key in cached:
+            audits[image_hash] = cached[key]
+            print(f"Cached audit {image_hash[:12]}", flush=True)
+            return
+        async with semaphore:
+            try:
                 response = await generate(api, args.model, [AUDIT_PROMPT, "DATA:", payload], AuditResult)
-                cached[key] = AuditResult.model_validate_json(response.text).model_dump()
+                audit = AuditResult.model_validate_json(response.text).model_dump()
                 usage = response.usage_metadata
                 append_jsonl(path, dict(key=key, image_hash=image_hash, model=args.model,
-                    audit=cached[key], prompt_tokens=getattr(usage, "prompt_token_count", 0) or 0,
+                    audit=audit, prompt_tokens=getattr(usage, "prompt_token_count", 0) or 0,
                     candidates_tokens=getattr(usage, "candidates_token_count", 0) or 0))
-            cards.append(render_card(prompt, result, cached[key]))
+                audits[image_hash] = audit
+                print(f"Saved audit {image_hash[:12]}: {audit['verdict']}", flush=True)
+            except Exception as exc:
+                error = dict(image_hash=image_hash, model=args.model,
+                    error_type=type(exc).__name__, message=str(exc))
+                append_jsonl(args.output_dir / "audit_errors.jsonl", error)
+                errors.append(error)
+                audits[image_hash] = dict(verdict="audit_failed", discrepancy_notes=
+                    f"Audit unavailable ({type(exc).__name__}); rerun to retry. This is not a consistency verdict.")
+                print(f"Audit failed {image_hash[:12]}: {type(exc).__name__}", flush=True)
+    try:
+        await asyncio.gather(*(audit_one(image_hash) for image_hash in results))
     finally:
         api.close()
+    cards = [render_card(prompts[image_hash], results[image_hash], audits[image_hash])
+        if image_hash in results else render_missing(prompts[image_hash]) for image_hash in prompts]
     report = args.output_dir / "review_report.html"
     write_report(report, cards, args.model)
-    print(report.resolve())
+    print(report.resolve(), flush=True)
+    if missing:
+        raise RuntimeError(f"{len(missing)} missing extractions are marked unavailable in the partial report")
+    if errors:
+        raise RuntimeError(f"{len(errors)} audits failed; report marks them audit_failed; rerun to resume")
+
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ The existing repository requirements supply all except Pillow explicitly;
 install missing dependencies with `python -m pip install -r benchmarks/task1_extraction/requirements.txt`, without changing production dependencies.
 
 ```cmd
-benchmarks\task1_extraction\run_all.cmd --limit 5
+benchmarks\task1_extraction\run_all.cmd --source github --limit 10
 benchmarks\task1_extraction\run_all.cmd --limit 0 --model gemini-3.1-flash-lite --concurrency 3
 benchmarks\task1_extraction\run_all.cmd --limit 5 --local-file path\to\essays.json
 .venv\Scripts\python.exe -m unittest benchmarks.task1_extraction.test_pipeline -v
@@ -23,14 +23,26 @@ in the prompt manifest are absolute, so re-prepare after moving the workspace.
 
 ## Input and scoring
 
-Default source is `EssayJudge/EssayJudge`, as requested. This identifier could
-not be accessed on 2026-11-23 (HTTP 401 / DatasetNotFoundError). No alternate
-corpus is silently substituted. Supply a valid `--dataset-name` or `--local-file`
-JSON/JSONL/Parquet containing images, questions, essays and human scores.
+Default source mode is `auto`: try `EssayJudge/EssayJudge` on Hugging Face,
+then fall back explicitly to the same dataset's official GitHub release
+<https://github.com/jsu360/EssayJudge> on its `master` branch. The HF identifier
+returned HTTP 401 / DatasetNotFoundError on 2026-11-23. The official CSV and
+its linked prompt images are publicly accessible. Use `--source github` to
+skip the failed HF lookup, or `--source huggingface` to disable fallback.
+Custom `--dataset-name` failures never silently fall back.
+
+The GitHub loader pins the CSV commit SHA, preserves its original GB18030 bytes,
+and stores CSV/image SHA-256 checksums, original URLs, counts and the score
+selection policy in `data/source/provenance.json`. Cached downloads are verified
+on reuse. The raw image URLs in the official CSV point to the author's
+`jsu360/MLLM-for-AES` repository; those bytes are retained locally with checksums.
+Use `--local-file` for JSON/JSONL/Parquet containing images, essays and human scores.
+
 Column names are matched case-insensitively with separators normalized.
 Images can be PIL images, HF bytes/path objects, or paths relative to the local file.
 Score selection prefers overall, then task achievement/response, then mean of
-available score/band columns. Only supply human scores in these fields; model
+available score/band/ground-truth columns. The official CSV has ten human trait
+columns and no overall score, so silver ranking uses their mean (not an IELTS band). Only supply human scores in these fields; model
 predictions are not suitable silver-reference labels. Missing scores remain null;
 ties retain the first essay. Data preparation visits every split and every row.
 
@@ -69,7 +81,8 @@ without checking the source dataset terms.
   deterministic normalization, deduplication/silver ranking, malformed checkpoints,
   UTF-8, safe self-contained HTML rendering, 429 retry, checkpoint resume and audit caching.
 - All Python modules compile on Python 3.11.
-- Default five-image end-to-end command stops at inaccessible EssayJudge source.
+- The initial default command stopped at inaccessible Hugging Face source; the
+  official-source loader below now resolves this.
 - A separate five-image synthetic bar-chart fixture exercises local preparation.
   It is not EssayJudge and cannot measure quality on real IELTS visuals.
 - `gemini-2.5-flash` returned HTTP 404 (unavailable to new users).
@@ -83,9 +96,9 @@ without checking the source dataset terms.
   Successful extraction p50 was 31,070 ms and p95 was 38,720 ms; these two samples
   do not establish real-data latency or extraction accuracy.
 
-The full requested EssayJudge benchmark remains unverified until an accessible
-real dataset is supplied. The synthetic fixture, checkpoints and failed requests
-are retained locally under ignored `data/` and `outputs/` folders.
+The original full-data benchmark was unverified at this stage. The synthetic
+fixture, checkpoints and failed requests are retained locally under ignored
+`data/` and `outputs/` folders. See the official-source reconnection below.
 
 ## Default-model update
 
@@ -95,3 +108,49 @@ Five of five synthetic prompt images extracted successfully. Checkpoints are in
 The live audit was stopped after a prolonged wait without a completed audit record;
 no new HTML report is claimed for this run. Resume the audit with the same model,
 data directory and output directory. Eight offline tests and compilation passed.
+
+## Official-source reconnection
+
+The official release has been downloaded: 1,054 essays, 125 source URLs, 121 unique
+raw image checksums and 121 normalized image hashes. Duplicate URLs/images reduce
+the actual prompt count below the originally expected 125. Every prompt has a
+silver-reference score (mean human trait score, range 2.9–4.9 for selected essays).
+CSV revision: `2ac9ad7814bc0b43b865e37137a9b6c52aab7009`.
+CSV SHA-256: `7998f78165f3b354f42333ad25dc75ee6a33bfa3aa6ffb8c07650fc53c29dea5`.
+
+```cmd
+benchmarks\task1_extraction\run_all.cmd --source github --limit 10 --concurrency 1 --output-dir benchmarks/task1_extraction/outputs/essayjudge_gemini_3_1_flash_lite
+```
+
+Audit requests now respect `--concurrency`, checkpoint each completed verdict,
+print progress and retain API failures in `audit_errors.jsonl`. If an audit fails,
+the HTML marks it `audit_failed` (not a factual alignment verdict), and the command
+returns a nonzero exit code. Resume reruns only unfinished audits.
+
+Use `audit_consistency --allow-partial` to render missing extractions explicitly
+when an API outage prevents completion. The partial report still returns a nonzero
+exit code. Normal runs remain strict and stop before auditing incomplete input.
+
+## Real EssayJudge benchmark result
+
+Model `gemini-3.1-flash-lite`, first 10/121 unique prompts (not a stratified sample):
+10/10 successful extractions and 10/10 completed audits. The initial concurrency-3
+run saved six extractions and logged four HTTP 503 high-demand failures after
+retries. Resuming with concurrency 1 recovered all four without rerunning successes.
+Routing: 3 auto_verified / 7 needs_user_check. Audit: 5 consistent / 4 minor_variance /
+1 conflict. The conflict notes describe rounding/approximation differences, so this
+verdict itself needs human review; it does not prove a visual extraction error.
+
+Successful-record extraction latency: p50 6,362 ms, p95 23,947 ms. Extraction usage:
+12,651 input tokens and 9,653 candidate tokens. These omit earlier failed requests
+and are not end-to-end wall time or a complete billing estimate. Confidence and
+silver consistency are not independently reviewed extraction accuracy.
+
+Outputs: `outputs/essayjudge_gemini_3_1_flash_lite/` contains extraction checkpoints,
+audit checkpoints, retained initial errors, `benchmark_summary.json`, and the
+self-contained `review_report.html` (923,859 bytes; 10 embedded JPEGs validated).
+Nine offline regression tests and Python compilation passed.
+
+The complete `run_all.cmd --source github --limit 10 --concurrency 1` rerun
+finished with exit code 0: 10 cached extractions, 10 cached audits, no pending
+Gemini requests. Production code and the existing `hf_test/` folder were untouched.

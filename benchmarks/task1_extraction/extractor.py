@@ -69,7 +69,9 @@ async def generate(api, model, contents, schema):
         except Exception as exc:
             if getattr(exc, 'code', None) not in (429, 503) or attempt == 5:
                 raise
-            await asyncio.sleep(min(32, 2 ** attempt) + random.random())
+            delay = min(32, 2 ** attempt) + random.random()
+            print(f'{model}: HTTP {exc.code}; retry {attempt + 1}/5 in {delay:.1f}s', flush=True)
+            await asyncio.sleep(delay)
 
 
 async def extract(api, record, model):
