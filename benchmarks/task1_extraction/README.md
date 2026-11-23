@@ -1,5 +1,57 @@
 # Task 1 visual extraction benchmark
 
+## Current exhaustive/sanity pipeline (version 3)
+
+Default model: `gemini-3.1-flash-lite`; default concurrency: 2. New output defaults
+to `outputs/v2_exhaustive_sanity/`. Historical version-2 output below is preserved
+at `outputs/essayjudge_gemini_3_1_flash_lite/` and is never used as a schema-v3 cache.
+
+```cmd
+.venv\Scripts\python.exe -m benchmarks.task1_extraction.prepare_essayjudge --source github --export-gold-template 20
+benchmarks\task1_extraction\run_all.cmd --source github --limit 10 --output-dir benchmarks/task1_extraction/outputs/v2_exhaustive_sanity
+.venv\Scripts\python.exe -m benchmarks.task1_extraction.audit_consistency --limit 10 --skip-audit
+.venv\Scripts\python.exe -m benchmarks.task1_extraction.eval_gold
+```
+
+The schema declares all numeric matrices before diagram elements, notes, overview
+and model confidence. Null/unreadable cells and malformed grids are retained with
+warnings instead of repaired or hidden. Complete declared grids alone cannot prove
+that the model detected every axis label; compare against verified gold labels.
+Arithmetic checks validate percentage partitions (>1.5 percentage-point difference)
+and explicit total rows/columns (>1.5% relative difference). Sanity warnings force
+confidence <=75 and needs_user_check. Uncertain numeric rows also prevent auto routing.
+Maps/processes/mixed retain <=80 caps; unlabeled charts <=78; blurry <=60.
+
+Five API attempts maximum, explicit HTTP 429/500/502/503/504 retries with exponential
+backoff+jitter (base 2 s, cap 30 s), SDK retries disabled. Every attempt has status,
+latency, backoff and known token usage. Failed attempts without provider usage make
+`token_usage_complete=false`; `total_tokens_including_retries` is then a LOWER BOUND,
+not an exact cost. Error checkpoints include the full failed-attempt telemetry.
+
+Per-item timings: load JPEG, validate/reuse normalized JPEG (`t_normalize_ms`, no
+re-encoding), extraction including retries, sanity and item total. Item total excludes
+queue wait, preparation and silver audit. `run_summary.json` records invocation wall
+time; `data/preparation_timings.json` records ingestion/normalization-group wall time;
+audit checkpoints record `t_audit_ms`. Do not add cached-stage durations and call that
+an end-to-end fresh-request latency. Historical timing observations below are v2.
+
+All 121 unique images are tagged from official source metadata: chart_static 56,
+chart_time_series 15, process 29, mixed 13, map 8. Source subtype counts are bar 30,
+line 15, pie 9, table 17, flow 29, composite 13, map 8. Two map examples were visually
+checked (student accommodation plan; museum 1998/2008); the overall scan is metadata-
+based and is not independently adjudicated visual classification.
+
+20-image `gold_set/gold_template.jsonl`: four drafts per category, deterministic seed
+42, protected from overwrite. See [gold review workflow](gold_set/README.md). There
+is no human-verified gold file yet, so no accuracy/F1/MAPE is claimed for real data.
+Numeric evaluator and routing safety tests use clearly synthetic annotations only.
+
+The HTML shows all matrices, copied raw labels, literal diagram steps, sanity
+alerts, attempt counts, and stage timing. `--skip-audit` uses cached silver verdicts
+or clearly marks not_run; `--allow-partial` renders failed extractions explicitly
+and still exits nonzero. These flags never imply a completed gold evaluation.
+
+
 Standalone experiment; no imports or changes to production `app.pilot:app`.
 All commands run from the repository root. Requires Python 3.11+, Pillow,
 Pydantic v2, google-genai, python-dotenv and datasets (available in `.venv`).
@@ -154,3 +206,49 @@ Nine offline regression tests and Python compilation passed.
 The complete `run_all.cmd --source github --limit 10 --concurrency 1` rerun
 finished with exit code 0: 10 cached extractions, 10 cached audits, no pending
 Gemini requests. Production code and the existing `hf_test/` folder were untouched.
+
+## Exhaustive/sanity run on the same ten images
+
+Version `3-exhaustive-sanity` completed 10/10 extraction records. The initial
+concurrency-2 invocation completed 7/10, the first concurrency-1 resume reached
+9/10, and the second resume reached 10/10. Each image invocation used at most five
+API attempts. Earlier failed invocations remain in extraction_errors.jsonl; do
+not call this a single-invocation 10/10 or claim that retry eliminates 503 outages.
+
+Scalar grid coverage against the prior visual position inventory rose from 97/192
+(50.5%) to 192/192 (100%). Weather: two tables, 4x12 + 2x12 = 72 cells; travel:
+6x4 = 24 cells; Australia population: 12 cells. This validates structural counts,
+not numeric correctness or independently reviewed recall. The weather estimates
+still need review; in a visual spot check, Brisbane maximum in March/April appears
+around 24/19 degrees, while this extraction gives 26.5/23.5. The process steps no
+longer claim pumped or closed-loop mechanisms, but the free-text notes still use
+'cyclical', which is not established as a recycling loop by the diagram.
+
+Travel retains the literal 680.5 and is flagged total_row_mismatch (1048.9 versus
+448.9). The 2008 pie retains its printed slices and is flagged sum=102.0%. Both
+route needs_user_check with confidence <=75. Routing is 1 auto_verified (milk)
+and 9 needs_user_check. Travel's overview still contains an inconsistent Europe-
+highest claim; the source arithmetic alert and forced review protect the route,
+but deterministic checks cannot certify every natural-language overview claim.
+
+Successful-record extraction latency including internal retries: p50 30,415 ms,
+p95 161,240 ms, mean 59,063 ms. Mean item total: 59,071 ms. These omit previous
+failed invocations, queue wait, preparation and silver audit; they are not a
+fresh full-pipeline user-visible latency estimate. Four failed image invocations
+(20 failed attempts) plus successful invocations (24 attempts) total 44 extraction
+attempts. Missing usage on failures means token totals are known lower bounds.
+
+`coverage_comparison.json` contains the per-image matrix sizes and the comparison
+definition. There is no verified_gold.jsonl yet; the evaluator correctly refuses
+to issue real accuracy/F1/MAPE in its absence. 18 offline tests pass, including
+synthetic exact/tolerance/MAPE/routing metrics, shape/sum routing, resume and errors.
+
+Fresh silver audit completed 10/10 after a concurrency-1 resume (first invocation
+4/10; six failed audit invocations retained with attempt-level telemetry). Milk
+now receives minor_variance for rounding rather than the earlier false conflict.
+The HTML was checked for ten valid embedded JPEGs, all 192 numeric cells, both
+arithmetic alerts, stage timings and no missing/failed audit placeholders. The
+original v2 output checksums were preserved. No verified gold accuracy is inferred.
+
+Final full entrypoint rerun (without --skip-audit) exited 0: all 10 extraction
+and all 10 audit records were cached; no new Gemini requests were needed.

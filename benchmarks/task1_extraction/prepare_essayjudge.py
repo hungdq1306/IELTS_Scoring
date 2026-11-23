@@ -9,13 +9,15 @@ import io
 import json
 import math
 import re
+import random
+from collections import Counter, defaultdict
 from pathlib import Path
 
 from datasets import load_dataset
 from PIL import Image
 
 from .extractor import ROOT, normalize_image
-from .schemas import PromptRecord
+from .schemas import PromptRecord, GoldRecord
 
 
 def column_key(value):
@@ -43,6 +45,69 @@ def human_score(row):
         if preferred in scores:
             return scores[preferred]
     return sum(scores.values()) / len(scores) if scores else None
+
+
+def category_from_types(source_types):
+    mapping = {"line_chart": "chart_time_series", "bar_chart": "chart_static",
+        "pie_chart": "chart_static", "table": "chart_static", "flow_chart": "process",
+        "map": "map", "composite_chart": "mixed"}
+    categories = {mapping.get(str(value).strip().lower()) for value in source_types} - {None}
+    return next(iter(categories)) if len(categories) == 1 else ("mixed" if categories else None)
+
+
+def scan_categories(records, destination):
+    category_counts = Counter(row["visual_category_hint"] or "unclassified" for row in records)
+    type_counts = Counter(kind for row in records for kind in row["source_types"])
+    report = dict(unique_images=len(records), essay_count=sum(row["essay_count"] for row in records),
+        category_counts=dict(sorted(category_counts.items())), source_type_counts=dict(sorted(type_counts.items())),
+        map_image_hashes=[row["image_hash"] for row in records if row["visual_category_hint"] == "map"],
+        method="Official source Type tags grouped by normalized hash; not independent visual classification")
+    destination.mkdir(parents=True, exist_ok=True)
+    (destination / "category_scan.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
+    print("Full unique-image categories:", json.dumps(report["category_counts"], ensure_ascii=False), flush=True)
+    print("Source types:", json.dumps(report["source_type_counts"], ensure_ascii=False), flush=True)
+    print(f"Map prompts available: {len(report['map_image_hashes'])}", flush=True)
+    return report
+
+
+def export_gold_template(records, count, destination, seed=42, drafts=None, overwrite=False):
+    if count < 1 or count > len(records):
+        raise ValueError("Gold sample size must be between 1 and the number of unique images")
+    buckets = defaultdict(list)
+    for row in records:
+        if row["visual_category_hint"] is not None:
+            buckets[row["visual_category_hint"]].append(row)
+    if count < len(buckets):
+        raise ValueError("Gold sample too small to cover all available categories")
+    rng = random.Random(seed)
+    for rows in buckets.values():
+        rows.sort(key=lambda row: row["image_hash"])
+        rng.shuffle(rows)
+    chosen = []
+    # Balanced strata rather than population-proportional sampling; no rare category omitted.
+    while len(chosen) < count:
+        progress = False
+        for category in sorted(buckets):
+            if buckets[category] and len(chosen) < count:
+                chosen.append(buckets[category].pop())
+                progress = True
+        if not progress:
+            raise ValueError("Not enough tagged images for requested stratified gold sample")
+    destination.mkdir(parents=True, exist_ok=True)
+    path = destination / "gold_template.jsonl"
+    if path.exists() and not overwrite:
+        raise FileExistsError(f"Preserving existing template: {path}; use --overwrite-gold-template explicitly")
+    rows = []
+    for row in chosen:
+        draft = (drafts or {}).get(row["image_hash"], {})
+        rows.append(GoldRecord(image_hash=row["image_hash"], image_path=row["image_path"], prompt=row["prompt"],
+            visual_category=row["visual_category_hint"], numeric_tables=draft.get("numeric_tables", []),
+            spatial_or_process_steps=draft.get("spatial_or_process_steps", []),
+            has_explicit_labels=draft.get("has_explicit_labels"),
+            review_notes="DRAFT: inspect the image, complete every cell/step, validate source anomalies; set reviewer/date/status only after human review."))
+    path.write_text("".join(row.model_dump_json() + "\n" for row in rows), encoding="utf-8")
+    print(f"Exported {len(rows)} DRAFT gold records: {path}; strata=" + str(dict(Counter(row.visual_category for row in rows))))
+    return rows
 
 
 def prepare(dataset, destination, image_base):
@@ -79,7 +144,13 @@ def prepare(dataset, destination, image_base):
             score = human_score(row)
             item = groups.setdefault(image_hash, dict(image_hash=image_hash,
                 image_path=str(dest.resolve()), prompt=str(question),
-                silver_reference_essay=essay, silver_score=score, essay_count=0))
+                silver_reference_essay=essay, silver_score=score, essay_count=0,
+                source_types=[], visual_category_hint=None))
+            source_type = pick(("type", "task type", "visual type"))
+            if source_type and str(source_type) not in item["source_types"]:
+                item["source_types"].append(str(source_type))
+                item["source_types"].sort()
+            item["visual_category_hint"] = category_from_types(item["source_types"])
             item["essay_count"] += 1
             if score is not None and (item["silver_score"] is None or score > item["silver_score"]):
                 item.update(silver_reference_essay=essay, silver_score=score)
@@ -172,7 +243,13 @@ def main():
     parser.add_argument("--local-file")
     parser.add_argument("--source", choices=("auto", "huggingface", "github"), default="auto")
     parser.add_argument("--data-dir", type=Path, default=ROOT / "data")
+    parser.add_argument("--export-gold-template", type=int)
+    parser.add_argument("--gold-dir", type=Path, default=ROOT / "gold_set")
+    parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--gold-draft-results", type=Path)
+    parser.add_argument("--overwrite-gold-template", action="store_true")
     args, _ = parser.parse_known_args()
+    preparation_started = time.perf_counter()
     source = Path(args.local_file).resolve() if args.local_file else None
     if source:
         dataset = load_dataset("parquet" if source.suffix.lower() == ".parquet" else "json", data_files=str(source))
@@ -186,7 +263,23 @@ def main():
                 raise RuntimeError("Dataset unavailable; check Hugging Face access or supply --local-file.") from exc
             print("Default Hugging Face source unavailable; using the official jsu360/EssayJudge release.", flush=True)
             dataset = load_official_dataset(args.data_dir.resolve())
-    prepare(dataset, args.data_dir.resolve(), source.parent if source else Path.cwd())
+    normalization_started = time.perf_counter()
+    t_ingest_ms = (normalization_started-preparation_started)*1000
+    records = prepare(dataset, args.data_dir.resolve(), source.parent if source else Path.cwd())
+    t_normalize_group_ms = (time.perf_counter()-normalization_started)*1000
+    scan_categories(records, args.data_dir.resolve())
+    if args.export_gold_template:
+        drafts = {}
+        if args.gold_draft_results:
+            from .extractor import read_jsonl, VERSION
+            drafts = {row["image_hash"]: row["extraction"] for row in read_jsonl(args.gold_draft_results)
+                if row.get("pipeline_version") == VERSION}
+        export_gold_template(records, args.export_gold_template, args.gold_dir.resolve(),
+            args.seed, drafts, args.overwrite_gold_template)
+    timing = dict(t_ingest_ms=t_ingest_ms, t_normalize_group_ms=t_normalize_group_ms,
+        t_prepare_total_ms=(time.perf_counter()-preparation_started)*1000,
+        unique_images=len(records), cache_note="Includes checksum verification of existing source downloads")
+    (args.data_dir / "preparation_timings.json").write_text(json.dumps(timing, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":
