@@ -6,7 +6,7 @@
     "dev": "node ../scripts/frontend-command.cjs dev",
     "build": "vite build",
     "build:offline": "node ../scripts/frontend-command.cjs build",
-    "test": "node --test ../scripts/fogwrite-model.test.mjs ../scripts/fogwrite-ui.test.cjs",
+    "test": "node --test ../scripts/fogwrite-model.test.mjs ../scripts/fogwrite-ui.test.cjs ../scripts/fogwrite-diagnostics.test.mjs",
     "test:tour": "node ../scripts/fogwrite-tour.test.cjs",
     "test:guide": "node ../scripts/fogwrite-guide.test.cjs",
     "test:auth": "node ../scripts/fogwrite-auth.test.cjs",

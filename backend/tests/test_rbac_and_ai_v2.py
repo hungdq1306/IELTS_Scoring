@@ -462,26 +462,26 @@ def test_split_thinking_budgets_and_vietnamese_feedback_schema(tmp_path):
     from app.providers.gemini import GeminiProvider
 
     defaults = PilotSettings(_env_file=None)
-    assert defaults.gemini_score_thinking_budget == 512
+    assert defaults.gemini_score_thinking_budget == -1
     assert defaults.gemini_practice_thinking_budget == 0
     assert defaults.worker_poll_seconds == 0.25
     assert defaults.feedback_language == 'vi'
     assert defaults.auto_practice_mode == 'idle_only'
     assert load_settings().score_thinking_budget == 512 or isinstance(load_settings().score_thinking_budget, int)
 
-    assert AssessmentOutputV2.model_fields['aspect_reviews'].metadata[0].max_length == 8
-    assert AssessmentOutputV2.model_fields['sentence_annotations'].metadata[0].max_length == 6
-    assert AssessmentOutputV2.model_fields['grammar_corrections'].metadata[0].max_length == 5
-    assert AssessmentOutputV2.model_fields['language_suggestions'].metadata[0].max_length == 5
+    assert AssessmentOutputV2.model_fields['aspect_reviews'].metadata[0].max_length == 15
+    assert AssessmentOutputV2.model_fields['sentence_annotations'].metadata[0].max_length == 10
+    assert AssessmentOutputV2.model_fields['grammar_corrections'].metadata[0].max_length == 8
+    assert AssessmentOutputV2.model_fields['language_suggestions'].metadata[0].max_length == 8
     assert AssessmentOutputV2.model_fields['paragraph_reviews'].metadata[0].max_length == 6
 
     oversized = {
         **v2_output(),
-        'aspect_reviews': [{'aspect': 'Relevance to Prompt', 'score': 6.5, 'explanation': 'Clear.'} for _ in range(16)],
+        'aspect_reviews': [{'aspect_name': 'Relevance to Prompt', 'score': 6.5, 'strength_vi': 'Đáp ứng chủ đề.', 'weakness_vi': 'Cần phát triển ví dụ.'} for _ in range(16)],
         'paragraph_reviews': [{'paragraph_number': i + 1, 'role': 'body', 'summary': 'Good.', 'improvement': 'Add detail.', 'evidence': None} for i in range(10)],
     }
     trimmed = AssessmentOutputV2.model_validate(oversized)
-    assert len(trimmed.aspect_reviews) == 8 and len(trimmed.paragraph_reviews) == 6
+    assert len(trimmed.aspect_reviews) == 15 and len(trimmed.paragraph_reviews) == 6
 
     captured_configs = []
 
@@ -506,6 +506,10 @@ def test_split_thinking_budgets_and_vietnamese_feedback_schema(tmp_path):
         await provider.generate_structured('sys', 'user', PracticeReview)
         await provider.generate_structured('sys', 'user', AnswerAssessment)
         assert [cfg.thinking_config.thinking_budget for cfg in captured_configs] == [512, 0, 0, 0]
+        provider.settings = __import__('dataclasses').replace(provider.settings, score_thinking_budget=-1)
+        await provider.generate_structured('sys','user',AssessmentOutputV2)
+        assert captured_configs[-1].thinking_config is None
+        captured_configs.pop()
         assert all(isinstance(cfg.thinking_config, types.ThinkingConfig) for cfg in captured_configs)
 
         captured_systems = []

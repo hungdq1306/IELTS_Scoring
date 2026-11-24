@@ -10,6 +10,7 @@ const criteria=['task_response','coherence_cohesion','lexical_resource','grammat
 const grade={submission_id:'saved',estimated_overall_band:6.5,criterion_scores:Object.fromEntries(criteria.map(k=>[k,6.5])),criterion_feedback:Object.fromEntries(criteria.map(k=>[k,{explanation:'Feedback.',strengths:[],weaknesses:[],evidence:[]}])),grammar_corrections:[],language_suggestions:[],priority_improvements:[],validation_warnings:[],paragraph_reviews:[],aspect_reviews:[]};
 async function setup(browser,width,scenario){
  const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage(),errors=[];
+ const currentGrade={...grade,aspect_reviews:scenario==='legacy'?[{aspect:'Depth of Ideas',score:6,explanation:'Legacy diagnostic explanation.'}]:[{aspect_name:'Clarity of Position',score:7,raw_score:8,strength_vi:'Lập trường rõ.',weakness_vi:'Một chỗ chưa nhất quán.'},{aspect_name:'Depth of Ideas',score:5.5,strength_vi:'Ý chính phù hợp.',weakness_vi:'Thiếu ví dụ cụ thể.'}]};
  let submissions=0,saves=0,answer='a',hash='hash-a';page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
  await context.addInitScript(()=>{localStorage.setItem('fogwrite:tour_done:recovery-user','completed');window.Clerk={user:{id:'clerk-recovery',fullName:'Recovery Student'},session:{getToken:async()=> 'fixture'},load:async()=>{},addListener:()=>()=>{},openSignIn:()=>{}};});
  await context.route('https://clerk.example.test/**',r=>r.fulfill({body:'',contentType:'text/javascript'}));await context.route('https://fonts.googleapis.com/**',r=>r.abort());
@@ -17,8 +18,8 @@ async function setup(browser,width,scenario){
   if(p==='/api/auth/config')return r.fulfill({json:{mode:'clerk',issuer:'https://clerk.example.test',publishable_key:'pk_test_fixture',privacy_version:'v1'}});
   if(p==='/api/auth/me')return r.fulfill({json:{id:'recovery-user',role:'student',consent_version:'v1',classes:[{id:'room',name:'Writing class',active:true,role:'student'}],quota_status:{remaining_today:0,daily_limit:3,is_enrolled:true}}});
   if(p==='/api/practice/submissions')return r.fulfill({json:{items:[{submission_id:'saved',prompt:question,status:scenario==='failed'?'FAILED':'COMPLETED',created:1700000000}]}});
-  if(p==='/api/writing/task2/saved/submission')return r.fulfill({json:{submission_id:'saved',class_id:'room',prompt:question,essay,status:scenario==='failed'?'FAILED':'COMPLETED',grade:scenario==='failed'?null:grade,error_code:'provider_timeout',error_message:'AI grading could not finish.',credit_refunded:true}});
-  if(p==='/api/writing/task2/evaluate'){submissions++;assert.equal(method,'POST');return r.fulfill({json:{...grade,reused:true,status:'COMPLETED',cached_content:{prompt:question,essay,classId:'room'},notice:'Bài viết này đã được chấm trước đó — hiển thị lại kết quả cũ, không trừ lượt hôm nay.'}});}
+  if(p==='/api/writing/task2/saved/submission')return r.fulfill({json:{submission_id:'saved',class_id:'room',prompt:question,essay,status:scenario==='failed'?'FAILED':'COMPLETED',grade:scenario==='failed'?null:currentGrade,error_code:'provider_timeout',error_message:'AI grading could not finish.',credit_refunded:true}});
+  if(p==='/api/writing/task2/evaluate'){submissions++;assert.equal(method,'POST');return r.fulfill({json:{...currentGrade,reused:true,status:'COMPLETED',cached_content:{prompt:question,essay,classId:'room'},notice:'Bài viết này đã được chấm trước đó — hiển thị lại kết quả cũ, không trừ lượt hôm nay.'}});}
   if(p==='/api/writing/task2/saved/exercises')return r.fulfill({json:{state:'ready',errors:[],exercises:[{exercise_id:'ex',source_error_id:'err',type:'multiple_choice',skill:'word_choice',difficulty:1,instruction:'Choose a word.',question:'Choose the best answer.',options:['a','b','c'],completed:true}]}});
   if(p==='/api/writing/task2/saved/progress')return r.fulfill({json:{exercises_total:1,exercises_completed:1,first_attempt_accuracy:1,hints_used:0,revisions:[]}});
   if(p==='/api/writing/task2/saved/practice-attempt'){
@@ -42,6 +43,13 @@ async function setup(browser,width,scenario){
   await isolated.page.reload();await isolated.page.getByRole('heading',{name:'Your writing, clearer.'}).waitFor();
   assert.equal(await isolated.page.evaluate(()=>JSON.parse(localStorage.getItem('fogwrite:draft:recovery-user')).essay),'New unsent draft');await isolated.context.close();
   await cache.page.goto(base+'/check');assert.equal(await cache.page.locator('#essay').inputValue(),'');await cache.page.reload();assert.equal(await cache.page.locator('#essay').inputValue(),'');
+  for(const scenario of ['practice','legacy']){
+   const diagnostic=await setup(browser,width,scenario);await diagnostic.context.addInitScript(()=>sessionStorage.setItem('fogwrite.assessment','saved'));await diagnostic.page.goto(base+'/assessment');await diagnostic.page.getByRole('button',{name:/TR Task Response/}).click();
+   await diagnostic.page.getByRole('heading',{name:'Writing Diagnostics'}).waitFor();assert.equal(await diagnostic.page.getByRole('heading',{name:'Develop this idea'}).count(),0);assert.equal(await diagnostic.page.getByRole('heading',{name:'Next step',exact:true}).count(),0);
+   assert.equal(await diagnostic.page.locator('.diagnostic-card h4').first().innerText(),'Depth of Ideas');assert.equal(await diagnostic.page.locator('.diagnostic-card p').first().evaluate(el=>parseFloat(getComputedStyle(el).fontSize)),15);
+   if(scenario==='legacy')await diagnostic.page.getByText('Legacy diagnostic explanation.',{exact:true}).waitFor();else {await diagnostic.page.getByText('Thiếu ví dụ cụ thể.',{exact:false}).waitFor();await diagnostic.page.getByText('model đề xuất 8.0.',{exact:false}).waitFor();}
+   assert.equal(await diagnostic.page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);assert.deepEqual(diagnostic.errors,[]);await diagnostic.context.close();
+  }
   await cache.context.close();
   console.log(`PASS recovery ${width}: failed essay -> editor, cached grade at zero credits, edited practice draft survives reload without old feedback`);
  }

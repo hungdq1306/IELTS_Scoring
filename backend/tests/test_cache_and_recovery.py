@@ -211,7 +211,7 @@ def test_execution_uses_frozen_model_and_budget(tmp_path):
     class Provider:
         settings = SimpleNamespace(model='model-B', score_thinking_budget=2048)
         async def generate_structured(self, system, user, schema, **options):
-            assert options == {'model_name':'offline-small-model', 'thinking_budget':512}
+            assert options == {'model_name':'offline-small-model', 'thinking_budget':-1}
             return Generation(json.dumps(v2_output()), options['model_name'], None, 20, {}, [])
     async def scenario():
         async with application(tmp_path) as c:

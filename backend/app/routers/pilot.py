@@ -11,6 +11,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.auth import current_user, staff_user
 from app.grading.detailed import essay_paragraphs
+from app.grading.v2 import V2_REVISION
 from app.grading.schemas import CRITERIA
 from app.grading.task2 import overall_band
 from app.guardrails import fingerprint, redact_pii, validate_input
@@ -258,7 +259,7 @@ async def submit(body: SubmitEssay, request: Request, idempotency_key: str | Non
             fewshot['version'] = 'teacher-' + fewshot['reference_sha256'][:12]
         fewshot = assignment_safe_config(fewshot, prompt)
         global_config = await system_settings(session)
-        snapshot = {'model_name': request.app.state.provider.settings.model, 'fewshot': fewshot, 'style': profile.style if profile else '', 'offsets': profile.offsets if profile else {},
+        snapshot = {'v2_revision': V2_REVISION, 'model_name': request.app.state.provider.settings.model, 'fewshot': fewshot, 'style': profile.style if profile else '', 'offsets': profile.offsets if profile else {},
                     'global_offsets': global_config['calibration_offsets_json'], 'prompt_version': global_config['active_prompt_version'],
                     'feedback_language': config.feedback_language,
                     'score_thinking_budget': getattr(request.app.state.provider.settings, 'score_thinking_budget', config.gemini_score_thinking_budget),

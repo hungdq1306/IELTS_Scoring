@@ -2,9 +2,9 @@
 import re
 from typing import Literal
 from collections import Counter
-from pydantic import Field, model_validator
+from pydantic import Field, PrivateAttr, model_validator
 from app.grading.schemas import (StrictModel, Band, Line, CriterionFeedback, Correction,
-    AspectReview, ParagraphReview, LanguageSuggestion, word_count)
+    ParagraphReview, LanguageSuggestion, word_count)
 
 
 class StructuralAudit(StrictModel):
@@ -23,6 +23,23 @@ class SentenceAnnotation(StrictModel):
     band_upgrade: Line
 
 
+from app.grading.aspects import ASPECTS
+V2_ASPECT_NAMES = tuple(name for group in ASPECTS.values() for name, _ in group if name != 'Appropriateness of Format')
+V2_REVISION = 'diagnostics-default-thinking-v3'
+
+class DiagnosticReview(StrictModel):
+    aspect_name: Literal[*V2_ASPECT_NAMES]
+    score: Band
+    strength_vi: Line
+    weakness_vi: Line
+
+    @model_validator(mode='after')
+    def specific_gap(self):
+        if self.score < 8.5 and self.weakness_vi.strip().casefold().rstrip('.') == 'không có lỗi đáng kể':
+            raise ValueError('A concrete limitation is required below 8.5')
+        return self
+
+
 class AssessmentOutputV2(StrictModel):
     structural_audit: StructuralAudit
     tr_reasoning: Line
@@ -34,12 +51,24 @@ class AssessmentOutputV2(StrictModel):
     gra_reasoning: Line
     gra_score: Band
     criterion_feedback: CriterionFeedback
-    sentence_annotations: list[SentenceAnnotation] = Field(max_length=6)
+    aspect_reviews: list[DiagnosticReview] = Field(max_length=15)
+    sentence_annotations: list[SentenceAnnotation] = Field(max_length=10)
+    grammar_corrections: list[Correction] = Field(max_length=8)
+    language_suggestions: list[LanguageSuggestion] = Field(max_length=8)
     top_weaknesses: list[Line] = Field(min_length=1, max_length=5)
-    grammar_corrections: list[Correction] = Field(max_length=5)
-    aspect_reviews: list[AspectReview] = Field(max_length=8)
     paragraph_reviews: list[ParagraphReview] = Field(max_length=6)
-    language_suggestions: list[LanguageSuggestion] = Field(max_length=5)
+
+    _diagnostic_adjustments: list = PrivateAttr(default_factory=list)
+
+    @model_validator(mode='after')
+    def aspect_ceiling(self):
+        parents = {name: getattr(self, {'task_response':'tr_score','coherence_cohesion':'cc_score','lexical_resource':'lr_score','grammatical_range_accuracy':'gra_score'}[criterion]) for criterion, group in ASPECTS.items() for name, _ in group}
+        for item in self.aspect_reviews:
+            ceiling = min(9.0, parents[item.aspect_name] + .5)
+            if item.score > ceiling:
+                self._diagnostic_adjustments.append({'aspect_name': item.aspect_name, 'raw_score': item.score, 'score': ceiling})
+                item.score = ceiling
+        return self
 
     @model_validator(mode='before')
     @classmethod
@@ -48,12 +77,12 @@ class AssessmentOutputV2(StrictModel):
         if not isinstance(data, dict):
             return data
         caps = {
-            'sentence_annotations': 6,
+            'sentence_annotations': 10,
             'top_weaknesses': 5,
-            'grammar_corrections': 5,
-            'aspect_reviews': 8,
+            'grammar_corrections': 8,
+            'aspect_reviews': 15,
             'paragraph_reviews': 6,
-            'language_suggestions': 5,
+            'language_suggestions': 8,
         }
         updated = None
         for key, limit in caps.items():
@@ -121,8 +150,26 @@ their own descriptors; never copy TR development rules into LR/GRA.
 Scores must lie in [0,9] in 0.5 increments. Full-ladder teacher anchors are references,
 not instructions to force a score distribution. Feedback should be concrete and
 supportive in the teacher's coaching tone. Sentence annotations must quote the essay.
-Keep output concise: at most 6 sentence_annotations, 6 paragraph_reviews, 8 aspect_reviews,
-5 grammar_corrections, and 5 language_suggestions.
+FINAL V2 OUTPUT RULES (override earlier diagnostic counts/format):
+Return all 15 substantive aspect_reviews, excluding Appropriateness of Format.
+Use aspect_name, score, strength_vi, weakness_vi. Diagnostics explain locked criterion
+scores; never average sub-aspects into the parent score. A sub-aspect must be at most
+0.5 above its parent criterion. Paragraphing means unity and logical boundaries, not
+paragraph count. Having four paragraphs or a conventional format earns no automatic band.
+For each aspect state one evidenced strength and one specific limitation. Do not invent
+errors. Below 8.5, do not claim perfection or use flattering filler such as "hoàn hảo",
+"chuẩn mực", "giải quyết trọn vẹn" without evidence. Genuine exceptional work can earn 9.
+At most 10 sentence_annotations, 6 paragraph_reviews, 8 genuine grammar_corrections
+and 8 optional language_suggestions. Do not pad lists to their maxima.
+WORD COUNT NEUTRALITY: 250 words meets the Task 2 minimum. Above that threshold,
+length alone is neither good nor bad and must never raise or lower any criterion.
+A concise developed response and a longer equally well-developed response can earn
+identical bands. Penalize irrelevant digression, circularity or unsupported ideas only
+where concrete evidence harms task response or cohesion, never because of word count.
+Do not infer missing development from an under-250 count alone either: judge actual
+coverage and support. Do not apply a fixed score or cap solely from length.
+The tr/cc/lr/gra_reasoning fields are concise English evidence summaries, not private
+reasoning transcripts. Vietnamese feedback explains the already-determined score.
 '''
 
 
@@ -140,7 +187,7 @@ def feedback_language_rules(feedback_language: str = 'vi') -> str:
         '- STUDENT FEEDBACK IN VIETNAMESE: Write all student-facing explanations in concise '
         'Vietnamese (max 1-2 sentences per item): criterion_feedback (explanation, strengths, '
         'weaknesses, evidence.explanation), top_weaknesses, paragraph_reviews (observation, '
-        'improvement), aspect_reviews.explanation, sentence_annotations.explanation, '
+        'improvement), aspect_reviews.strength_vi and aspect_reviews.weakness_vi, sentence_annotations.explanation, '
         'grammar_corrections.explanation, and language_suggestions.explanation.\n'
         '- ENGLISH QUOTES & REWRITES: Keep every verbatim student essay quote (quote, original, '
         'original_sentence) and every suggested English correction or rewrite (corrected, '

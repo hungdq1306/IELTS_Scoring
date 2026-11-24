@@ -3,7 +3,7 @@ from app.guardrails import fingerprint
 
 
 def content_hash(user_id, class_id, prompt, essay, snapshot, model):
-    return fingerprint({'cache_revision': 2, 'user_id': user_id, 'class_id': class_id,
+    return fingerprint({'cache_revision': 3, 'user_id': user_id, 'class_id': class_id,
                         'prompt': prompt.replace('\r\n', '\n'), 'essay': essay.replace('\r\n', '\n'),
                         'snapshot': snapshot, 'model': model})
 

@@ -15,7 +15,7 @@ export function TourProvider({children}:{children:ReactNode}) {
  const [ready,setReady]=useState(false),[missing,setMissing]=useState(false),[chooser,setChooser]=useState(false);
  const [dwelling,setDwelling]=useState(false);
  const [hovered,setHovered]=useState(false);
- const origin=useRef(''),owner=useRef<string|null>(null),seen=useRef(new Set<string>()),queryHandled=useRef(false),returnFocus=useRef<HTMLElement|null>(null);
+ const origin=useRef(''),owner=useRef<string|null>(null),queryHandled=useRef(false),returnFocus=useRef<HTMLElement|null>(null);
  const step=tours[activeRoleTour][currentStepIndex];
  function start(role:TourRole){
   if(!isOpen){const url=new URL(location.href);url.searchParams.delete('tour');origin.current=url.pathname+url.search+url.hash;returnFocus.current=document.activeElement as HTMLElement;}
@@ -31,10 +31,7 @@ export function TourProvider({children}:{children:ReactNode}) {
  useEffect(()=>{
   if(auth.status==='loading')return;
   if(!queryHandled.current){queryHandled.current=true;const q=new URLSearchParams(location.search).get('tour');if(q==='student'||q==='teacher'){start(q);return;}}
-  if(userId&&!auth.needsConsent&&!isOpen&&!seen.current.has(userId)){
-   seen.current.add(userId);let done=false;try{done=!!localStorage.getItem('fogwrite:tour_done:'+userId);}catch{}
-   if(!done&&!isOpen)start(['teacher','admin','ta'].includes(auth.account?.role)?'teacher':'student');
-  }
+
  },[auth.status,userId,auth.needsConsent,isOpen]);
  useEffect(()=>{if(isOpen&&owner.current!==userId)close(false,true);},[userId]);
  useEffect(()=>{
@@ -78,7 +75,7 @@ export function TourProvider({children}:{children:ReactNode}) {
  },[isOpen,currentStepIndex,activeRoleTour,userId]);
  const value={isOpen,activeRoleTour,currentStepIndex,isAutoPlaying,isDemoSandboxActive:isOpen,start,close,next,back,target,step};
  return <Context.Provider value={value}>{children}
-  {!isOpen&&<div className="tour-launcher">{chooser&&<div className="tour-role-picker" aria-label="Chọn hướng dẫn"><button onClick={()=>start('student')}>Học sinh · 6 bước</button><button onClick={()=>start('teacher')}>Giáo viên · 4 bước</button><button onClick={()=>setChooser(false)}>Đóng</button></div>}<button className="tour-pill" aria-expanded={chooser} onClick={()=>setChooser(v=>!v)}>↗ Hướng dẫn sử dụng</button></div>}
+  {!isOpen&&['visitor','demo'].includes(auth.status)&&<div className="tour-launcher">{chooser&&<div className="tour-role-picker" aria-label="Chọn hướng dẫn"><button onClick={()=>start('student')}>Học sinh · 6 bước</button><button onClick={()=>start('teacher')}>Giáo viên · 4 bước</button><button onClick={()=>setChooser(false)}>Đóng</button></div>}<button className="tour-pill" aria-expanded={chooser} onClick={()=>setChooser(v=>!v)}>↗ Hướng dẫn sử dụng</button></div>}
   {isOpen&&<VirtualCursorOverlay {...{target,step,ready,missing,isAutoPlaying,dwelling,currentStepIndex,activeRoleTour,next,back}} total={tours[activeRoleTour].length} onHover={setHovered} onPause={()=>setAuto(false)} onToggle={()=>setAuto(v=>!v)} onClose={()=>close()}/>}
  </Context.Provider>;
 }
