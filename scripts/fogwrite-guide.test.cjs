@@ -21,6 +21,7 @@ const base='http://127.0.0.1:8000';
   });
   await page.goto(base+'/guide');
   await page.getByRole('heading',{name:'Hướng dẫn sử dụng',exact:true}).waitFor();
+  if(['student','teacher','admin'].includes(role)){assert.equal(await page.locator('.tour-launcher').count(),0);assert.equal(await page.locator('.tour-step-card').count(),0);}
   if(role==='visitor')assert.equal(protectedCalls,0,'public help must not request protected APIs');
   if(role==='demo')await page.getByText('Bạn đang xem bản demo local.',{exact:true}).waitFor();
   await page.getByRole('button',{name:'Học sinh',exact:true}).click();
@@ -36,6 +37,7 @@ const base='http://127.0.0.1:8000';
   await page.getByRole('button',{name:'Xem bài mẫu',exact:true}).click();await page.getByRole('heading',{name:'Your writing, clearer.'}).waitFor();
   await page.goto(base+'/guide');await page.getByRole('heading',{name:'Hướng dẫn sử dụng',exact:true}).waitFor();
   await page.locator('.guide-choices').getByRole('button',{name:'Check My Essay',exact:true}).click();
+  if(['student','teacher','admin'].includes(role)){assert.equal(await page.locator('.tour-launcher').count(),0);assert.equal(await page.locator('.tour-step-card').count(),0);}
   if(role==='visitor')assert.equal(await page.evaluate(()=>window.__signIn),true);
   else await page.getByRole('heading',{name:'Check My Essay',exact:true}).waitFor();
   assert.deepEqual(errors,[]);await context.close();console.log(`PASS help ${role} ${width}`);

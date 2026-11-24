@@ -1,26 +1,15 @@
-export const aspectGroups = {
-  task_response: ["Relevance to Prompt", "Clarity of Position", "Depth of Ideas", "Appropriateness of Format", "Relevant & Specific Examples"],
-  coherence_cohesion: ["Logical Organization", "Effective Introduction & Conclusion", "Supported Main Points", "Cohesive Devices Usage", "Paragraphing"],
-  lexical_resource: ["Vocabulary Range", "Lexical Accuracy", "Spelling and Word Formation"],
-  grammatical_range_accuracy: ["Sentence Structure Variety", "Grammar Accuracy", "Punctuation Usage"],
-};
-
-export function WritingChecks({ result }) {
-  return <div className="writing-summary">
-    <span><strong>{result.word_count}</strong> words</span>
-    {result.paragraph_count != null && <span><strong>{result.paragraph_count}</strong> paragraphs</span>}
-    <span>Task 2 target 250+ words</span>
-  </div>;
-}
+import {diagnosticItems} from "./diagnostics-model";
 
 export function AspectDiagnostics({ result, criterion }) {
-  const items = result.aspect_reviews?.filter(item => aspectGroups[criterion].includes(item.aspect)) ?? [];
-  if (!items.length) return null;
-  return <div className="diagnostics"><h4>Writing diagnostics</h4>
-    <dl className="aspect-list">{items.map(item =>
-      <div key={item.aspect}><dt>{item.aspect} <strong>{item.score.toFixed(1)}</strong></dt><dd>{item.explanation}</dd></div>
-    )}</dl>
-  </div>;
+ const items=diagnosticItems(result.aspect_reviews,criterion,result.criterion_scores?.[criterion]);
+ return <section className="diagnostics" aria-label="Writing Diagnostics"><h3>Writing Diagnostics</h3>
+ {!items.length&&<p className="diagnostics-unavailable">Bản lưu này chưa có chẩn đoán chi tiết theo khía cạnh.</p>}
+ <div className="diagnostic-grid">{items.map((item,i)=><article className={`diagnostic-card ${item.needsWork?'needs-work':'strong'}`} key={item.name+'-'+i}>
+  <header><h4>{item.name}</h4><span className="diagnostic-score">{item.score===null?'—':item.score.toFixed(1)}</span></header>
+  <span className="diagnostic-status">{item.needsWork?'Cần cải thiện':'Điểm mạnh'}</span>
+  {typeof item.raw_score==='number'&&item.raw_score!==item.score&&<p className="diagnostic-adjustment">Điểm khía cạnh được giới hạn theo band tiêu chí; model đề xuất {item.raw_score.toFixed(1)}.</p>}
+  {item.strength||item.weakness?<><p><strong>Điểm tốt:</strong> {item.strength||'Bản lưu chưa có nhận xét riêng.'}</p><p><strong>Thiếu sót:</strong> {item.weakness||'Bản lưu chưa có nhận xét riêng.'}</p></>:<p>{item.legacy||'Bản lưu chưa có nhận xét chi tiết.'}</p>}
+ </article>)}</div></section>;
 }
 
 export function ParagraphFeedback({ result, essay }) {

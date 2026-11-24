@@ -2,6 +2,8 @@
 
 ## Current implementation
 
+- [Task 2 criterion diagnostics](TASK2_DIAGNOSTICS_V3.md)
+
 - [Single-class policy and reviewed implementation plan](SINGLE_CLASS_ENROLLMENT.md)
 
 - [Architecture](ARCHITECTURE.md)

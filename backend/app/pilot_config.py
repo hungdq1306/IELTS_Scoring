@@ -35,7 +35,7 @@ class PilotSettings(BaseSettings):
     gemini_max_tpm: int = Field(100000, ge=1000)
     gemini_max_rpd: int = Field(200, ge=1)
     gemini_max_concurrent: int = Field(2, ge=1, le=4)
-    gemini_score_thinking_budget: int = Field(512, ge=0, le=24576)
+    gemini_score_thinking_budget: int = Field(-1, ge=-1, le=24576)
     gemini_practice_thinking_budget: int = Field(0, ge=0, le=24576)
     retention_days: int = Field(30, ge=1, le=365)
     max_queued_jobs: int = Field(200, ge=40, le=5000)

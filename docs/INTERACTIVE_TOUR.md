@@ -40,7 +40,7 @@ App thật vẫn mặc định proxy FastAPI ở `127.0.0.1:8000` khi không đ�
 
 The floating **Hướng dẫn sử dụng** button opens a role chooser. Tours normally advance about 4.5 seconds after the current target appears; Next/Back or interaction pauses playback. Auto-play resumes it. Escape/Skip restores the original route and focus. Reduced-motion preference disables animation and initial playback. A hidden browser tab pauses playback.
 
-New authenticated users see onboarding once after consent. Completion/skip is stored under `fogwrite:tour_done:${backendUserId}`. Demo/anonymous sessions do not write completion flags. Switching accounts closes an active tour. Query links launch either presentation without granting that account any role.
+Authenticated users do not receive automatic onboarding, and the floating tour launcher is hidden after sign-in. Explicit query links remain available for intentional demos. Completion/skip is stored under `fogwrite:tour_done:${backendUserId}`. Demo/anonymous sessions do not write completion flags. Switching accounts closes an active tour. Query links launch either presentation without granting that account any role.
 
 The tour renders an explicitly labeled sandbox using the actual Overview and EssayEditor components, plus isolated class/roster/history examples. It does not create classes, join classes, save overrides, write drafts, send essays, or call an AI provider. The feedback example shows Overall 6.5, TR/CC 6.5, LR 6.0, GRA 7.0. Its teacher-style coaching is clearly illustrative, not attributed as actual teacher feedback. Existing drafts remain in the application state while the sandbox is mounted.
 

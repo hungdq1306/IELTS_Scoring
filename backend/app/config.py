@@ -18,7 +18,7 @@ class Settings:
     timeout: int = 45
     retries: int = 2
     web_retries: int = 4
-    score_thinking_budget: int = 512
+    score_thinking_budget: int = -1
     practice_thinking_budget: int = 0
     feedback_language: str = "vi"
 
@@ -53,7 +53,7 @@ def load_settings() -> Settings:
         timeout=limit("TIMEOUT_SECONDS", 45, 1, 300),
         retries=limit("MAX_RETRIES", 2, 0, 4),
         web_retries=limit("WEB_MAX_RETRIES", 4, 0, 4),
-        score_thinking_budget=limit("SCORE_THINKING_BUDGET", 512, 0, 24576),
+        score_thinking_budget=limit("SCORE_THINKING_BUDGET", -1, -1, 24576),
         practice_thinking_budget=limit("PRACTICE_THINKING_BUDGET", 0, 0, 24576),
         feedback_language=lang,
     )
