@@ -6,10 +6,10 @@ from contextlib import suppress
 
 from fastapi import HTTPException
 from pydantic import ValidationError
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 
 from app.guardrails import redact_pii
-from app.models import Assessment, ClassRoom, ExerciseTemplate, Job, PracticeSet, Submission
+from app.models import Assessment, ClassRoom, ExerciseTemplate, Job, PracticeSet, PracticeExercise, Submission
 from app.practice.prompts import ANSWER_EVALUATOR
 from app.practice.schemas import AnswerAssessment
 from app.providers.base import ProviderError
@@ -100,6 +100,9 @@ class Worker:
                 elif job.kind == 'practice':
                     practice = await session.get(PracticeSet, job.submission_id)
                     practice.state, practice.payload = 'ready', result
+                    await session.execute(delete(PracticeExercise).where(PracticeExercise.submission_id == job.submission_id))
+                    session.add_all([PracticeExercise(exercise_id=exercise['exercise_id'], submission_id=job.submission_id)
+                                     for exercise in result.get('exercises', [])])
                     stored.result = drill_gen.public_practice(job.submission_id, 'ready', result)
             stored.lease_token, stored.lease_expires_at = None, None
             return True

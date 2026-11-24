@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.exc import IntegrityError
 
 from app.auth import current_user, staff_user
@@ -14,12 +14,13 @@ from app.grading.detailed import essay_paragraphs
 from app.grading.schemas import CRITERIA
 from app.grading.task2 import overall_band
 from app.guardrails import fingerprint, redact_pii, validate_input
-from app.models import Assessment, AuditEvent, ClassRoom, ExerciseTemplate, Job, Membership, PracticeSet, Prompt, Submission, TeacherAnchor, TeacherProfile, User, uid
+from app.models import Assessment, AuditEvent, ClassRoom, ExerciseTemplate, Job, Membership, PracticeSet, PracticeExercise, Prompt, Submission, SubmissionRequest, TeacherAnchor, TeacherProfile, User, uid
 from app.pilot_schemas import AnchorInput, AssignMember, Consent, CreateClass, JoinClass, ProfileUpdate, PromptInput, ScoreOverride, SubmitEssay, TemplateInput
 from app.practice.schemas import AnswerRequest, PracticeAnswers, PracticeSubmit, RevisionRequest
 from app.queue import consume_quota, enqueue, find_request, locked_bucket, ticket
 from app.services.drill_gen import public_practice
 from app.services.scorer import assignment_safe_config, baseline_config
+from app.services.submission_cache import answers_hash, content_hash
 from app.entitlements import get_user_quota_status, admit_grading, system_settings
 from app.identity import display_label, public_profile
 from app.enrollment import lock_student, check_join, member_role
@@ -208,16 +209,29 @@ async def submit(body: SubmitEssay, request: Request, idempotency_key: str | Non
     payload = body.model_dump()
     async with database(request).transaction() as session:
         await locked_bucket(session, 'submit:' + user.id)
+        alias = await session.get(SubmissionRequest, (user.id, key))
+        if alias:
+            if alias.fingerprint != fingerprint(payload):
+                raise HTTPException(409, 'Mã yêu cầu này đã được dùng cho nội dung khác.')
+            source = await owned_submission(session, alias.submission_id, user)
+            if user.consent_version != config.privacy_version:
+                raise HTTPException(403, 'Please accept the current privacy notice before submitting.')
+            if alias.reused:
+                return cached_response(source, await session.get(Assessment, source.id))
+            prior = await session.scalar(select(Job).where(Job.submission_id == source.id, Job.kind == 'score'))
+            if prior:
+                return ticket(prior)
         prior = await find_request(session, user.id, 'score', key, payload)
         if prior:
             return ticket(prior)
-        await admit_grading(session, user)
         if user.consent_version != config.privacy_version:
             raise HTTPException(403, 'Please accept the adult-only pilot and privacy notice before submitting.')
         memberships = list((await session.scalars(select(Membership).join(ClassRoom, ClassRoom.id == Membership.class_id)
             .where(Membership.user_id == user.id, Membership.active.is_(True), ClassRoom.active.is_(True)))).all())
         membership = next((member for member in memberships if member.class_id == body.class_id), None) if body.class_id else memberships[0] if len(memberships) == 1 else None
         if not membership:
+            if not memberships and user.role == 'student':
+                raise HTTPException(403, {'code': 'CLASS_ENROLLMENT_REQUIRED', 'message': 'Join an active class before submitting.'})
             raise HTTPException(403, 'Join a class first, or select a class if you belong to several.')
         classroom = await session.get(ClassRoom, membership.class_id)
         prompt = body.prompt
@@ -247,12 +261,30 @@ async def submit(body: SubmitEssay, request: Request, idempotency_key: str | Non
         snapshot = {'fewshot': fewshot, 'style': profile.style if profile else '', 'offsets': profile.offsets if profile else {},
                     'global_offsets': global_config['calibration_offsets_json'], 'prompt_version': global_config['active_prompt_version'],
                     'feedback_language': config.feedback_language,
+                    'score_thinking_budget': getattr(request.app.state.provider.settings, 'score_thinking_budget', config.gemini_score_thinking_budget),
                     'version': profile.version if profile else 0}
+        digest = content_hash(user.id, classroom.id, prompt, body.essay, snapshot, request.app.state.provider.settings.model)
+        cached = await session.scalar(select(Submission).join(Assessment, Assessment.submission_id == Submission.id)
+            .where(Submission.user_id == user.id, Submission.class_id == classroom.id,
+                   Submission.content_hash == digest, Submission.status == 'COMPLETED')
+            .order_by(Submission.created_at.desc(), Submission.id).limit(1))
+        if cached:
+            assessment = await session.get(Assessment, cached.id)
+            session.add(SubmissionRequest(user_id=user.id, request_key=key, submission_id=cached.id, fingerprint=fingerprint(payload), reused=True))
+            return cached_response(cached, assessment)
+        in_flight = await session.scalar(select(Job).join(Submission, Submission.id == Job.submission_id)
+            .where(Submission.user_id == user.id, Submission.content_hash == digest, Job.kind == 'score',
+                   Job.status.in_(['QUEUED', 'RUNNING'])).order_by(Job.created_at.desc()).limit(1))
+        if in_flight:
+            session.add(SubmissionRequest(user_id=user.id, request_key=key, submission_id=in_flight.submission_id, fingerprint=fingerprint(payload), reused=False))
+            return {**ticket(in_flight), 'reconnected': True}
+        await admit_grading(session, user)
         submission = Submission(user_id=user.id, class_id=classroom.id, prompt_id=body.prompt_id,
-                                prompt=prompt, essay=body.essay, word_count=count, warnings=warnings, config_snapshot=snapshot)
+                                prompt=prompt, essay=body.essay, word_count=count, warnings=warnings, config_snapshot=snapshot, content_hash=digest)
         session.add(submission)
         await session.flush()
         job = await enqueue(session, config, user.id, submission.id, 'score', key, payload)
+        session.add(SubmissionRequest(user_id=user.id, request_key=key, submission_id=submission.id, fingerprint=fingerprint(payload), reused=False))
         return ticket(job)
 
 
@@ -280,8 +312,12 @@ async def get_submission(submission_id: str, request: Request, user=Depends(curr
     async with database(request).sessions() as session:
         submission = await owned_submission(session, submission_id, user)
         assessment = await session.get(Assessment, submission_id)
+        job = await session.scalar(select(Job).where(Job.submission_id == submission_id, Job.kind == 'score'))
         return {'submission_id': submission.id, 'class_id': submission.class_id, 'prompt': submission.prompt,
-                'essay': submission.essay, 'status': submission.status,
+                'essay': submission.essay, 'status': submission.status, 'word_count': submission.word_count,
+                'error_code': job.error_code if job and submission.status == 'FAILED' else None,
+                'error_message': 'AI grading could not finish. You can edit and resubmit your saved essay.' if submission.status == 'FAILED' else None,
+                'credit_refunded': submission.status == 'FAILED',
                 'grade': effective_grade(assessment) if assessment else None}
 
 
@@ -293,6 +329,12 @@ async def submission_result(submission_id: str, request: Request, user=Depends(c
         if not job:
             raise HTTPException(404, 'Assessment job not found.')
         return JSONResponse(ticket(job), status_code=202)
+
+
+def cached_response(submission, assessment):
+    return JSONResponse({**effective_grade(assessment), 'submission_id': submission.id, 'status': 'COMPLETED',
+        'reused': True, 'cached_content': {'prompt': submission.prompt, 'essay': submission.essay, 'classId': submission.class_id},
+        'notice': 'Bài viết này đã được chấm trước đó — hiển thị lại kết quả cũ, không trừ lượt hôm nay.'})
 
 
 def effective_grade(assessment):
@@ -359,9 +401,19 @@ async def make_practice(submission_id: str, request: Request, user=Depends(curre
 
 async def exercise_context(session, exercise_id, user):
     # Exercise IDs are random, but authorization still checks the parent submission.
-    practices = (await session.execute(select(PracticeSet, Submission).join(Submission, Submission.id == PracticeSet.submission_id)
-                                       .where(Submission.user_id == user.id, PracticeSet.state == 'ready').limit(100))).all()
-    for practice, submission in practices:
+    query = select(PracticeSet, Submission).join(Submission, Submission.id == PracticeSet.submission_id).where(
+        Submission.user_id == user.id, PracticeSet.state == 'ready')
+    row = (await session.execute(query.join(PracticeExercise, PracticeExercise.submission_id == PracticeSet.submission_id)
+        .where(PracticeExercise.exercise_id == exercise_id))).first()
+    if row is None:
+        # Compatibility for unmigrated/imported JSON records; no bounded Python scan.
+        predicate = ("EXISTS (SELECT 1 FROM json_each(practice_sets.payload, '$.exercises') ex "
+                     "WHERE json_extract(ex.value, '$.exercise_id') = :exercise_id)") if session.bind.dialect.name == 'sqlite' else (
+                     "EXISTS (SELECT 1 FROM json_array_elements(practice_sets.payload::json->'exercises') ex "
+                     "WHERE ex->>'exercise_id' = :exercise_id)")
+        row = (await session.execute(query.where(text(predicate)), {'exercise_id': exercise_id})).first()
+    if row:
+        practice, submission = row
         exercise = next((item for item in practice.payload.get('exercises', []) if item['exercise_id'] == exercise_id), None)
         if exercise:
             await owned_submission(session, submission.id, user)
@@ -379,6 +431,11 @@ async def queue_operation(session, config, user, submission_id, kind, key, paylo
         raise HTTPException(429, 'Practice attempt limit reached for this essay.')
     await consume_quota(session, 'practice-calls:' + user.id, config.daily_practice_limit)
     job = await enqueue(session, config, user.id, submission_id, kind, key, payload)
+    if kind in ('answer', 'practice_batch'):
+        ids = [row['exercise_id'] for row in payload['answers']] if kind == 'practice_batch' else [payload['exercise_id']]
+        hinted = set((await session.scalars(select(Job.request_key).where(Job.submission_id == submission_id, Job.kind == 'hint'))).all())
+        # Preserve the fingerprint of the client payload; hints are immutable server metadata.
+        job.payload = {**payload, 'hint_snapshot': {exercise_id: exercise_id in hinted for exercise_id in ids}}
     return JSONResponse(ticket(job), status_code=202)
 
 
@@ -406,8 +463,8 @@ async def feedback(exercise_id: str, request: Request, user=Depends(current_user
 @router.post('/exercises/{exercise_id}/hint')
 async def hint(exercise_id: str, request: Request, user=Depends(current_user)):
     async with database(request).transaction() as session:
+        await locked_bucket(session, 'practice:' + user.id)
         submission, _, exercise = await exercise_context(session, exercise_id, user)
-        await locked_bucket(session, 'hint:' + user.id)
         row = await find_request(session, user.id, 'hint', exercise_id, {})
         if not row:
             session.add(Job(user_id=user.id, submission_id=submission.id, kind='hint', request_key=exercise_id,
@@ -435,9 +492,13 @@ async def practice_attempt(submission_id: str, request: Request, user=Depends(cu
     async with database(request).sessions() as session:
         _, practice = await practice_context(session, submission_id, user)
         last = await session.scalar(select(Job).where(Job.submission_id == submission_id, Job.kind == 'practice_batch').order_by(Job.created_at.desc()).limit(1))
-        return {'submission_id': submission_id, 'answers': practice.draft_answers if practice else [],
-                'state': 'complete' if last and last.status == 'COMPLETED' else 'pending' if last and last.status in ('QUEUED', 'RUNNING') else 'failed' if last else 'draft',
-                'result': last.result if last and last.status == 'COMPLETED' else None,
+        answers = practice.draft_answers if practice else []
+        current_hash = answers_hash(answers)
+        graded_hash = answers_hash(last.payload.get('answers', [])) if last else None
+        matches = bool(last and current_hash == graded_hash)
+        return {'submission_id': submission_id, 'answers': answers, 'answer_hash': current_hash, 'graded_answer_hash': graded_hash,
+                'state': 'complete' if matches and last.status == 'COMPLETED' else 'pending' if matches and last.status in ('QUEUED', 'RUNNING') else 'failed' if matches else 'draft',
+                'result': last.result if matches and last.status == 'COMPLETED' else None,
                 'exercises_total': len(practice.payload.get('exercises', [])) if practice else 0,
                 'evaluation_model': request.app.state.answer_provider.settings.model}
 
@@ -459,12 +520,13 @@ async def save_attempt(submission_id: str, body: PracticeAnswers, request: Reque
         await locked_bucket(session, 'practice:' + user.id)
         practice, answers = await validate_answers(session, submission_id, user, body.answers)
         practice.draft_answers = answers
-        return {'state': 'saved', 'answers': answers, 'submission_id': submission_id}
+        return {'state': 'saved', 'answers': answers, 'answer_hash': answers_hash(answers), 'submission_id': submission_id}
 
 
 @router.post('/writing/task2/{submission_id}/practice-attempt/submit')
 async def submit_attempt(submission_id: str, body: PracticeSubmit, request: Request, user=Depends(current_user)):
     async with database(request).transaction() as session:
+        await locked_bucket(session, 'practice:' + user.id)
         practice, answers = await validate_answers(session, submission_id, user, body.answers, complete=True)
         practice.draft_answers = answers
         return await queue_operation(session, settings(request), user, submission_id, 'practice_batch', body.request_id, {'answers': answers}, 3)
@@ -476,20 +538,22 @@ async def progress(submission_id: str, request: Request, user=Depends(current_us
     async with database(request).sessions() as session:
         _, practice = await practice_context(session, submission_id, user)
         jobs = list((await session.scalars(select(Job).where(Job.submission_id == submission_id, Job.status == 'COMPLETED')
-                                          .order_by(Job.completed_at, Job.id))).all())
+                                          .order_by(Job.created_at, Job.id))).all())
     payload = practice.payload if practice else {}
     exercises, errors = payload.get('exercises', []), payload.get('errors', [])
     records = []
     for job in jobs:
-        if job.kind == 'answer': records.append(job.result)
-        elif job.kind == 'practice_batch': records.extend(job.result['items'])
+        if job.kind == 'answer': records.append((job.result, job))
+        elif job.kind == 'practice_batch': records.extend((item, job) for item in job.result['items'])
     first = {}
-    for row in records: first.setdefault(row['exercise_id'], row)
+    for row, job in records: first.setdefault(row['exercise_id'], (row, job))
     hints = {job.request_key for job in jobs if job.kind == 'hint'}
-    done = {row['exercise_id'] for row in records if row['outcome'] == 'correct'}
-    unassisted = [row for key, row in first.items() if key not in hints]
+    hint_times = {job.request_key: job.created_at for job in jobs if job.kind == 'hint'}
+    done = {row['exercise_id'] for row, _ in records if row['outcome'] == 'correct'}
+    unassisted = [row for key, (row, job) in first.items() if not job.payload.get('hint_snapshot', {}).get(
+        key, hint_times.get(key, float('inf')) <= job.created_at)]
     return {'submission_id': submission_id, 'exercises_total': len(exercises), 'exercises_completed': len(done),
-            'attempts': len(records), 'first_attempt_accuracy': sum(row['outcome'] == 'correct' for row in first.values()) / len(first) if first else None,
+            'attempts': len(records), 'first_attempt_accuracy': sum(row['outcome'] == 'correct' for row, _ in first.values()) / len(first) if first else None,
             'unassisted_first_attempt_accuracy': sum(row['outcome'] == 'correct' for row in unassisted) / len(unassisted) if unassisted else None,
             'hints_used': len(hints), 'skills_practiced': sorted({exercise['skill'] for exercise in exercises if exercise['exercise_id'] in first}),
             'common_error_categories': dict(Counter(error['category'] for error in errors if error['exercise_eligible'])),

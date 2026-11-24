@@ -140,7 +140,7 @@ def test_concurrent_quota_and_idempotency(tmp_path):
             assert len({response.json()['job_id'] for response in duplicates}) == 1
             conflict = await submit(context, key='same_request', essay=ESSAY + ' Additional evidence improves this argument.')
             assert conflict.status_code == 409
-            responses = await asyncio.gather(*(submit(context, key='quota_key_' + str(index)) for index in range(9)))
+            responses = await asyncio.gather(*(submit(context, key='quota_key_' + str(index), essay=ESSAY + ' Additional example number ' + str(index) + '.') for index in range(9)))
             assert sum(response.status_code == 202 for response in responses) == 2
             assert sum(response.status_code == 429 for response in responses) == 7
             assert all('retry-after' in response.headers for response in responses if response.status_code == 429)
@@ -170,7 +170,7 @@ def test_owner_role_class_and_revocation_guards(tmp_path):
 def test_stale_lease_fences_old_worker_and_claim_order(tmp_path):
     async def scenario():
         async with application(tmp_path) as context:
-            responses = [await submit(context, key='ordered_key_' + str(index)) for index in range(3)]
+            responses = [await submit(context, key='ordered_key_' + str(index), essay=ESSAY+' Ordered example '+str(index)+'.') for index in range(3)]
             first = await claim(context.database, context.settings)
             assert first.id == responses[0].json()['job_id']
             async with context.database.transaction() as session:

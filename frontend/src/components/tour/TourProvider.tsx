@@ -13,11 +13,13 @@ export function TourProvider({children}:{children:ReactNode}) {
  const [isOpen,setOpen]=useState(false),[activeRoleTour,setRole]=useState<TourRole>('student');
  const [currentStepIndex,setIndex]=useState(0),[isAutoPlaying,setAuto]=useState(true),[target,setTarget]=useState('');
  const [ready,setReady]=useState(false),[missing,setMissing]=useState(false),[chooser,setChooser]=useState(false);
+ const [dwelling,setDwelling]=useState(false);
+ const [hovered,setHovered]=useState(false);
  const origin=useRef(''),owner=useRef<string|null>(null),seen=useRef(new Set<string>()),queryHandled=useRef(false),returnFocus=useRef<HTMLElement|null>(null);
  const step=tours[activeRoleTour][currentStepIndex];
  function start(role:TourRole){
   if(!isOpen){const url=new URL(location.href);url.searchParams.delete('tour');origin.current=url.pathname+url.search+url.hash;returnFocus.current=document.activeElement as HTMLElement;}
-  owner.current=userId;setRole(role);setIndex(0);setAuto(!matchMedia('(prefers-reduced-motion: reduce)').matches);setChooser(false);setOpen(true);
+  owner.current=userId;setHovered(false);setRole(role);setIndex(0);setAuto(!matchMedia('(prefers-reduced-motion: reduce)').matches);setChooser(false);setOpen(true);
  }
  function close(completed=false,accountChanged=false){
   if(!accountChanged&&owner.current&&owner.current===userId){try{localStorage.setItem('fogwrite:tour_done:'+owner.current,completed?'completed':'skipped');}catch{}}
@@ -48,15 +50,24 @@ export function TourProvider({children}:{children:ReactNode}) {
   if(!isOpen||!ready)return;
   // Only move to sandbox controls; never click production controls or submit a form.
   const second=activeRoleTour==='student'&&currentStepIndex===3?'sample-error-highlight':activeRoleTour==='student'&&currentStepIndex===1?'tour-join-submit':activeRoleTour==='student'&&currentStepIndex===2?'sample-active-class':activeRoleTour==='student'&&currentStepIndex===4?'sample-drill-answer':activeRoleTour==='teacher'&&currentStepIndex===0?'teacher-invite-controls':activeRoleTour==='teacher'&&currentStepIndex===2?'teacher-score-override':null;
+  if(activeRoleTour==='student'&&currentStepIndex===2){
+   const timers=[setTimeout(()=>setTarget('sample-prompt-editor'),1500),setTimeout(()=>setTarget('sample-essay-editor'),2900),setTimeout(()=>setTarget('sample-submit-essay'),4300)];
+   return()=>timers.forEach(clearTimeout);
+  }
   if(!second)return;const timer=setTimeout(()=>setTarget(second),1500);
   const correction=activeRoleTour==='student'&&currentStepIndex===3?setTimeout(()=>setTarget('sample-correction-card'),2900):null;
   return()=>{clearTimeout(timer);if(correction)clearTimeout(correction);};
  },[isOpen,ready,currentStepIndex,activeRoleTour]);
  useEffect(()=>{
-  if(!isOpen||!ready||!isAutoPlaying||document.hidden)return;
-  const timer=setTimeout(()=>{if(currentStepIndex===tours[activeRoleTour].length-1)close(true);else setIndex(i=>i+1);},activeRoleTour==='student'&&currentStepIndex===3?6000:4500);
-  return()=>clearTimeout(timer);
- },[isOpen,ready,isAutoPlaying,currentStepIndex,activeRoleTour]);
+  setDwelling(false);
+  if(!isOpen||!ready||missing||!isAutoPlaying||hovered||document.hidden)return;
+  const finalTarget=activeRoleTour==='student'?['credits-badge','tour-join-submit','sample-submit-essay','sample-correction-card','sample-drill-answer','writing-journal'][currentStepIndex]:['teacher-invite-controls','teacher-class-roster','teacher-score-override','essay-workspace'][currentStepIndex];
+  if(target!==finalTarget)return;
+  // 650ms glide + 450ms click ring finish before eight seconds of reading time.
+  let timer:ReturnType<typeof setTimeout>;
+  const settle=setTimeout(()=>{setDwelling(true);timer=setTimeout(()=>{if(currentStepIndex===tours[activeRoleTour].length-1)close(true);else setIndex(i=>i+1);},8000);},1200);
+  return()=>{clearTimeout(settle);clearTimeout(timer);};
+ },[isOpen,ready,missing,isAutoPlaying,hovered,currentStepIndex,activeRoleTour,target]);
  useEffect(()=>{
   if(!isOpen)return;
   const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();close();}else if(e.key==='ArrowRight'&&!['INPUT','TEXTAREA','SELECT'].includes((e.target as HTMLElement).tagName)){e.preventDefault();next();}else if(e.key==='ArrowLeft'&&!['INPUT','TEXTAREA','SELECT'].includes((e.target as HTMLElement).tagName)){e.preventDefault();back();}};
@@ -68,6 +79,6 @@ export function TourProvider({children}:{children:ReactNode}) {
  const value={isOpen,activeRoleTour,currentStepIndex,isAutoPlaying,isDemoSandboxActive:isOpen,start,close,next,back,target,step};
  return <Context.Provider value={value}>{children}
   {!isOpen&&<div className="tour-launcher">{chooser&&<div className="tour-role-picker" aria-label="Chọn hướng dẫn"><button onClick={()=>start('student')}>Học sinh · 6 bước</button><button onClick={()=>start('teacher')}>Giáo viên · 4 bước</button><button onClick={()=>setChooser(false)}>Đóng</button></div>}<button className="tour-pill" aria-expanded={chooser} onClick={()=>setChooser(v=>!v)}>↗ Hướng dẫn sử dụng</button></div>}
-  {isOpen&&<VirtualCursorOverlay {...{target,step,ready,missing,isAutoPlaying,currentStepIndex,activeRoleTour,next,back}} total={tours[activeRoleTour].length} onToggle={()=>setAuto(v=>!v)} onClose={()=>close()}/>}
+  {isOpen&&<VirtualCursorOverlay {...{target,step,ready,missing,isAutoPlaying,dwelling,currentStepIndex,activeRoleTour,next,back}} total={tours[activeRoleTour].length} onHover={setHovered} onPause={()=>setAuto(false)} onToggle={()=>setAuto(v=>!v)} onClose={()=>close()}/>}
  </Context.Provider>;
 }

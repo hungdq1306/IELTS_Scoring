@@ -7,7 +7,7 @@ export const tours:Record<TourRole,TourStep[]> = {
   {route:'/check',target:'essay-workspace',title:'Đưa đề và bài viết vào đây',body:'Kiểm tra lớp nhận bài, dán đầy đủ đề và bài, hướng tới ít nhất 250 từ. Submit essay mở xác nhận trước khi gửi chấm.'},
   {route:'/assessment',target:'sample-band-scores',title:'Xem band rồi mở sửa câu',body:'Xem bốn tiêu chí, sau đó theo con trỏ đến câu tô màu. Minimal Fix sửa lỗi trực tiếp; Band Upgrade minh họa cách diễn đạt tốt hơn.'},
   {route:'/practice',target:'practice-workspace',title:'Viết có giờ, rồi luyện điểm yếu',body:'Writing Practice là viết đề trong 40 phút; nháp tự lưu theo tài khoản. Bài tập cá nhân hóa nằm ở Skill Practice sau assessment: trả lời đủ bộ rồi Submit all responses.'},
-  {route:'/history',target:'writing-journal',title:'Trở lại bài cũ và tiếp tục tiến bộ',body:'History giữ bài đã nộp để mở lại band, nhận xét và bài tập. Continue draft ở Overview dành cho nháp. Nút Hướng dẫn sử dụng ở góc dưới mở lại tour bất kỳ lúc nào.'},
+  {route:'/history',target:'writing-journal',title:'Trở lại bài cũ và tiếp tục tiến bộ',body:'History giữ cả bài hoàn tất và bài FAILED. Mở bài lỗi để đọc lại nội dung rồi Edit & Resubmit; bài hoàn tất mở band, nhận xét và bài tập. Continue draft ở Overview dành cho nháp. Nút Hướng dẫn sử dụng mở lại tour bất kỳ lúc nào.'},
  ],
  teacher:[
   {route:'/classes',target:'teacher-create-class',title:'Tạo lớp và chia sẻ lời mời',body:'Create Class tạo lớp. Theo con trỏ tới mã mời: Copy code/link để gửi học sinh; Regenerate code làm mã cũ hết hiệu lực. Mọi thao tác ở đây là minh họa.'},

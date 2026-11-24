@@ -31,7 +31,7 @@ def test_unenrolled_join_three_credits_refund_and_rotation(tmp_path):
             joined=await c.client.post('/api/classes/join',headers=headers(),json={'join_code':' '+code.lower()+' '})
             assert joined.status_code==200 and joined.json()['quota_status']['remaining_today']==3
             assert 'join_code' not in (await c.client.get('/api/auth/me',headers=headers())).text
-            responses=await asyncio.gather(*(submit(c,key='v2_request_'+str(i)) for i in range(4)))
+            responses=await asyncio.gather(*(submit(c,key='v2_request_'+str(i),essay=ESSAY+' Additional example number '+str(i)+'.') for i in range(4)))
             assert [r.status_code for r in responses].count(202)==3
             assert [r.status_code for r in responses].count(429)==1
             from app.queue import claim
@@ -544,7 +544,7 @@ def test_worker_idle_only_auto_practice_and_priority(tmp_path):
         async with application(tmp_path) as c:
             assert c.settings.auto_practice_mode == 'idle_only'
             r1 = await submit(c, key='idle_key_01')
-            r2 = await submit(c, key='idle_key_02')
+            r2 = await submit(c, key='idle_key_02', essay=ESSAY+' Additional evidence supports this argument.')
             assert r1.status_code == 202 and r2.status_code == 202
             sub1, sub2 = r1.json(), r2.json()
 

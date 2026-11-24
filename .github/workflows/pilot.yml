@@ -25,6 +25,16 @@ jobs:
           python-version: "3.11"
       - run: pip install -r backend/requirements-dev.txt
       - run: python -m pytest -q backend/tests -m "not live"
+  task1-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r benchmarks/task1_extraction/requirements.txt
+      - run: python -m pytest -q benchmarks/task1_extraction/test_pipeline.py
+      - run: python -m unittest discover -s benchmarks/task1_extraction -t . -p "test_*.py"
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -33,10 +43,12 @@ jobs:
         with:
           node-version: "22"
       - run: npm install --prefix frontend --workspaces=false
+      - run: npm --prefix frontend run typecheck:tour
       - run: node scripts/build-frontend.cjs
       - run: node --test scripts/fogwrite-model.test.mjs scripts/fogwrite-ui.test.cjs
       - run: cd frontend && npx playwright install --with-deps chromium
       - run: node scripts/fogwrite-auth.test.cjs
+      - run: node scripts/fogwrite-recovery.test.cjs
       - run: node scripts/fogwrite-guide.test.cjs
       - run: node scripts/fogwrite-tour.test.cjs
   image:

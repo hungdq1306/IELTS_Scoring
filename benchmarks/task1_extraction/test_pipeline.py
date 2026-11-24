@@ -9,7 +9,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock, Mock, patch
 from PIL import Image
-from . import audit_consistency, run_benchmark
+from . import audit_consistency, run_benchmark, extractor, prepare_essayjudge
 from .eval_gold import evaluate
 from .extractor import VERSION, compute_routing, extract, generate, normalize_image, read_jsonl
 from .prepare_essayjudge import prepare, human_score, load_official_dataset, export_gold_template, scan_categories
@@ -50,6 +50,13 @@ def record(image_hash, model="fixture-only", extraction=None):
 
 
 class PipelineTests(unittest.TestCase):
+    def setUp(self):
+        # Fail immediately on accidental outbound HTTP, under either test runner.
+        for target in ('urllib.request.urlopen', 'httpx.HTTPTransport.handle_request', 'httpx.AsyncHTTPTransport.handle_async_request'):
+            guard = patch(target, side_effect=AssertionError('Offline regression attempted network access'))
+            guard.start()
+            self.addCleanup(guard.stop)
+
     def test_field_order(self):
         self.assertEqual(list(Task1ExtractionResult.model_fields), ["visual_category", "title_and_units",
             "has_explicit_labels", "image_clarity", "numeric_tables", "spatial_or_process_steps",
@@ -139,7 +146,7 @@ class PipelineTests(unittest.TestCase):
         def fetch(url):return b'{"sha":"pinned"}' if "/commits/" in url else csv_data if url.endswith("data.csv") else buffer.getvalue()
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory)
-            with patch("benchmarks.task1_extraction.prepare_essayjudge.fetch_bytes",side_effect=fetch) as network:
+            with patch.object(prepare_essayjudge,"fetch_bytes",side_effect=fetch) as network:
                 dataset=load_official_dataset(root);load_official_dataset(root)
                 self.assertEqual(network.call_count,3)
             records=prepare(dataset,root,root)
@@ -156,7 +163,7 @@ class PipelineTests(unittest.TestCase):
         response=SimpleNamespace(usage_metadata=SimpleNamespace(prompt_token_count=10,candidates_token_count=4,total_token_count=15))
         api=SimpleNamespace(models=SimpleNamespace(generate_content=Mock(side_effect=[*failures,response])))
         telemetry={}
-        with patch("benchmarks.task1_extraction.extractor.asyncio.sleep",new_callable=AsyncMock) as sleep, patch("benchmarks.task1_extraction.extractor.random.uniform",return_value=0):
+        with patch.object(extractor.asyncio,"sleep",new_callable=AsyncMock) as sleep, patch.object(extractor.random,"uniform",return_value=0):
             self.assertIs(asyncio.run(generate(api,"fixture",[],Task1ExtractionResult,telemetry)),response)
             self.assertEqual([call.args[0] for call in sleep.await_args_list],[2,4,8])
         self.assertEqual(telemetry["attempt_count"],4)
@@ -168,7 +175,7 @@ class PipelineTests(unittest.TestCase):
         exc=RuntimeError("busy");exc.code=503
         api=SimpleNamespace(models=SimpleNamespace(generate_content=Mock(side_effect=exc)))
         telemetry={}
-        with patch("benchmarks.task1_extraction.extractor.asyncio.sleep",new_callable=AsyncMock) as sleep:
+        with patch.object(extractor.asyncio,"sleep",new_callable=AsyncMock) as sleep:
             with self.assertRaises(RuntimeError):asyncio.run(generate(api,"fixture",[],Task1ExtractionResult,telemetry))
             self.assertEqual(sleep.await_count,4)
         self.assertEqual(telemetry["attempt_count"],5)

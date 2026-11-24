@@ -11,6 +11,7 @@ export function PracticeWorkspace({userId,result,essay,criterion,sourceQuote,cle
  const [busy,setBusy]=useState(false),[loading,setLoading]=useState(true),[error,setError]=useState(''),[hint,setHint]=useState(''),[elapsed,setElapsed]=useState(0);
  const [paragraph,setParagraph]=useState(''),[revision,setRevision]=useState(''),[revisionFeedback,setRevisionFeedback]=useState(null);
  const pending=useRef(false),active=useRef(true),request=useRef(null);
+ const baseHash=useRef(null);
  const exercises=batch?.exercises||[],current=Math.min(index,Math.max(0,exercises.length-1)),chosen=exercises[current];
  const source=batch?.errors?.find(e=>e.error_id===chosen?.source_error_id);
  const answered=exercises.filter(e=>(answers[e.exercise_id]||'').trim()).length;
@@ -22,8 +23,12 @@ export function PracticeWorkspace({userId,result,essay,criterion,sourceQuote,cle
   active.current=true;let cancelled=false;
   async function load(){const b=await reload(),attempt=await api(`/writing/task2/${sid}/practice-attempt`);if(cancelled)return;
    const saved=Object.fromEntries((attempt.answers||[]).map(r=>[r.exercise_id,r.answer]));
-   if(!['complete','pending'].includes(attempt.state)){try{Object.assign(saved,JSON.parse(localStorage.getItem(draftKey)||'{}'));}catch{}}
-   setAnswers(Object.fromEntries((b.exercises||[]).map(e=>[e.exercise_id,saved[e.exercise_id]||''])));setReview(attempt.result||null);setState(attempt.state);
+   baseHash.current=attempt.answer_hash||null;let newerDraft=false;
+   try{const local=JSON.parse(localStorage.getItem(draftKey)||'null');
+    if(local?.answers&&local.base_hash===baseHash.current){Object.assign(saved,local.answers);newerDraft=(b.exercises||[]).some(e=>(saved[e.exercise_id]||'')!==(attempt.answers||[]).find(a=>a.exercise_id===e.exercise_id)?.answer);}
+    else if(local&&!local.answers&&!['complete','pending'].includes(attempt.state))Object.assign(saved,local);
+   }catch{}
+   setAnswers(Object.fromEntries((b.exercises||[]).map(e=>[e.exercise_id,saved[e.exercise_id]||''])));setReview(newerDraft?null:attempt.result||null);setState(newerDraft?'draft':attempt.state);
    if(sourceQuote){const i=(b.exercises||[]).findIndex(e=>b.errors?.some(r=>r.error_id===e.source_error_id&&r.original_quote.includes(sourceQuote)));if(i>=0)setIndex(i);}
   }
   load().catch(e=>{if(!cancelled)setError(e.message);}).finally(()=>{if(!cancelled)setLoading(false);});
@@ -50,13 +55,13 @@ export function PracticeWorkspace({userId,result,essay,criterion,sourceQuote,cle
   return()=>{stopped=true;clearInterval(timer);};
  },[batch?.state,sid]);
  async function run(action){if(pending.current)return;pending.current=true;setBusy(true);setError('');try{await action();}catch(e){if(active.current)setError(e.message);}finally{pending.current=false;if(active.current)setBusy(false);}}
- function edit(value){const next={...answers,[chosen.exercise_id]:value};setAnswers(next);setReview(null);setState('draft');request.current=null;try{localStorage.setItem(draftKey,JSON.stringify(next));}catch{setError('Browser storage is unavailable. Save responses before leaving.');}}
- async function save(){await api(`/writing/task2/${sid}/practice-attempt`,{method:'PUT',body:JSON.stringify(payload())});}
+ function edit(value){const next={...answers,[chosen.exercise_id]:value};setAnswers(next);setReview(null);setState('draft');request.current=null;try{localStorage.setItem(draftKey,JSON.stringify({answers:next,base_hash:baseHash.current}));}catch{setError('Browser storage is unavailable. Save responses before leaving.');}}
+ async function save(){const saved=await api(`/writing/task2/${sid}/practice-attempt`,{method:'PUT',body:JSON.stringify(payload())});baseHash.current=saved.answer_hash||null;try{localStorage.setItem(draftKey,JSON.stringify({answers,base_hash:baseHash.current}));}catch{}}
  async function move(i){await run(async()=>{await save();setIndex(i);});}
  async function submit(){await run(async()=>{
   if(!complete)throw new Error('Finish every exercise before submitting.');const data=payload(),signature=JSON.stringify(data);
   if(request.current?.signature!==signature)request.current={signature,id:crypto.randomUUID()};
-  try{const response=await api(`/writing/task2/${sid}/practice-attempt/submit`,{method:'POST',body:JSON.stringify({...data,request_id:request.current.id})});if(active.current){setReview(response);setState('complete');}await reload();}
+  try{const response=await api(`/writing/task2/${sid}/practice-attempt/submit`,{method:'POST',body:JSON.stringify({...data,request_id:request.current.id})});try{localStorage.removeItem(draftKey);}catch{}const attempt=await api(`/writing/task2/${sid}/practice-attempt`);baseHash.current=attempt.answer_hash||null;if(active.current){setReview(response);setState('complete');}await reload();}
   catch(e){const status=await api(`/writing/task2/${sid}/practice-attempt`).catch(()=>null);if(status?.state==='failed')request.current=null;if(status?.result&&active.current){setReview(status.result);setState('complete');}throw e;}
  });}
  const paragraphOptions=[...new Set((batch?.errors||[]).filter(e=>e.exercise_eligible).map(e=>e.paragraph_number))];

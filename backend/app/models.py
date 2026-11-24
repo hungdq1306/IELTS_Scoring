@@ -119,8 +119,18 @@ class Submission(Base):
     warnings: Mapped[list] = mapped_column(JSON, default=list)
     status: Mapped[str] = mapped_column(String(24), default='QUEUED')
     config_snapshot: Mapped[dict] = mapped_column(JSON)
+    content_hash: Mapped[str | None] = mapped_column(String(64), index=True)
     created_at: Mapped[float] = mapped_column(Float, default=time.time, index=True)
     credit_reserved_at: Mapped[float | None] = mapped_column(Float)
+
+
+class SubmissionRequest(Base):
+    __tablename__ = 'submission_requests'
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id', ondelete='CASCADE'), primary_key=True)
+    request_key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    submission_id: Mapped[str] = mapped_column(ForeignKey('submissions.id', ondelete='CASCADE'), index=True)
+    fingerprint: Mapped[str] = mapped_column(String(64))
+    reused: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
 class Assessment(Base):
@@ -139,6 +149,12 @@ class PracticeSet(Base):
     payload: Mapped[dict] = mapped_column(JSON, default=dict)
     templates: Mapped[list] = mapped_column(JSON, default=list)
     draft_answers: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class PracticeExercise(Base):
+    __tablename__ = 'practice_exercises'
+    exercise_id: Mapped[str] = mapped_column(String(80), primary_key=True)
+    submission_id: Mapped[str] = mapped_column(ForeignKey('practice_sets.submission_id', ondelete='CASCADE'), index=True)
 
 
 class Job(Base):
