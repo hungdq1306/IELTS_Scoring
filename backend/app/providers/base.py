@@ -33,5 +33,6 @@ class ProviderError(Exception):
 
 class LLMProvider(Protocol):
     async def generate_structured(
-        self, system_prompt: str, user_prompt: str, response_schema: type[BaseModel]
+        self, system_prompt: str, user_prompt: str, response_schema: type[BaseModel],
+        *, thinking_budget: int | None = None, model_name: str | None = None
     ) -> Generation: ...

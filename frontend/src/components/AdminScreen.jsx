@@ -205,7 +205,8 @@ export function AdminScreen({go}) {
           <div><span>Submissions today</span><strong>{data.today_submissions ?? 0}</strong><small>{data.completed_today ?? 0} completed · {data.active_classes ?? 0} active classes</small></div>
           <div className={(data.failed_jobs_today || 0) > 0 ? 'kpi-alert' : ''}><span>Failed jobs today</span><strong>{data.failed_jobs_today ?? 0}</strong><small>{(data.failed_jobs_today || 0) > 0 ? 'Requires operator attention' : 'All jobs healthy'}</small></div>
           <div><span>Longest active queue wait</span><strong>{data.longest_active_wait_sec ?? 0}s</strong><small>{data.queue_depth ?? 0} jobs waiting or running</small></div>
-          <div><span>Grading latency (Median / P95)</span><strong>{fmtSec(l24?.median_sec)} / {fmtSec(l24?.p95_sec)}</strong><small>{latencyText}</small></div>
+          <div><span>End-to-end latency (Median / P95)</span><strong>{fmtSec(l24?.median_sec)} / {fmtSec(l24?.p95_sec)}</strong><small>{latencyText}</small></div>
+          {['queue_wait_ms','processing_ms'].map(key=><div key={key}><span>{key==='queue_wait_ms'?'Initial queue wait':'Successful processing'} (Median / P95)</span><strong>{fmtSec(l24?.[key]?.median_sec)} / {fmtSec(l24?.[key]?.p95_sec)}</strong></div>)}
           <div><span>AI tokens &amp; cost (7d)</span><strong>{costText}</strong><small>{data.total_tokens_used ?? 0} tokens</small></div>
         </div>
         <p>{data.usage_scope || 'Cost shows Pricing unconfigured when model unit prices or provider usage are unset.'}</p>

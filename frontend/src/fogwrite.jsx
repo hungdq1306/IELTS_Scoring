@@ -135,6 +135,7 @@ function App(){
    const grade=await api('/writing/task2/evaluate',{method:'POST',signal:controller.signal,body:JSON.stringify({prompt:snapshot.prompt,essay:snapshot.essay,topic:snapshot.topic,source:null,experiment:method,...(selectedClass?{class_id:selectedClass.id}:{})})});
    if(activeSessionRef.current.gen!==gen||activeSessionRef.current.userId!==userId)return;
    try{sessionStorage.setItem('fogwrite.assessment',grade.submission_id);localStorage.setItem('fogwrite.timing.'+grade.submission_id,JSON.stringify({started:snapshot.started,finished:snapshot.finished}));}catch{}
+   setDraft(current=>current.updatedAt===snapshot.updatedAt&&current.prompt===snapshot.prompt&&current.essay===snapshot.essay?{...blank,userId}:current);
    setResult(grade);setAssessmentDraft({...snapshot,...grade.cached_content});setTarget({});setRevision(n=>n+1);feedbackScroll.current=0;navigate('feedback');
   }catch(e){
    if(e.name!=='AbortError'&&activeSessionRef.current.gen===gen&&activeSessionRef.current.userId===userId)setError(e.message);
@@ -145,7 +146,6 @@ function App(){
  }
  async function restore(sid,onMount=false){
   if(pending.current)return;
-  if(!onMount&&!activeDraft.finished&&activeDraft.essay&&!confirm('Open this assessment and replace the current browser draft?'))return;
   const {gen,userId}=activeSessionRef.current;
   const controller=new AbortController();
   inflightController.current=controller;
@@ -155,8 +155,7 @@ function App(){
    if(activeSessionRef.current.gen!==gen||activeSessionRef.current.userId!==userId)return;
    let timing={};try{timing=JSON.parse(localStorage.getItem('fogwrite.timing.'+sid)||'{}');sessionStorage.setItem('fogwrite.assessment',sid);}catch{}
    const snapshot=normalizeDraft({...timing,userId,classId:saved.class_id,prompt:saved.prompt,essay:saved.essay});
-   if(onMount&&activeDraft.essay&&!activeDraft.finished&&activeDraft.essay!==saved.essay){setError('Your current draft has changed. Open the saved assessment from History to replace it.');return;}
-   setDraft(snapshot);setAssessmentDraft(snapshot);setResult(saved.status==='FAILED'?{failed:true,...saved}:{...saved.grade,submission_id:saved.submission_id});setTarget({});feedbackScroll.current=0;
+   setAssessmentDraft(snapshot);setResult(saved.status==='FAILED'?{failed:true,...saved}:{...saved.grade,submission_id:saved.submission_id});setTarget({});feedbackScroll.current=0;
    if(saved.status==='FAILED')navigate('feedback');else if(onMount){setRoute(initial.route);setCriterionValue(initial.criterion);}else navigate('feedback');
   }catch(e){
    if(e.name!=='AbortError'&&activeSessionRef.current.gen===gen&&activeSessionRef.current.userId===userId)setError(e.message);

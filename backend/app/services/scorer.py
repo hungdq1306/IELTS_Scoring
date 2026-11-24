@@ -72,7 +72,8 @@ async def score(submission, provider):
         system += V2_RULES + feedback_language_rules(feedback_language)
         user += '\n<essay_metadata>' + json.dumps(essay_metadata(request.essay)) + '</essay_metadata>'
         user += '\n<student_essay>' + request.essay.replace('<','&lt;').replace('>','&gt;') + '</student_essay>'
-    generation = await provider.generate_structured(system, user, AssessmentOutputV2 if v2 else DetailedModelGrade)
+    execution = {'model_name': snapshot['model_name'], 'thinking_budget': snapshot['score_thinking_budget']} if snapshot.get('model_name') else {}
+    generation = await provider.generate_structured(system, user, AssessmentOutputV2 if v2 else DetailedModelGrade, **execution)
     if v2:
         audit = AssessmentOutputV2.model_validate_json(generation.raw)
         payload = {k: getattr(audit,k).model_dump() if hasattr(getattr(audit,k),'model_dump') else

@@ -192,7 +192,7 @@ class GeminiProvider:
             return int(getattr(self.settings, "score_thinking_budget", 512))
         return int(getattr(self.settings, "practice_thinking_budget", 0))
 
-    async def generate_structured(self, system_prompt, user_prompt, response_schema, *, thinking_budget: int | None = None) -> Generation:
+    async def generate_structured(self, system_prompt, user_prompt, response_schema, *, thinking_budget: int | None = None, model_name: str | None = None) -> Generation:
         client = self._client()
         budget = self.thinking_budget_for(response_schema, thinking_budget)
         config = types.GenerateContentConfig(
@@ -222,7 +222,7 @@ class GeminiProvider:
                 try:
                     async with asyncio.timeout(self.settings.timeout):
                         response = await client.aio.models.generate_content(
-                            model=self.settings.model, contents=user_prompt, config=config,
+                            model=model_name or self.settings.model, contents=user_prompt, config=config,
                         )
                 except (errors.APIError, httpx.TransportError, TimeoutError) as exc:
                     elapsed = round((perf_counter() - started) * 1000)
@@ -245,7 +245,7 @@ class GeminiProvider:
                 usable = reason in ("FinishReason.STOP", "STOP") and bool(response.text)
                 status = "ok" if usable else "incomplete_output"
                 attempts.append(Attempt(status=status, latency_ms=elapsed, usage=usage))
-                generation = Generation(response.text or "", self.settings.model, response.model_version, elapsed, usage, attempts)
+                generation = Generation(response.text or "", model_name or self.settings.model, response.model_version, elapsed, usage, attempts)
                 if not usable:
                     raise ProviderError(status, f"Gemini returned incomplete output ({reason}).",
                                         attempts=attempts, generation=generation)

@@ -282,7 +282,7 @@ def test_scoring_practice_batch_and_teacher_override_e2e(tmp_path):
     from app.providers.base import Generation
     class Provider(PracticeProvider):
         settings = SimpleNamespace(model='offline-small-model')
-        async def generate_structured(self, system, user, schema):
+        async def generate_structured(self, system, user, schema, **execution):
             from app.grading.v2 import AssessmentOutputV2
             if schema is AssessmentOutputV2:
                 from test_rbac_and_ai_v2 import v2_output

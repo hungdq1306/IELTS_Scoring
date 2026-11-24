@@ -202,3 +202,43 @@ def test_practice_completion_publishes_direct_lookup_atomically(tmp_path):
                 assert (await db.get(PracticeSet, 'review-0')).state == 'ready'
             assert (await c.client.post('/api/exercises/ex-0/hint', headers=headers())).status_code == 200
     asyncio.run(scenario())
+
+
+def test_execution_uses_frozen_model_and_budget(tmp_path):
+    import json
+    from test_rbac_and_ai_v2 import v2_output
+    from app.providers.base import Generation
+    class Provider:
+        settings = SimpleNamespace(model='model-B', score_thinking_budget=2048)
+        async def generate_structured(self, system, user, schema, **options):
+            assert options == {'model_name':'offline-small-model', 'thinking_budget':512}
+            return Generation(json.dumps(v2_output()), options['model_name'], None, 20, {}, [])
+    async def scenario():
+        async with application(tmp_path) as c:
+            c.settings.auto_practice_mode='on_demand'
+            posted=await submit(c)
+            await Worker(c.database,c.settings,Provider(),Provider()).process(await claim(c.database,c.settings))
+            cached=await submit(c,key='frozen_context_again')
+            assert cached.status_code==200 and cached.json()['model']=='offline-small-model'
+            c.app.state.provider.settings=SimpleNamespace(model='model-B',score_thinking_budget=2048)
+            assert (await submit(c,key='different_runtime')).status_code==202
+    asyncio.run(scenario())
+
+
+def test_admin_latency_includes_queue_and_retries(tmp_path):
+    from app.models import User
+    async def scenario():
+        async with application(tmp_path) as c:
+            c.settings.auto_practice_mode='on_demand'
+            posted=await submit(c)
+            job=await claim(c.database,c.settings)
+            await Worker(c.database,c.settings,None,None).finish(job,result={**RESULT,'latency_ms':20000})
+            async with c.database.transaction() as db:
+                owner=await db.scalar(select(User).where(User.external_auth_id=='user_teacher'));owner.role='admin'
+                stored=await db.get(Job,job.id);now=time.time();stored.created_at=now-180;stored.first_started_at=now-20;stored.completed_at=now
+                (await db.get(Submission,job.submission_id)).created_at=now-180
+            stats=(await c.client.get('/api/admin/overview',headers=headers(subject='user_teacher'))).json()['grading_latency']['24h']
+            assert stats['median_sec']==180
+            assert stats['queue_wait_ms']['median_sec']==160
+            assert stats['processing_ms']['median_sec']==20
+    asyncio.run(scenario())

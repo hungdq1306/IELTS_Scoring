@@ -62,6 +62,28 @@ class AssessmentOutputV2(StrictModel):
                 if updated is None:
                     updated = dict(data)
                 updated[key] = val[:limit]
+        cur = updated if updated is not None else data
+        weaknesses = cur.get('top_weaknesses')
+        if isinstance(weaknesses, list) and len(weaknesses) == 0:
+            fallback = []
+            cf = cur.get('criterion_feedback') or {}
+            if isinstance(cf, dict):
+                for crit in ('task_response', 'coherence_cohesion', 'lexical_resource', 'grammatical_range_accuracy'):
+                    entry = cf.get(crit) or {}
+                    if isinstance(entry, dict):
+                        items = entry.get('weaknesses') or []
+                        if isinstance(items, list) and items and isinstance(items[0], str) and items[0].strip():
+                            fallback.append(items[0].strip())
+                            break
+                        exp = entry.get('explanation')
+                        if isinstance(exp, str) and exp.strip():
+                            fallback.append(exp.strip())
+                            break
+            if not fallback:
+                fallback = ['Continue developing idea precision and grammatical control.']
+            if updated is None:
+                updated = dict(data)
+            updated['top_weaknesses'] = fallback
         return updated if updated is not None else data
 
 

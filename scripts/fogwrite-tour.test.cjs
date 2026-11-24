@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const root=path.resolve(__dirname,'..'),assetRoot=process.env.FOGWRITE_TOUR_ASSET_ROOT||path.join(root,'frontend/dist'),deps=process.env.FOGWRITE_NODE_MODULES||path.join(root,'.cache/pilot-ui-deps/node_modules');
+const root=path.resolve(__dirname,'..'),assetRoot=process.env.FOGWRITE_TOUR_ASSET_ROOT||path.join(root,'frontend/dist'),deps=process.env.FOGWRITE_NODE_MODULES||path.join(root,'frontend/node_modules');
 const {chromium}=require(require.resolve('playwright',{paths:[deps]}));
 const local='C:/Users/Lenovo/AppData/Local/ms-playwright/chromium_headless_shell-1248/chrome-headless-shell-win64/chrome-headless-shell.exe',base=process.env.FOGWRITE_TOUR_BASE_URL||'http://127.0.0.1:5173',live=process.env.FOGWRITE_TOUR_LIVE==='1';
 async function setup(browser,{width=1440,user=null,reducedMotion='no-preference'}={}){

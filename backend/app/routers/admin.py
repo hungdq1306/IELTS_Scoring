@@ -163,12 +163,17 @@ async def overview(request: Request, user=Depends(admin_user)):
         completed=await db.scalar(select(func.count()).select_from(Submission).where(Submission.created_at>=vn_day()[0],Submission.status=='COMPLETED'))
         failed=await db.scalar(select(func.count()).select_from(Job).where(Job.status=='FAILED',func.coalesce(Job.completed_at,Job.created_at)>=vn_day()[0]))
         oldest=await db.scalar(select(func.min(Job.created_at)).where(Job.status.in_(['QUEUED','RUNNING'])))
-        latency_rows=(await db.execute(select(Job.completed_at,Assessment.result).join(Assessment,Assessment.submission_id==Job.submission_id)
+        latency_rows=(await db.execute(select(Job, Submission.created_at, Assessment.result).join(Submission,Submission.id==Job.submission_id)
+            .join(Assessment,Assessment.submission_id==Job.submission_id)
             .where(Job.kind=='score',Job.status=='COMPLETED',Job.completed_at>=now-7*86400))).all()
         latency={}
         for window,seconds in [('24h',86400),('7d',7*86400)]:
-            values=sorted(row.get('latency_ms',0)/1000 for at,row in latency_rows if at>=now-seconds and row.get('latency_ms') is not None)
-            latency[window]={'count':len(values),'median_sec':percentile(values,.5),'p95_sec':percentile(values,.95)}
+            rows=[job_timings(j, created, result) for j,created,result in latency_rows if j.completed_at>=now-seconds]
+            metrics={}
+            for key in ('total_e2e_ms','queue_wait_ms','processing_ms'):
+                values=sorted(r[key]/1000 for r in rows if r[key] is not None)
+                metrics[key]={'count':len(values),'median_sec':percentile(values,.5),'p95_sec':percentile(values,.95)}
+            latency[window]={**metrics['total_e2e_ms'], **metrics}
         return {'users_by_role':roles,'active_classes':classes,'today_submissions':today,'queue_depth':queue,
                 'completed_today':completed,'failed_jobs_today':failed,'longest_active_wait_sec':round(max(0,now-oldest)) if oldest else 0,
                 'grading_latency':latency,'usage_by_day_model':list(breakdown.values()),
@@ -176,6 +181,12 @@ async def overview(request: Request, user=Depends(admin_user)):
                 'estimated_gemini_cost':round(cost,6) if (has_pricing and not unknown) else None,
                 'priced_cost_usd':round(cost,6),'unpriced_or_unknown_calls':unknown,'recorded_calls':len(results),
                 'usage_scope':'Provider responses since v2 migration, including practice; unavailable upstream usage and crash windows cannot be billed precisely.'}
+
+
+def job_timings(job, submitted_at, result=None):
+    return {'total_e2e_ms': max(0, (job.completed_at-submitted_at)*1000) if job.completed_at else None,
+            'queue_wait_ms': max(0, (job.first_started_at-submitted_at)*1000) if job.first_started_at else None,
+            'processing_ms': (result or {}).get('latency_ms')}
 
 
 def percentile(values,p):
@@ -205,7 +216,7 @@ async def jobs(request: Request, status: Literal['QUEUED','SCORING','GENERATING_
         rows=(await db.execute(query.order_by(Job.created_at.desc(),Job.id).offset(offset).limit(limit))).all()
         return {'items':[{'job_id':j.id,'submission_id':s.id,'submission_code':s.id[:8].upper(),'student_name':display_label(u),
             'student_email':public_profile(u)['email'],'email_source':public_profile(u)['email_source'],'class_name':c.name,'kind':j.kind,'status':job_label(j),'attempt_count':j.attempt_count,
-            'created_at':j.created_at,'completed_at':j.completed_at,'wait_duration_sec':round(max(0,(j.completed_at or time.time())-j.created_at)),
+            **job_timings(j,s.created_at),'created_at':j.created_at,'completed_at':j.completed_at,'wait_duration_sec':round(max(0,(j.completed_at or time.time())-j.created_at)),
             'error_code':j.error_code,'error_message':'The AI operation failed. Review the error code before retrying.' if j.error_code else None,
             'credit_refunded':j.kind=='score' and j.status=='FAILED' and s.status=='FAILED'} for j,s,u,c in rows],
             'total':total,'limit':limit,'offset':offset}
@@ -237,7 +248,7 @@ async def retry_job(submission_id: str, body: RetryInput, request: Request,user=
         await consume_quota(db,'operator-retry:'+submission_id,3)
         before={'status':job.status,'attempt_count':job.attempt_count,'error_code':job.error_code}
         job.status='QUEUED';job.attempt_count=0;job.error_code=None;job.result=None
-        job.lease_token=None;job.lease_expires_at=None;job.next_attempt_at=0;job.completed_at=None
+        job.lease_token=None;job.lease_expires_at=None;job.next_attempt_at=0;job.completed_at=None;job.first_started_at=None
         submission.status='QUEUED';submission.credit_reserved_at=time.time()
         db.add(AuditEvent(actor_id=user.id,action='job_retried',target_id=submission_id,
             detail={'previous':before,'current':{'status':'QUEUED','attempt_count':0},'reason':body.reason}))
