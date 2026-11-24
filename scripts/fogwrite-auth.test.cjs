@@ -123,7 +123,7 @@ for(const width of [1440,1024,768,390])for(const role of ['visitor','student','t
    await page.waitForFunction(()=>true);
    assert.ok(auditQueries.some(q=>q.includes('target=Jamie')&&q.includes('action=job_retried')),'audit-logs must send target and action filters');
    await page.getByRole('button',{name:'Usage overview',exact:true}).click();
-   await page.getByText('Pricing unconfigured',{exact:true}).waitFor();await page.getByText('Longest active queue wait').waitFor();await page.getByText('Grading latency (Median / P95)').waitFor();
+   await page.getByText('Pricing unconfigured',{exact:true}).waitFor();await page.getByText('Longest active queue wait').waitFor();await page.getByText('End-to-end latency (Median / P95)').waitFor();
    overviewConfigured=true;
    await page.getByRole('button',{name:'Grading jobs',exact:true}).click();
    await page.getByRole('button',{name:'Usage overview',exact:true}).click();

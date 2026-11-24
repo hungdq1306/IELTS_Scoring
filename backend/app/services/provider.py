@@ -22,13 +22,13 @@ class PilotProvider(GeminiProvider):
         self.budget_wait_seconds = 70
         self.semaphore = semaphore
 
-    async def generate_structured(self, system_prompt, user_prompt, response_schema, *, thinking_budget=None):
+    async def generate_structured(self, system_prompt, user_prompt, response_schema, *, thinking_budget=None, model_name=None):
         # Conservative upper bound for textual input plus max output; includes schema overhead.
         estimate = len((system_prompt + user_prompt + json.dumps(response_schema.model_json_schema())).encode('utf-8')) + 8192
         token = self.budget.tokens.set(estimate)
         generation, outcome = None, 'failed'
         try:
-            generation = await super().generate_structured(system_prompt, user_prompt, response_schema, thinking_budget=thinking_budget)
+            generation = await super().generate_structured(system_prompt, user_prompt, response_schema, thinking_budget=thinking_budget, model_name=model_name)
             outcome = 'completed'
             return generation
         except ProviderError as error:
@@ -39,6 +39,6 @@ class PilotProvider(GeminiProvider):
             self.budget.tokens.reset(token)
             try:
                 async with self.database.transaction() as session:
-                    session.add(ProviderUsage(model=self.settings.model,usage=generation.usage if generation else {},outcome=outcome))
+                    session.add(ProviderUsage(model=model_name or self.settings.model,usage=generation.usage if generation else {},outcome=outcome))
             except Exception:
                 logging.getLogger('fogwrite').error('provider_usage_write_failed')

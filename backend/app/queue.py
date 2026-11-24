@@ -75,6 +75,7 @@ async def claim(database, settings):
                                    .with_for_update(skip_locked=True).limit(1))
         if job is None:
             return None
+        if job.first_started_at is None: job.first_started_at = now
         job.status, job.lease_token = 'RUNNING', uid()
         job.attempt_count += 1
         job.lease_expires_at = now + settings.worker_lease_seconds

@@ -1,4 +1,6 @@
 import asyncio
+import os
+import re
 from alembic import context
 from app.database import Database
 from app.models import Base
@@ -16,6 +18,13 @@ async def online():
     database = Database((settings.migration_database_url or settings.database_url).get_secret_value())
     try:
         async with database.engine.connect() as connection:
+            schema = os.getenv('FOGWRITE_MIGRATION_TEST_SCHEMA')
+            if schema:
+                if settings.app_env != 'test' or not re.fullmatch(r'migration_test_[a-f0-9]{32}', schema):
+                    raise ValueError('Invalid isolated migration test schema')
+                from sqlalchemy import text
+                await connection.execute(text('SET search_path TO ' + schema))
+                await connection.commit()
             await connection.run_sync(migrations)
     finally:
         await database.close()

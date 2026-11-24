@@ -175,6 +175,7 @@ class Job(Base):
     next_attempt_at: Mapped[float] = mapped_column(Float, default=0)
     error_code: Mapped[str | None] = mapped_column(String(80))
     created_at: Mapped[float] = mapped_column(Float, default=time.time)
+    first_started_at: Mapped[float | None] = mapped_column(Float)
     completed_at: Mapped[float | None] = mapped_column(Float)
     __table_args__ = (UniqueConstraint('user_id', 'kind', 'request_key'),
                       Index('ix_jobs_claim', 'status', 'next_attempt_at', 'priority', 'created_at'))
