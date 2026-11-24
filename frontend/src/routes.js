@@ -1,4 +1,4 @@
-const paths={landing:'/',overview:'/overview',topics:'/topics',write:'/practice',check:'/check',feedback:'/assessment',skills:'/skill-practice',history:'/history',classes:'/classes',join:'/join',profile:'/profile',admin:'/admin'};
+const paths={landing:'/',overview:'/overview',topics:'/topics',write:'/practice',check:'/check',feedback:'/assessment',skills:'/skill-practice',history:'/history',classes:'/classes',join:'/join',profile:'/profile',admin:'/admin',guide:'/guide'};
 export const criterionKeys=['task_response','coherence_cohesion','lexical_resource','grammatical_range_accuracy'];
 export function pathFor(route,criterion=null){return route==='feedback'&&criterion?`/assessment/${criterion.replaceAll('_','-')}`:paths[route]||'/';}
 export function readRoute(location){

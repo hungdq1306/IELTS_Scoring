@@ -28,10 +28,11 @@ export async function pilotApi(path,options={}){
     const detail=body?.detail;
     const error=new Error(Array.isArray(detail)?detail.map(item=>item.msg).join(' '):detail?.message||(typeof detail==='string'?detail:'Unexpected backend response.'));error.status=response.status;error.detail=detail;throw error;
   }
+  if(storageKey&&response.status!==202)try{sessionStorage.removeItem(storageKey);}catch{}
   if(response.status===202&&body.poll_url){
     const deadline=Date.now()+25*60*1000;window.dispatchEvent(new CustomEvent('fogwrite:queue',{detail:body}));
     try{while(Date.now()<deadline){
-      await pause(2500,options.signal);
+      await pause(1200,options.signal);
       const state=await pilotApi(body.poll_url.replace(/^\/api/,''),{signal:options.signal});
       window.dispatchEvent(new CustomEvent('fogwrite:queue',{detail:state}));
       if(state.status==='COMPLETED'){if(storageKey)try{sessionStorage.removeItem(storageKey);}catch{}return state.result;}
@@ -42,7 +43,7 @@ export async function pilotApi(path,options={}){
     }throw new Error('Your job is saved. Return to History or retry this submission to reconnect.');}
     finally{window.dispatchEvent(new CustomEvent('fogwrite:queue',{detail:null}));}
   }
-  if(method==='GET'&&/^\/writing\/task2\/[^/]+\/submission$/.test(path)&&!body.grade){
+  if(method==='GET'&&/^\/writing\/task2\/[^/]+\/submission$/.test(path)&&!body.grade&&body.status!=='FAILED'){
     const grade=await pilotApi('/submissions/'+encodeURIComponent(body.submission_id)+'/result',{signal:options.signal});
     return {...body,grade};
   }

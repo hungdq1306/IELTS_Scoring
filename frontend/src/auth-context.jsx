@@ -18,10 +18,12 @@ export function AuthProvider({children}){
    const profileUser=clerk.user;
    let account=await api('/auth/me');
    if(run!==generation.current)return null;
-   const payload={full_name:profileUser?.fullName||null,email:profileUser?.primaryEmailAddress?.emailAddress||null};
+   const fullName=(profileUser?.fullName||[profileUser?.firstName,profileUser?.lastName].filter(Boolean).join(' ')||profileUser?.username||'').trim()||null;
+   const email=(profileUser?.primaryEmailAddress?.emailAddress||profileUser?.emailAddresses?.[0]?.emailAddress||'').trim()||null;
+   const payload={full_name:fullName,email};
    const signature=JSON.stringify(payload), syncKey=sessionKey+':'+signature;
-   const nameMissing=payload.full_name&&(!account.full_name||account.name_source==='self_reported'&&account.full_name!==payload.full_name);
-   const emailMissing=payload.email&&(!account.email||account.email_source==='self_reported'&&account.email!==payload.email.toLowerCase());
+   const nameMissing=payload.full_name&&!account.full_name;
+   const emailMissing=payload.email&&!account.email;
    if((nameMissing||emailMissing)&&!profileSyncs.current.has(syncKey)){
     profileSyncs.current.set(syncKey,true);
     try{const synced=await api('/auth/me',{method:'PATCH',body:JSON.stringify(payload)});if(run!==generation.current)return null;account={...account,...synced};}catch{/* Display-only fallback cannot deny sign-in. */}

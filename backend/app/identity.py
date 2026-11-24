@@ -1,6 +1,7 @@
 """Display-only profile cache, sourced exclusively from verified identity providers."""
 import time
 import httpx
+from sqlalchemy.exc import IntegrityError
 from urllib.parse import quote
 
 def display_label(user):
@@ -41,7 +42,17 @@ async def sync_profile(database,user,claims,settings,force=False):
         stored=await db.get(type(user),user.id)
         for key,value in fields.items():setattr(stored,key,value)
         if due:stored.profile_synced_at=time.time()
-        await db.flush()
+        try:
+            async with db.begin_nested():
+                await db.flush()
+        except IntegrityError:
+            # Never crash login if an upstream email collides with an existing row.
+            await db.refresh(stored)
+            for key,value in fields.items():
+                if key!='email':
+                    setattr(stored,key,value)
+            if due:stored.profile_synced_at=time.time()
+            await db.flush()
         return stored
 
 

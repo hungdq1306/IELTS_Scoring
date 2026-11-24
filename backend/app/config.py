@@ -18,10 +18,16 @@ class Settings:
     timeout: int = 45
     retries: int = 2
     web_retries: int = 4
+    score_thinking_budget: int = 512
+    practice_thinking_budget: int = 0
+    feedback_language: str = "vi"
 
 
 def load_settings() -> Settings:
     values = {**dotenv_values(ROOT / ".env"), **dotenv_values(ROOT / ".env.local")}
+
+    def raw(key, default):
+        return environ.get(key, values.get(key)) or default
 
     def get(key, default):
         key = "GEMINI_" + key
@@ -33,6 +39,10 @@ def load_settings() -> Settings:
             raise ValueError(f"GEMINI_{key} must be between {minimum} and {maximum}")
         return value
 
+    lang = str(raw("FEEDBACK_LANGUAGE", "vi")).strip().lower()
+    if lang not in ("vi", "en"):
+        raise ValueError("FEEDBACK_LANGUAGE must be 'vi' or 'en'")
+
     return Settings(
         api_key=get("API_KEY", "").strip(),
         model=get("MODEL", Settings.model).removeprefix("models/"),
@@ -43,4 +53,7 @@ def load_settings() -> Settings:
         timeout=limit("TIMEOUT_SECONDS", 45, 1, 300),
         retries=limit("MAX_RETRIES", 2, 0, 4),
         web_retries=limit("WEB_MAX_RETRIES", 4, 0, 4),
+        score_thinking_budget=limit("SCORE_THINKING_BUDGET", 512, 0, 24576),
+        practice_thinking_budget=limit("PRACTICE_THINKING_BUDGET", 0, 0, 24576),
+        feedback_language=lang,
     )

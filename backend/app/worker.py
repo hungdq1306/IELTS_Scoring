@@ -4,15 +4,16 @@ import random
 import time
 from contextlib import suppress
 
+from fastapi import HTTPException
 from pydantic import ValidationError
-from sqlalchemy import select, update
+from sqlalchemy import delete, func, select, update
 
 from app.guardrails import redact_pii
-from app.models import Assessment, Job, PracticeSet, Submission
+from app.models import Assessment, ClassRoom, ExerciseTemplate, Job, PracticeSet, PracticeExercise, Submission
 from app.practice.prompts import ANSWER_EVALUATOR
 from app.practice.schemas import AnswerAssessment
 from app.providers.base import ProviderError
-from app.queue import claim
+from app.queue import claim, enqueue
 from app.services import drill_gen, scorer
 
 log = logging.getLogger('fogwrite.worker')
@@ -95,12 +96,52 @@ class Worker:
                 if job.kind == 'score':
                     session.add(Assessment(submission_id=job.submission_id, result=result, raw_scores=result.get('raw_criterion_scores', result['criterion_scores'])))
                     submission.status = 'COMPLETED'
+                    await self._maybe_enqueue_auto_practice(session, job, submission)
                 elif job.kind == 'practice':
                     practice = await session.get(PracticeSet, job.submission_id)
                     practice.state, practice.payload = 'ready', result
+                    await session.execute(delete(PracticeExercise).where(PracticeExercise.submission_id == job.submission_id))
+                    session.add_all([PracticeExercise(exercise_id=exercise['exercise_id'], submission_id=job.submission_id)
+                                     for exercise in result.get('exercises', [])])
                     stored.result = drill_gen.public_practice(job.submission_id, 'ready', result)
             stored.lease_token, stored.lease_expires_at = None, None
             return True
+
+    async def _maybe_enqueue_auto_practice(self, session, job, submission):
+        """Enqueue low-priority practice only when policy permits and no score jobs wait."""
+        mode = getattr(self.settings, 'auto_practice_mode', 'idle_only')
+        if not getattr(self.settings, 'enable_practice_gen', True) or mode == 'on_demand':
+            return
+        if mode == 'idle_only':
+            queued_score_count = await session.scalar(
+                select(func.count()).select_from(Job).where(Job.status == 'QUEUED', Job.kind == 'score')
+            )
+            if queued_score_count:
+                return
+        if await session.get(PracticeSet, job.submission_id):
+            return
+        if await session.scalar(select(Job.id).where(Job.submission_id == job.submission_id, Job.kind == 'practice').limit(1)):
+            return
+        classroom = await session.get(ClassRoom, submission.class_id)
+        if not classroom:
+            return
+        templates = list((await session.scalars(
+            select(ExerciseTemplate).where(
+                ExerciseTemplate.active.is_(True),
+                (ExerciseTemplate.teacher_id == classroom.teacher_id) | ExerciseTemplate.teacher_id.is_(None),
+            ).order_by(ExerciseTemplate.id).limit(12)
+        )).all())
+        try:
+            async with session.begin_nested():
+                session.add(PracticeSet(
+                    submission_id=job.submission_id,
+                    state='generating',
+                    templates=[{'id': row.id, 'version': row.version, 'kind': row.kind, 'instruction': redact_pii(row.instruction)} for row in templates],
+                ))
+                await enqueue(session, self.settings, job.user_id, job.submission_id, 'practice', f'auto-{job.submission_id}', {})
+        except HTTPException:
+            # Skip background practice gracefully when the queue is full.
+            return
 
     async def process(self, job):
         operation = asyncio.create_task(self.handler(job))

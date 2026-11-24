@@ -5,9 +5,12 @@ import { api } from "./api";
 import { useRequest, Notice, Spinner } from "./shared";
 import { LEGACY_DRAFT_KEYS, draftMode, draftRoute, draftStorageKey, hydrateDraft, normalizeDraft, resolveActiveClass, serializeDraft } from "./fogwrite-model";
 import { readRoute, pathFor } from "./routes";
-import { Landing, Shell, Overview, TopicLibrary, EssayEditor, Assessment, SampleExercise, EmptyState } from "./components/StudioScreens";
+import { Brand, Landing, Shell, Overview, TopicLibrary, EssayEditor, Assessment, SampleExercise, EmptyState } from "./components/StudioScreens";
 import { PracticeWorkspace } from "./practice-batch";
 import "./fogwrite.css";
+import {TourProvider,useTour} from "./components/tour/TourProvider";
+import {TourStage} from "./components/tour/TourStage";
+import {HelpGuide} from "./components/HelpGuide";
 import {AuthProvider,useAuth} from "./auth-context";
 import {ConsentScreen,ClassesScreen,ProfileScreen,AdminScreen} from "./components/AccountScreens";
 import "./components/account-shell.css";
@@ -32,6 +35,7 @@ function SignInNotice({close}){
 }
 function App(){
  const auth=useAuth();
+ const tour=useTour();
  const initial=useRef(readRoute(location)).current;
  const [route,setRoute]=useState(initial.route),[criterion,setCriterionValue]=useState(initial.criterion);
  const [draft,setDraft]=useState(blank),[hydratedUserId,setHydratedUserId]=useState(null);
@@ -41,7 +45,7 @@ function App(){
  const draftUserId=auth.status==='ready'?(auth.account?.id||auth.user?.id||null):auth.status==='demo'?'demo':null;
  const activeSessionRef=useRef({gen:0,userId:draftUserId});
  const activeDraft=(draftUserId&&hydratedUserId===draftUserId&&draft.userId===draftUserId)?draft:blank;
- const canRequest=auth.status==='demo'||auth.status==='ready'&&!auth.needsConsent;
+ const canRequest=!tour.isOpen&&(auth.status==='demo'||auth.status==='ready'&&!auth.needsConsent);
  const journal=useRequest(canRequest?'/practice/submissions?r='+revision:null,draftUserId||'');
  const previousAccount=useRef(undefined);
  useEffect(()=>{purgeLegacyDrafts();},[]);
@@ -118,11 +122,6 @@ function App(){
  }
  async function evaluate(){
   if(pending.current)return;
-  if(auth.status==='ready'&&auth.account?.quota_status?.remaining_today===0){
-   if(!auth.account.quota_status.is_enrolled){navigate('classes');}
-   else{setError('No grading credits remain today. Credits reset at midnight in Vietnam.');}
-   return;
-  }
   const selectedClass=auth.status==='ready'?resolveActiveClass(auth.account?.classes||[],auth.user?.id||''):null;
   if(auth.status==='ready'&&!selectedClass){setError('Join an active class in My Classes before submitting.');return;}
   const {gen,userId}=activeSessionRef.current;
@@ -136,7 +135,7 @@ function App(){
    const grade=await api('/writing/task2/evaluate',{method:'POST',signal:controller.signal,body:JSON.stringify({prompt:snapshot.prompt,essay:snapshot.essay,topic:snapshot.topic,source:null,experiment:method,...(selectedClass?{class_id:selectedClass.id}:{})})});
    if(activeSessionRef.current.gen!==gen||activeSessionRef.current.userId!==userId)return;
    try{sessionStorage.setItem('fogwrite.assessment',grade.submission_id);localStorage.setItem('fogwrite.timing.'+grade.submission_id,JSON.stringify({started:snapshot.started,finished:snapshot.finished}));}catch{}
-   setResult(grade);setAssessmentDraft(snapshot);setTarget({});setRevision(n=>n+1);feedbackScroll.current=0;navigate('feedback');
+   setResult(grade);setAssessmentDraft({...snapshot,...grade.cached_content});setTarget({});setRevision(n=>n+1);feedbackScroll.current=0;navigate('feedback');
   }catch(e){
    if(e.name!=='AbortError'&&activeSessionRef.current.gen===gen&&activeSessionRef.current.userId===userId)setError(e.message);
   }finally{
@@ -155,10 +154,10 @@ function App(){
    const saved=await api('/writing/task2/'+encodeURIComponent(sid)+'/submission',{signal:controller.signal});
    if(activeSessionRef.current.gen!==gen||activeSessionRef.current.userId!==userId)return;
    let timing={};try{timing=JSON.parse(localStorage.getItem('fogwrite.timing.'+sid)||'{}');sessionStorage.setItem('fogwrite.assessment',sid);}catch{}
-   const snapshot=normalizeDraft({...timing,userId,prompt:saved.prompt,essay:saved.essay});
+   const snapshot=normalizeDraft({...timing,userId,classId:saved.class_id,prompt:saved.prompt,essay:saved.essay});
    if(onMount&&activeDraft.essay&&!activeDraft.finished&&activeDraft.essay!==saved.essay){setError('Your current draft has changed. Open the saved assessment from History to replace it.');return;}
-   setDraft(snapshot);setAssessmentDraft(snapshot);setResult({...saved.grade,submission_id:saved.submission_id});setTarget({});feedbackScroll.current=0;
-   if(onMount){setRoute(initial.route);setCriterionValue(initial.criterion);}else navigate('feedback');
+   setDraft(snapshot);setAssessmentDraft(snapshot);setResult(saved.status==='FAILED'?{failed:true,...saved}:{...saved.grade,submission_id:saved.submission_id});setTarget({});feedbackScroll.current=0;
+   if(saved.status==='FAILED')navigate('feedback');else if(onMount){setRoute(initial.route);setCriterionValue(initial.criterion);}else navigate('feedback');
   }catch(e){
    if(e.name!=='AbortError'&&activeSessionRef.current.gen===gen&&activeSessionRef.current.userId===userId)setError(e.message);
   }finally{
@@ -168,23 +167,27 @@ function App(){
  }
  function preview(){if(pending.current)return;setAssessmentDraft({...blank,prompt:samplePrompt,essay:sampleEssay});setResult(sampleResult);setTarget({});feedbackScroll.current=0;navigate('feedback');}
  function practice(key,annotation){setTarget({criterion:key,source:annotation});go('skills');}
+ function editFailed(){setDraft({...assessmentDraft,userId:draftUserId,mode:'check',started:null,finished:null,remainingSec:null,updatedAt:Date.now()});clearAssessment();navigate('check');}
  let page;
- if(route==='overview')page=<Overview draft={activeDraft} currentUserId={draftUserId} count={journal.value?.items?.length} go={go} onContinueDraft={continueDraft} preview={preview}/>;
+ if(route==='guide')page=<HelpGuide go={go} preview={preview}/>;
+ else if(route==='overview')page=<Overview draft={activeDraft} currentUserId={draftUserId} count={journal.value?.items?.length} go={go} onContinueDraft={continueDraft} preview={preview}/>;
  else if(route==='topics')page=<TopicLibrary choose={choose}/>;
  else if(['write','check'].includes(route))page=route==='write'&&!activeDraft.started?<EmptyState title="Your next essay is waiting." text="Choose a question to start a timed writing session." action="Choose a topic" onAction={()=>go('topics')}/>:<EssayEditor {...{draft:activeDraft,setDraft,busy,elapsed,error,onSubmit:evaluate,experiment,setExperiment,storageError,onEdit:clearAssessment,go,draftUserId}} timed={route==='write'}/>;
- else if(route==='feedback')page=result?<Assessment {...{result,draft:assessmentDraft||activeDraft,criterion,setCriterion:changeCriterion,selected,setSelected,practice}}/>:<EmptyState title="First, a little writing." text="Submit an essay or open a saved assessment from History." action="Open history" onAction={()=>go('history')}/>;
+ else if(route==='feedback')page=result?.failed?<section className="surface" style={{padding:26}}><h1>Your saved essay</h1><Notice error>{result.error_message||'AI grading could not finish.'}{result.error_code&&` (${result.error_code})`}{result.credit_refunded&&' Your grading credit was refunded.'}</Notice><h2>Task question</h2><p className="essay-text">{assessmentDraft?.prompt}</p><h2>Your essay</h2><p className="essay-text">{assessmentDraft?.essay}</p><button className="primary" onClick={editFailed}>Edit &amp; Resubmit <ArrowRight size={17}/></button></section>:result?<>{result.reused&&<Notice>{result.notice}</Notice>}<Assessment {...{result,draft:assessmentDraft||activeDraft,criterion,setCriterion:changeCriterion,selected,setSelected,practice}}/></>:<EmptyState title="First, a little writing." text="Submit an essay or open a saved assessment from History." action="Open history" onAction={()=>go('history')}/>;
  else if(route==='skills')page=<><button className="text-button back-link" onClick={()=>go('feedback')}><ArrowLeft size={16}/>Back to feedback</button>{result?.sample?<SampleExercise source={target.source?.quote} criterion={target.criterion}/>:result?.submission_id?<PracticeWorkspace key={`${draftUserId||'anon'}-${result.submission_id}-${target.criterion||'all'}-${target.source?.id||'all'}`} userId={draftUserId} result={result} essay={(assessmentDraft||activeDraft).essay} criterion={target.criterion} sourceQuote={target.source?.quote} clearFilter={()=>setTarget({})}/>:<EmptyState title="Start with your own essay." text="Personalised exercises use a saved assessment. You can also explore the labelled sample." action="Check my essay" onAction={()=>go('check')}/>}</>;
  else if(route==='classes'||route==='join')page=auth.status==='ready'?<ClassesScreen go={go}/>:<EmptyState title="Sign in to use classes."/>;
  else if(route==='profile')page=auth.status==='ready'?<ProfileScreen/>:<EmptyState title="Sign in to view your profile."/>;
  else if(route==='admin')page=<AdminScreen go={go}/>;
- else if(route==='history')page=<><div className="page-heading"><div><h1>Your writing journal.</h1><p>Return to an essay. Notice what is changing.</p></div><button className="primary" onClick={()=>go('topics')}>Write an essay <ArrowRight size={17}/></button></div>{journal.loading?<Spinner>Loading your essays…</Spinner>:journal.error?<Notice error>{journal.error}</Notice>:journal.value?.items?.length?<div className="history-list surface">{journal.value.items.map((item,i)=><button key={item.submission_id} disabled={busy} onClick={()=>restore(item.submission_id)}><span className="history-index">{journal.value.items.length-i}</span><span><strong>{item.prompt}</strong><small>{new Date(item.created*1000).toLocaleString()}</small></span><ArrowRight size={18}/></button>)}</div>:<EmptyState title="A fresh page." text="Your assessed essays will appear here in your writing journal." action="Check your first essay" onAction={()=>go('check')}/>}</>;
+ else if(route==='history')page=<section data-tour="writing-journal"><div className="page-heading"><div><h1>Your writing journal.</h1><p>Return to an essay. Notice what is changing.</p></div><button className="primary" onClick={()=>go('topics')}>Write an essay <ArrowRight size={17}/></button></div>{journal.loading?<Spinner>Loading your essays…</Spinner>:journal.error?<Notice error>{journal.error}</Notice>:journal.value?.items?.length?<div className="history-list surface">{journal.value.items.map((item,i)=><button key={item.submission_id} disabled={busy} onClick={()=>restore(item.submission_id)}><span className="history-index">{journal.value.items.length-i}</span><span><strong>{item.prompt}</strong><small>{new Date(item.created*1000).toLocaleString()}</small></span><ArrowRight size={18}/></button>)}</div>:<EmptyState title="A fresh page." text="Your assessed essays will appear here in your writing journal." action="Check your first essay" onAction={()=>go('check')}/>}</section>;
  else page=<EmptyState title="This page has wandered off." text="Return to the studio to continue writing." action="Back to your studio" onAction={()=>go('overview')}/>;
+ if(tour.isOpen)return <TourStage/>;
  if(auth.status==='loading')return <div className="auth-loading" role="status"><img src="/mascots/frog-logo.png" alt=""/><h1>FogWrite</h1><Spinner>Opening your writing studio…</Spinner></div>;
  if(['error','expired'].includes(auth.status))return <div className="auth-loading"><h1>Your writing is safe.</h1><Notice error>{auth.error}</Notice><button className="primary" onClick={()=>auth.retry().catch(e=>setError(e.message))}> {'Try again'}</button><button className="secondary" onClick={()=>auth.signOut().catch(e=>setError(e.message))}>Sign out</button>{error&&<Notice error>{error}</Notice>}</div>;
- if(auth.status==='visitor')return route==='feedback'&&result?.sample?<div className="visitor-preview"><button className="text-button" onClick={()=>navigate('landing')}><ArrowLeft size={16}/>Back to FogWrite</button><Assessment result={result} draft={assessmentDraft} criterion={criterion} setCriterion={changeCriterion} selected={selected} setSelected={setSelected} practice={()=>auth.signIn()}/></div>:<><Landing go={()=>auth.signIn().catch(e=>setError(e.message))} preview={preview} signIn={()=>auth.signIn().catch(e=>setError(e.message))}/>{error&&<Notice error>{error}</Notice>}</>;
+ if(auth.status==='visitor'&&route==='guide')return <div className="public-guide"><header className="public-guide-bar"><button onClick={()=>navigate('landing')} aria-label="FogWrite home"><Brand/></button><button className="secondary" onClick={()=>auth.signIn().catch(e=>setError(e.message))}>Sign in</button></header>{error&&<Notice error>{error}</Notice>}<HelpGuide go={go} preview={preview}/></div>;
+ if(auth.status==='visitor')return route==='feedback'&&result?.sample?<div className="visitor-preview"><button className="text-button" onClick={()=>navigate('landing')}><ArrowLeft size={16}/>Back to FogWrite</button><Assessment result={result} draft={assessmentDraft} criterion={criterion} setCriterion={changeCriterion} selected={selected} setSelected={setSelected} practice={()=>auth.signIn()}/></div>:<><Landing go={next=>next==='guide'?go(next):auth.signIn().catch(e=>setError(e.message))} preview={preview} signIn={()=>auth.signIn().catch(e=>setError(e.message))}/>{error&&<Notice error>{error}</Notice>}</>;
  if(auth.status==='ready'&&auth.needsConsent)return <Shell route="consent" busy={false} go={()=>{}}><ConsentScreen/></Shell>;
  if(auth.status==='ready'&&route==='landing')page=<Overview draft={activeDraft} currentUserId={draftUserId} count={journal.value?.items?.length} go={go} onContinueDraft={continueDraft} preview={preview}/>;
  const showLanding=auth.status!=='ready'&&route==='landing';
- return <>{showLanding?<Landing go={go} preview={preview} signIn={()=>runtimeConfig().then(c=>c.mode==='clerk'?openSignIn():setSignIn(true)).catch(e=>setError(e.message))}/>:<Shell route={auth.status==='ready'&&route==='landing'?'overview':route} busy={busy} go={go}>{busy&&!['write','check'].includes(route)&&<div className="restore-status"><Spinner>Opening your assessment…</Spinner></div>}{error&&!['write','check'].includes(route)&&<Notice error>{error}</Notice>}{page}</Shell>}{signIn&&<SignInNotice close={()=>setSignIn(false)}/>}</>;
+ return <>{showLanding?<Landing go={go} preview={preview} signIn={()=>runtimeConfig().then(c=>c.mode==='clerk'?openSignIn():setSignIn(true)).catch(e=>setError(e.message))}/>:<Shell route={auth.status==='ready'&&route==='landing'?'overview':route} busy={busy} go={go}>{auth.config?.offline_preview&&<aside className="guide-demo" role="note"><strong>Offline demo</strong>Explore sample feedback, topics and saved drafts. Real AI grading and classroom accounts are unavailable in this preview.</aside>}{busy&&!['write','check'].includes(route)&&<div className="restore-status"><Spinner>Opening your assessment…</Spinner></div>}{error&&!['write','check'].includes(route)&&<Notice error>{error}</Notice>}{page}</Shell>}{signIn&&<SignInNotice close={()=>setSignIn(false)}/>}</>;
 }
-createRoot(document.getElementById('root')).render(<AuthProvider><App/></AuthProvider>);
+createRoot(document.getElementById('root')).render(<AuthProvider><TourProvider><App/></TourProvider></AuthProvider>);

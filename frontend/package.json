@@ -2,13 +2,30 @@
   "name": "fogwrite",
   "private": true,
   "type": "module",
-  "scripts": {"dev": "vite --host 127.0.0.1", "build": "vite build", "test": "node --test ../scripts/fogwrite-model.test.mjs ../scripts/fogwrite-ui.test.cjs", "test:auth": "node ../scripts/fogwrite-auth.test.cjs", "test:ui": "node ../scripts/fogwrite-smoke.cjs --offline"},
-  "dependencies": {"react": "19.2.0", "react-dom": "19.2.0", "lucide-react": "0.468.0"},
+  "scripts": {
+    "dev": "node ../scripts/frontend-command.cjs dev",
+    "build": "vite build",
+    "build:offline": "node ../scripts/frontend-command.cjs build",
+    "test": "node --test ../scripts/fogwrite-model.test.mjs ../scripts/fogwrite-ui.test.cjs",
+    "test:tour": "node ../scripts/fogwrite-tour.test.cjs",
+    "test:guide": "node ../scripts/fogwrite-guide.test.cjs",
+    "test:auth": "node ../scripts/fogwrite-auth.test.cjs",
+    "test:ui": "node ../scripts/fogwrite-smoke.cjs --offline",
+    "typecheck:tour": "tsc -p tsconfig.tour.json"
+  },
+  "dependencies": {
+    "lucide-react": "0.468.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.17",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
     "@vitejs/plugin-react": "5.1.1",
-    "tailwindcss": "4.1.17",
     "playwright": "1.62.1",
+    "tailwindcss": "4.1.17",
+    "typescript": "5.9.3",
     "vite": "7.2.2"
   }
 }

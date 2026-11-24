@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -229,7 +230,9 @@ def test_live_demo_v1_stratified_wiring(tmp_path: Path) -> None:
     with TestClient(create_app(REPO_ROOT / "data", tmp_path / "results", lambda _: StubProvider())) as client:
         index_resp = client.get("/")
         assert index_resp.status_code == 200
-        js_resp = client.get("/app.js")
+        script = re.search(r'<script[^>]+src="([^"]+)"', index_resp.text)
+        assert script is not None
+        js_resp = client.get(script.group(1))
         assert js_resp.status_code == 200
         assert "V1_STRATIFIED" in js_resp.text
 

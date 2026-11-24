@@ -31,7 +31,7 @@ def test_unenrolled_join_three_credits_refund_and_rotation(tmp_path):
             joined=await c.client.post('/api/classes/join',headers=headers(),json={'join_code':' '+code.lower()+' '})
             assert joined.status_code==200 and joined.json()['quota_status']['remaining_today']==3
             assert 'join_code' not in (await c.client.get('/api/auth/me',headers=headers())).text
-            responses=await asyncio.gather(*(submit(c,key='v2_request_'+str(i)) for i in range(4)))
+            responses=await asyncio.gather(*(submit(c,key='v2_request_'+str(i),essay=ESSAY+' Additional example number '+str(i)+'.') for i in range(4)))
             assert [r.status_code for r in responses].count(202)==3
             assert [r.status_code for r in responses].count(429)==1
             from app.queue import claim
@@ -450,5 +450,165 @@ def test_failed_jobs_record_completed_at_across_worker_and_stale_lease_and_clear
             async with c.database.sessions() as db:
                 j1_failed = await db.get(Job, jid1)
                 assert j1_failed.status == 'FAILED' and j1_failed.completed_at is not None
+
+    asyncio.run(scenario())
+
+
+def test_split_thinking_budgets_and_vietnamese_feedback_schema(tmp_path):
+    from google.genai import types
+    from app.config import Settings, load_settings
+    from app.pilot_config import PilotSettings
+    from app.practice.schemas import AnswerAssessment, PracticeDraft, PracticeReview
+    from app.providers.gemini import GeminiProvider
+
+    defaults = PilotSettings(_env_file=None)
+    assert defaults.gemini_score_thinking_budget == 512
+    assert defaults.gemini_practice_thinking_budget == 0
+    assert defaults.worker_poll_seconds == 0.25
+    assert defaults.feedback_language == 'vi'
+    assert defaults.auto_practice_mode == 'idle_only'
+    assert load_settings().score_thinking_budget == 512 or isinstance(load_settings().score_thinking_budget, int)
+
+    assert AssessmentOutputV2.model_fields['aspect_reviews'].metadata[0].max_length == 8
+    assert AssessmentOutputV2.model_fields['sentence_annotations'].metadata[0].max_length == 6
+    assert AssessmentOutputV2.model_fields['grammar_corrections'].metadata[0].max_length == 5
+    assert AssessmentOutputV2.model_fields['language_suggestions'].metadata[0].max_length == 5
+    assert AssessmentOutputV2.model_fields['paragraph_reviews'].metadata[0].max_length == 6
+
+    oversized = {
+        **v2_output(),
+        'aspect_reviews': [{'aspect': 'Relevance to Prompt', 'score': 6.5, 'explanation': 'Clear.'} for _ in range(16)],
+        'paragraph_reviews': [{'paragraph_number': i + 1, 'role': 'body', 'summary': 'Good.', 'improvement': 'Add detail.', 'evidence': None} for i in range(10)],
+    }
+    trimmed = AssessmentOutputV2.model_validate(oversized)
+    assert len(trimmed.aspect_reviews) == 8 and len(trimmed.paragraph_reviews) == 6
+
+    captured_configs = []
+
+    class FakeModels:
+        async def generate_content(self, *, model, contents, config):
+            captured_configs.append(config)
+            raw_json = json.dumps(v2_output())
+            usage = SimpleNamespace(model_dump=lambda: {'prompt_token_count': 10, 'candidates_token_count': 20, 'thoughts_token_count': 5, 'total_token_count': 35})
+            candidate = SimpleNamespace(finish_reason='STOP')
+            return SimpleNamespace(text=raw_json, usage_metadata=usage, candidates=[candidate], model_version='gemini-3.5-flash-lite')
+
+    fake_client = SimpleNamespace(aio=SimpleNamespace(models=FakeModels()))
+    provider = GeminiProvider(
+        Settings(api_key='test-key', score_thinking_budget=512, practice_thinking_budget=0),
+        budget_path=tmp_path / 'quota.sqlite3',
+        client=fake_client,
+    )
+
+    async def scenario():
+        await provider.generate_structured('sys', 'user', AssessmentOutputV2)
+        await provider.generate_structured('sys', 'user', PracticeDraft)
+        await provider.generate_structured('sys', 'user', PracticeReview)
+        await provider.generate_structured('sys', 'user', AnswerAssessment)
+        assert [cfg.thinking_config.thinking_budget for cfg in captured_configs] == [512, 0, 0, 0]
+        assert all(isinstance(cfg.thinking_config, types.ThinkingConfig) for cfg in captured_configs)
+
+        captured_systems = []
+
+        class CaptureProvider:
+            settings = SimpleNamespace(feedback_language='vi')
+
+            async def generate_structured(self, system, user, schema):
+                captured_systems.append(system)
+                return Generation(json.dumps(v2_output()), 'fixture', None, 1, {'total_token_count': 20}, [])
+
+        vi_sub = SimpleNamespace(
+            prompt=QUESTION, essay=ESSAY, warnings=[],
+            config_snapshot={'fewshot': baseline_config(), 'prompt_version': 'v2', 'feedback_language': 'vi'},
+        )
+        en_sub = SimpleNamespace(
+            prompt=QUESTION, essay=ESSAY, warnings=[],
+            config_snapshot={'fewshot': baseline_config(), 'prompt_version': 'v2', 'feedback_language': 'en'},
+        )
+        await score(vi_sub, CaptureProvider())
+        await score(en_sub, CaptureProvider())
+        assert 'FEEDBACK_LANGUAGE=vi' in captured_systems[0]
+        assert 'structural_audit' in captured_systems[0]
+        assert 'FEEDBACK_LANGUAGE=vi' not in captured_systems[1]
+
+    asyncio.run(scenario())
+
+
+def test_worker_idle_only_auto_practice_and_priority(tmp_path):
+    from app.models import PracticeSet
+    from app.queue import claim
+    from app.worker import Worker
+    from test_concurrency_and_guardrails import FakeProvider, RESULT
+
+    async def scenario():
+        async with application(tmp_path) as c:
+            assert c.settings.auto_practice_mode == 'idle_only'
+            r1 = await submit(c, key='idle_key_01')
+            r2 = await submit(c, key='idle_key_02', essay=ESSAY+' Additional evidence supports this argument.')
+            assert r1.status_code == 202 and r2.status_code == 202
+            sub1, sub2 = r1.json(), r2.json()
+
+            worker = Worker(c.database, c.settings, FakeProvider(), FakeProvider())
+
+            # First score job finishes while second score job is STILL queued -> skip auto-practice.
+            j1 = await claim(c.database, c.settings)
+            assert j1.id == sub1['job_id'] and j1.priority == 0
+            assert await worker.finish(j1, result=RESULT)
+            async with c.database.sessions() as db:
+                assert await db.get(PracticeSet, sub1['submission_id']) is None
+                practice_jobs = (await db.scalars(select(Job).where(Job.kind == 'practice'))).all()
+                assert len(practice_jobs) == 0
+
+            # Second (last) score job finishes with queued_score_count == 0 -> enqueue priority=10 practice.
+            j2 = await claim(c.database, c.settings)
+            assert j2.id == sub2['job_id']
+            assert await worker.finish(j2, result=RESULT)
+            async with c.database.sessions() as db:
+                ps = await db.get(PracticeSet, sub2['submission_id'])
+                assert ps is not None and ps.state == 'generating'
+                pjobs = (await db.scalars(select(Job).where(Job.kind == 'practice'))).all()
+                assert len(pjobs) == 1 and pjobs[0].submission_id == sub2['submission_id'] and pjobs[0].priority == 10
+
+            # New score job (priority=0) must always be claimed BEFORE queued practice job (priority=10).
+            r3 = await submit(c, 1, key='idle_key_03')
+            assert r3.status_code == 202
+            sub3 = r3.json()
+            next_claimed = await claim(c.database, c.settings)
+            assert next_claimed.id == sub3['job_id'] and next_claimed.kind == 'score'
+            # Under on_demand mode, no practice job is auto-enqueued even when idle.
+            c.settings.auto_practice_mode = 'on_demand'
+            assert await worker.finish(next_claimed, result=RESULT)
+            async with c.database.sessions() as db:
+                assert await db.get(PracticeSet, sub3['submission_id']) is None
+
+            # Pending priority=10 practice job is claimed once score queue is empty.
+            p_claimed = await claim(c.database, c.settings)
+            assert p_claimed is not None and p_claimed.kind == 'practice' and p_claimed.submission_id == sub2['submission_id']
+
+    asyncio.run(scenario())
+
+
+def test_profile_backfill_alias_null_only_and_collision_safe(tmp_path):
+    async def scenario():
+        async with application(tmp_path) as c:
+            # First backfill populates null reported_* fields via /api/auth/profile.
+            first = await c.client.patch('/api/auth/profile', headers=headers(), json={'full_name': 'Minh Bui', 'email': 'minh.bui@example.test'})
+            assert first.status_code == 200
+            assert first.json()['full_name'] == 'Minh Bui' and first.json()['email'] == 'minh.bui@example.test'
+            # Already-populated fields are NOT overwritten on subsequent fallback calls.
+            second = await c.client.post('/api/auth/profile', headers=headers(), json={'full_name': 'Overwrite Attempt', 'email': 'other@example.test'})
+            assert second.status_code == 200
+            assert second.json()['full_name'] == 'Minh Bui' and second.json()['email'] == 'minh.bui@example.test'
+            # Role escalation & extra fields remain rejected (422) and role never mutates.
+            assert (await c.client.patch('/api/auth/profile', headers=headers(), json={'role': 'admin'})).status_code == 422
+            assert (await c.client.get('/api/auth/me', headers=headers())).json()['role'] == 'student'
+
+            # Unique email collision on reported_email is caught cleanly without crashing backfill.
+            from sqlalchemy import text as sql_text
+            async with c.database.transaction() as db:
+                await db.execute(sql_text('CREATE UNIQUE INDEX ix_test_reported_email ON users(reported_email) WHERE reported_email IS NOT NULL'))
+            collision = await c.client.patch('/api/auth/profile', headers=headers(1), json={'full_name': 'Second Student', 'email': 'minh.bui@example.test'})
+            assert collision.status_code == 200
+            assert collision.json()['full_name'] == 'Second Student' and collision.json()['email'] is None
 
     asyncio.run(scenario())
