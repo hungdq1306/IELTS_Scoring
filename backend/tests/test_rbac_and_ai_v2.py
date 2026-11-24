@@ -475,6 +475,14 @@ def test_split_thinking_budgets_and_vietnamese_feedback_schema(tmp_path):
     assert AssessmentOutputV2.model_fields['language_suggestions'].metadata[0].max_length == 5
     assert AssessmentOutputV2.model_fields['paragraph_reviews'].metadata[0].max_length == 6
 
+    oversized = {
+        **v2_output(),
+        'aspect_reviews': [{'aspect': 'Relevance to Prompt', 'score': 6.5, 'explanation': 'Clear.'} for _ in range(16)],
+        'paragraph_reviews': [{'paragraph_number': i + 1, 'role': 'body', 'summary': 'Good.', 'improvement': 'Add detail.', 'evidence': None} for i in range(10)],
+    }
+    trimmed = AssessmentOutputV2.model_validate(oversized)
+    assert len(trimmed.aspect_reviews) == 8 and len(trimmed.paragraph_reviews) == 6
+
     captured_configs = []
 
     class FakeModels:

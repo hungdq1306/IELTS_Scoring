@@ -2,7 +2,7 @@
 import re
 from typing import Literal
 from collections import Counter
-from pydantic import Field
+from pydantic import Field, model_validator
 from app.grading.schemas import (StrictModel, Band, Line, CriterionFeedback, Correction,
     AspectReview, ParagraphReview, LanguageSuggestion, word_count)
 
@@ -40,6 +40,29 @@ class AssessmentOutputV2(StrictModel):
     aspect_reviews: list[AspectReview] = Field(max_length=8)
     paragraph_reviews: list[ParagraphReview] = Field(max_length=6)
     language_suggestions: list[LanguageSuggestion] = Field(max_length=5)
+
+    @model_validator(mode='before')
+    @classmethod
+    def _cap_list_lengths(cls, data):
+        """Truncate verbose model lists to schema bounds so extra items never fail a grading job."""
+        if not isinstance(data, dict):
+            return data
+        caps = {
+            'sentence_annotations': 6,
+            'top_weaknesses': 5,
+            'grammar_corrections': 5,
+            'aspect_reviews': 8,
+            'paragraph_reviews': 6,
+            'language_suggestions': 5,
+        }
+        updated = None
+        for key, limit in caps.items():
+            val = data.get(key)
+            if isinstance(val, list) and len(val) > limit:
+                if updated is None:
+                    updated = dict(data)
+                updated[key] = val[:limit]
+        return updated if updated is not None else data
 
 
 def essay_metadata(essay):
