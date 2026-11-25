@@ -12,6 +12,7 @@ from tqdm import tqdm
 from app.config import ROOT, load_settings
 from app.grading.rubric import PROMPT_VERSION, RUBRIC_VERSION, SYSTEM_PROMPT
 from app.grading.detailed import DETAILED_PROMPT, DETAILED_PROMPT_VERSION
+from app.grading.bands import OVERALL_POLICY
 from app.grading.schemas import DetailedModelGrade, GradeRequest, ModelGrade
 from app.grading.task2 import grade_essay
 from app.providers.base import ProviderError
@@ -49,7 +50,7 @@ def make_metadata(dataset, split, count, model, file_hash, manifest, experiment=
         "dataset": dataset, "dataset_revision": manifest.get("revision"),
         "label_provenance": manifest.get("label_provenance", PROVENANCE),
         "split": split, "expected": count, "model": model, "dataset_sha256": file_hash,
-        "experiment": experiment, "prompt_version": version,
+        "experiment": experiment, "prompt_version": version, "overall_policy": OVERALL_POLICY,
         "rubric_version": RUBRIC_VERSION, "prompt_sha256": prompt_hash,
         "kind": kind, "selected_essay_id": essay_id, "provider": "gemini",
         "parameters": {"temperature": 0, "max_output_tokens": 8192},

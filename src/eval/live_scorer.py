@@ -98,7 +98,7 @@ class LiveGeminiScorer:
         from src.eval.prompt_v1 import PROMPT_V1_VERSION
         serialized = json.dumps([r.model_dump() for r in pool], sort_keys=True, ensure_ascii=False)
         digest = hashlib.sha256(serialized.encode()).hexdigest()
-        return f'{PAYLOAD_VERSION}:floor_half_v1:{PROMPT_V1_VERSION}:{self.prompt_version}:{self.model_name}:{digest}'
+        return f'{PAYLOAD_VERSION}:half_band_threshold_0375_v1:{PROMPT_V1_VERSION}:{self.prompt_version}:{self.model_name}:{digest}'
 
     async def score_async(self, target: EssayRecord, fewshot_pool: list[EssayRecord], provider: GeminiProvider) -> dict[str, Any]:
         pool_ids = {e.essay_id for e in fewshot_pool}
@@ -121,7 +121,7 @@ class LiveGeminiScorer:
         ov = compute_ielts_overall(tr, cc, lr, gra)
 
         result = {
-            "overall_policy": "floor_half_v1",
+            "overall_policy": "half_band_threshold_0375_v1",
             "pred": {"tr": tr, "cc": cc, "lr": lr, "gra": gra, "overall": ov},
             "rationale": {
                 "brief": parsed.brief_rationale,

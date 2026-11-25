@@ -300,7 +300,7 @@ def evaluate_predictions(
         )
         results[key] = tm.model_dump()
     return {
-        "overall_policy": "floor_half_v1",
+        "overall_policy": "half_band_threshold_0375_v1",
         "overall_reference": "computed_from_criteria",
         "n_essays": len(pairs),
         "n_clusters": len(set(cluster_ids)),

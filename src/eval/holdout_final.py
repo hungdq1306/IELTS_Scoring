@@ -50,7 +50,7 @@ def freeze_dev_cc_calibration(
     check_membership(expected, 'dev', dataset_dir)
     if len(dev_rows) != len(expected) or {r['essay_id'] for r in dev_rows} != {r.essay_id for r in expected}:
         raise ValueError('Dev predictions differ from frozen Dev membership')
-    if any(r.get('overall_policy') != 'floor_half_v1' for r in dev_rows):
+    if any(r.get('overall_policy') != 'half_band_threshold_0375_v1' for r in dev_rows):
         raise ValueError('Dev calibration requires predictions with the current scoring policy')
     cc_diffs = [float(r["true"]["cc"]) - float(r["pred"]["cc"]) for r in dev_rows]
     cc_offset = float(np.mean(cc_diffs))
@@ -115,7 +115,7 @@ async def _run_one_shot_holdout_version(
                     "pred": res["pred"],
                     "overall_error": round(res["pred"]["overall"] - target.overall, 2),
                     "rationale": res["rationale"],
-                    "cache_policy": policy, "overall_policy": "floor_half_v1",
+                    "cache_policy": policy, "overall_policy": "half_band_threshold_0375_v1",
                     "latency_ms": res["latency_ms"],
                     "usage": res["usage"],
                     "model": res["model"],

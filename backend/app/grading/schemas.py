@@ -113,7 +113,7 @@ class BandConfidence(StrictModel):
 
 
 class GradeResult(ModelGrade):
-    overall_policy: str = "floor_half_v1"
+    overall_policy: str = "half_band_threshold_0375_v1"
     fewshot_config: str | None = None
     fewshot_version: str | None = None
     production_fewshot_ready: bool | None = None

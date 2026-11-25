@@ -7,7 +7,7 @@ Branch: `hung/task2-claude-haiku55-eval`; review baseline: `f607678`.
 - One target question and one target essay in a JSON payload. Verified paragraphs are labeled `[pN]` in both targets and anchors.
 - Paragraph spans refer to unchanged source substrings. Labels never become evidence or saved essay text.
 - Unknown paragraph boundaries stay unverified; CC instructions prohibit treating missing source formatting as a student error.
-- Overall policy `floor_half_v1` uses Decimal floor. Criterion midpoint aggregation and calibration rounding remain separate.
+- Current overall policy `half_band_threshold_0375_v1`: .375/.875 round up; .25/.75 round down, using Decimal. This supersedes the original strict-floor policy. Criterion midpoint aggregation and calibration rounding remain separate.
 - Teacher-reported overall labels are retained independently from computed overall.
 - Anchors are selected by independent score provenance and loaded feedback; no essay-ID cue tables remain.
 - Anchor serialization is allowlisted: four criterion scores and verified criterion feedback, without overall or legacy cues.
@@ -30,7 +30,7 @@ No splitter was run against the frozen artifacts. Dev and holdout bytes are pres
 
 ## Seed provenance and overall labels
 
-| ID | TR | CC | LR | GRA | Reported | Computed floor | Score source |
+| ID | TR | CC | LR | GRA | Reported | Computed current policy | Score source |
 |---|---:|---:|---:|---:|---:|---:|---|
 | 60d15778a7220c00129d0fef | 5.5 | 5.5 | 5.0 | 4.5 | 5.0 | 5.0 | dual_rater |
 | 6756f7ea91514b0011fd65e2 | 6.0 | 5.5 | 4.5 | 4.5 | 5.0 | 5.0 | dual_rater |
@@ -45,8 +45,8 @@ No splitter was run against the frozen artifacts. Dev and holdout bytes are pres
 | lecturer_10 | 8.5 | 9.0 | 8.5 | 9.0 | 9.0 | 8.5 | ai_augmented |
 | lecturer_11 | 8.5 | 9.0 | 8.5 | 9.0 | 9.0 | 8.5 | ai_augmented |
 | lecturer_12 | 8.5 | 9.0 | 8.5 | 9.0 | 9.0 | 8.5 | ai_augmented |
-| lecturer_13 | 9.0 | 9.0 | 8.5 | 9.0 | 9.0 | 8.5 | ai_augmented |
-| lecturer_14 | 9.0 | 9.0 | 8.5 | 9.0 | 9.0 | 8.5 | ai_augmented |
+| lecturer_13 | 9.0 | 9.0 | 8.5 | 9.0 | 9.0 | 9.0 | ai_augmented |
+| lecturer_14 | 9.0 | 9.0 | 8.5 | 9.0 | 9.0 | 9.0 | ai_augmented |
 
 ## Paragraph source audit
 
@@ -69,7 +69,7 @@ The twelve exceptions contain nine single-newline records and three records with
 
 ## Offline verification
 
-Final verification:
+Verification of the preceding strict-floor version (retained as historical evidence):
 
 | Check | Result |
 |---|---|
@@ -100,3 +100,9 @@ node scripts/build-frontend.cjs
 `--windows-udp-wakeup` is an explicit test-only adapter for this Windows sandbox: it replaces the blocked TCP self-pipe with local UDP and bounds IOCP polling to service worker-thread callbacks. It is not loaded by the application. `--offline` blocks external connections and disables external test databases. SQLite tests do not establish production/Postgres load behavior.
 
 Fake-provider score preservation tests validate the contract; they do not establish Gemini or Claude grading accuracy. No paid grading or new holdout benchmark is authorized by this implementation run. Historical benchmark artifacts remain historical and are not relabeled as results for the new prompt.
+
+## Rounding correction requested after review
+
+Current rule: `7.875 -> 8.0`, `7.375 -> 7.5`, while `7.75 -> 7.5` and `7.25 -> 7.0` remain unchanged. Policy is `half_band_threshold_0375_v1`; strict-floor caches are incompatible. Both overall calculation entry points use the shared Decimal helper. Criterion scores and reported labels remain unchanged; dev/holdout files remain byte-identical. Updated verification is recorded separately in `artifacts/hygiene_verification/rounding_tests.xml` and `rounding_results.json`.
+
+Updated rounding verification: **66 passed**, including all **130,321** criterion combinations, threshold boundaries, backend/evaluation parity, and unchanged dev/holdout bytes. Zero paid API calls. Only computed seed overall values for the two upper-eighth supplemental records change (8.5 -> 9.0); reported labels and all criterion scores are preserved.

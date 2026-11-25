@@ -22,7 +22,7 @@ def load_records(path):
             row['paragraph_boundary_source'] = note['paragraph_boundary_source']
         row['overall_computed'] = compute_ielts_overall(*(row[c] for c in ('tr','cc','lr','gra')))
         row['overall'] = row['overall_computed']
-        row['overall_policy'] = 'floor_half_v1'
+        row['overall_policy'] = 'half_band_threshold_0375_v1'
         rows.append(EssayRecord.model_validate(row))
     return sorted(rows, key=lambda r: r.essay_id)
 

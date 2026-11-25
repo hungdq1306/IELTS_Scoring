@@ -9,9 +9,9 @@ max_criterion_spread: 2.0
 
 # Gold label aggregation convention (matches backend/benchmark/compare_raters.py & app/grading/task2.py)
 # Each criterion: round_half_up((r1 + r2) / 2) to 0.5 increments
-# Overall: FogWrite floor-to-0.5; reported labels are preserved separately.
+# Overall: FogWrite: .375/.875 round up; .25/.75 round down; reported labels stay separate.
 gold_aggregation: "midpoint_round_half_up"
-overall_policy: "floor_half_v1"
+overall_policy: "half_band_threshold_0375_v1"
 
 # Input dataset paths and detected schema mappings
 inputs:

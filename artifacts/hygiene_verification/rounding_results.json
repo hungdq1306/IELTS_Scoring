@@ -1,0 +1,26 @@
+{
+  "overall_policy": "half_band_threshold_0375_v1",
+  "passed": 66,
+  "failed": 0,
+  "duration_seconds": 30.969,
+  "valid_half_band_combinations_checked": 130321,
+  "paid_api_calls": 0,
+  "frozen_datasets": {
+    "dev": {
+      "sha256": "e0d1e13dfde444e61a36dea76b0c19d383bc148ca769b895a1f5a86711d83c5c",
+      "bytes_unchanged": true
+    },
+    "holdout": {
+      "sha256": "2eb6efe23882d4ae0b66f2993a49e159c829ca81db82d11e433a12134cf61ce0",
+      "bytes_unchanged": true
+    }
+  },
+  "cases": {
+    "7.875": 8.0,
+    "7.75": 7.5,
+    "7.625": 7.5,
+    "7.5": 7.5,
+    "7.375": 7.5,
+    "7.25": 7.0
+  }
+}

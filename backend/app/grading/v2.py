@@ -25,7 +25,7 @@ class SentenceAnnotation(StrictModel):
 
 from app.grading.aspects import ASPECTS
 V2_ASPECT_NAMES = tuple(name for group in ASPECTS.values() for name, _ in group if name != 'Appropriateness of Format')
-V2_REVISION = 'decoupled-tr-cc-single-essay-floor-v4'
+V2_REVISION = 'decoupled-tr-cc-single-essay-rounding-v5'
 
 class DiagnosticReview(StrictModel):
     aspect_name: Literal[*V2_ASPECT_NAMES]

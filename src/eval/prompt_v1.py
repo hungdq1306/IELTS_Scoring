@@ -6,7 +6,7 @@ from typing import Any
 
 from src.data.tiering import EssayRecord
 
-PROMPT_V1_VERSION = "task2-v1-metadata-single-essay-floor-v1"
+PROMPT_V1_VERSION = "task2-v1-metadata-single-essay-rounding-v2"
 
 SYSTEM_PROMPT_V1 = """
 Assess one IELTS Academic Writing Task 2 response independently and accurately against the official

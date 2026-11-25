@@ -251,9 +251,9 @@ async def submit(body: SubmitEssay, request: Request, idempotency_key: str | Non
             ladder = {}
             for anchor in anchors:
                 scores = anchor.payload.get('scores', {})
-                from app.grading.bands import floor_overall
+                from app.grading.bands import compute_overall
                 from app.grading.schemas import CRITERIA
-                band = floor_overall(scores[c] for c in CRITERIA) if all(c in scores for c in CRITERIA) else None
+                band = compute_overall(scores[c] for c in CRITERIA) if all(c in scores for c in CRITERIA) else None
                 if band is not None: ladder.setdefault(band, anchor)
             if ladder: anchors = [ladder[band] for band in sorted(ladder)]
             fewshot['examples'] = [anchor.payload for anchor in anchors]

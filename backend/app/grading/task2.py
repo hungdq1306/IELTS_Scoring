@@ -1,5 +1,5 @@
 import json
-from app.grading.bands import floor_overall
+from app.grading.bands import compute_overall
 from time import perf_counter
 
 from pydantic import ValidationError
@@ -13,7 +13,7 @@ from app.providers.base import Generation, LLMProvider, ProviderError
 
 
 def overall_band(scores: Scores) -> float:
-    return floor_overall(scores.model_dump().values())
+    return compute_overall(scores.model_dump().values())
 
 
 def compute_band_confidence(

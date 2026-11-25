@@ -28,9 +28,9 @@ def round_half(val: float | int | str | Decimal) -> float:
 
 
 def compute_ielts_overall(tr: float, cc: float, lr: float, gra: float) -> float:
-    """FogWrite floor-to-half policy; reported labels remain separate."""
-    from backend.app.grading.bands import floor_overall
-    return floor_overall((tr, cc, lr, gra))
+    """FogWrite half-band policy: upper eighth rounds up; reported labels remain separate."""
+    from backend.app.grading.bands import compute_overall
+    return compute_overall((tr, cc, lr, gra))
 
 
 def parse_half_band(raw: Any) -> float | None:
@@ -152,7 +152,7 @@ def _load_examiner_verified(config: dict[str, Any], root: Path) -> tuple[list[Es
                 score_provenance={"independently_verified": item.get("label_provenance") == "explicit_lecturer_annotation",
                                   "source_record": str(inputs["examiner_fs7_json"]),
                                   "label_provenance": item.get("label_provenance")},
-                overall_reported=scores_obj.get("overall"), overall_computed=ov, overall_policy="floor_half_v1",
+                overall_reported=scores_obj.get("overall"), overall_computed=ov, overall_policy="half_band_threshold_0375_v1",
                 tr=parsed["tr"],
                 cc=parsed["cc"],
                 lr=parsed["lr"],
@@ -198,7 +198,7 @@ def _load_examiner_verified(config: dict[str, Any], root: Path) -> tuple[list[Es
                     score_source="examiner_verified" if item.get('provenance', {}).get('independently_verified_lecturer_grade') is True else "ai_augmented",
                     score_provenance={"independently_verified": item.get('provenance', {}).get('independently_verified_lecturer_grade') is True,
                                       **item.get('provenance', {})},
-                    overall_reported=scores_obj.get("overall"), overall_computed=ov, overall_policy="floor_half_v1",
+                    overall_reported=scores_obj.get("overall"), overall_computed=ov, overall_policy="half_band_threshold_0375_v1",
                     tr=parsed["tr"],
                     cc=parsed["cc"],
                     lr=parsed["lr"],

@@ -11,7 +11,7 @@ from app.config import ROOT
 from app.grading.schemas import Band, CRITERIA, Scores, StrictModel, word_count
 from app.providers.base import ProviderError
 
-V1_STRATIFIED_VERSION = 'verified-metadata-single-essay-floor-v1'
+V1_STRATIFIED_VERSION = 'verified-metadata-single-essay-rounding-v2'
 EXPERIMENTS = {'FS5', 'FS5_FULL', 'FS5_COMPACT', 'FS7', 'V1_STRATIFIED'}
 SENTINEL = '[UNVERIFIED_TASK_PROMPT - DO NOT INFER PROMPT TOPIC FOR TASK RESPONSE CALIBRATION]'
 VIETNAMESE = re.compile(r'[\u0102-\u0103\u0110-\u0111\u0128-\u0129\u0168-\u0169\u01a0-\u01b0\u1ea0-\u1ef9]')
