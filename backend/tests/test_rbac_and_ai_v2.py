@@ -89,7 +89,7 @@ def test_vietnam_midnight_telemetry_and_rounding():
     assert metadata['paragraph_count']==2 and metadata['ngram_repetition_ratio']['2']>0
     assert sum(metadata['words_per_paragraph'])==metadata['word_count']
     assert next(iter(AssessmentOutputV2.model_fields))=='structural_audit'
-    for raw,expected in ((6.25,6.5),(6.75,7.0)):
+    for raw,expected in ((6.25,6.0),(6.75,6.5)):
         scores=Scores(**dict(zip(CRITERIA,[raw-.25,raw-.25,raw+.25,raw+.25])))
         assert overall_band(scores)==expected
     assert calibrate(dict.fromkeys(CRITERIA,8.5),dict.fromkeys(CRITERIA,1)).task_response==9
@@ -117,8 +117,9 @@ def test_v2_schema_rejects_invalid_bands_and_preserves_audit_order():
 def test_v2_scorer_adapter_metadata_and_calibration():
     class Provider:
         async def generate_structured(self,system,user,schema):
-            assert schema is AssessmentOutputV2 and '<essay_metadata>' in user and '<student_essay>' in user
-            assert 'ANTI LENGTH BIAS' in system
+            assert schema is AssessmentOutputV2 and 'metadata' in json.loads(user)['NEW ESSAY']
+            assert '<student_essay>' not in user
+            assert 'ANTI-LENGTH BIAS' in system
             return Generation(json.dumps(v2_output()),'fixture',None,1,{'total_token_count':20},[])
     async def scenario():
         submission=SimpleNamespace(prompt=QUESTION,essay=ESSAY,warnings=[],config_snapshot={'fewshot':baseline_config(),'prompt_version':'v2','global_offsets':{'tr':.5}})

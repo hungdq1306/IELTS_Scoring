@@ -21,16 +21,18 @@ def test_schema_orders_evidence_before_criterion_scores():
         assert schema["required"][-1]=="criterion_scores"
 
 
-def test_detailed_input_includes_word_count_and_short_essay_note():
+def test_detailed_input_includes_neutral_word_count_metadata():
     short_req=GradeRequest(prompt="Should cities invest in public transport?",essay="One two three four five.")
     short_payload=json.loads(detailed_input(short_req))
-    assert short_payload["word_count"]==5
-    assert "length_note" in short_payload and "under 250 words" in short_payload["length_note"]
+    assert short_payload["metadata"]["word_count"]==5
+    assert "length_note" not in short_payload
+    assert short_payload["metadata"]["paragraph_boundary_verified"] is False
+    assert short_payload["student_essay"] == short_req.essay
 
     long_essay=" ".join(["argument"] * 260)
     long_req=GradeRequest(prompt="Should cities invest in public transport?",essay=long_essay)
     long_payload=json.loads(detailed_input(long_req))
-    assert long_payload["word_count"]==260
+    assert long_payload["metadata"]["word_count"]==260
     assert "length_note" not in long_payload
 
 

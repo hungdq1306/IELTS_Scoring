@@ -215,8 +215,8 @@ def test_input_schema_rounding_and_pii():
         with pytest.raises(HTTPException): validate_input(QUESTION, essay)
     with pytest.raises(ValidationError): Scores(task_response=99, coherence_cohesion=6, lexical_resource=6, grammatical_range_accuracy=6)
     with pytest.raises(ValidationError): Scores(task_response=6.1, coherence_cohesion=6, lexical_resource=6, grammatical_range_accuracy=6)
-    assert overall_band(Scores(task_response=6,coherence_cohesion=6,lexical_resource=6,grammatical_range_accuracy=7)) == 6.5
-    assert overall_band(Scores(task_response=6,coherence_cohesion=7,lexical_resource=7,grammatical_range_accuracy=7)) == 7.0
+    assert overall_band(Scores(task_response=6,coherence_cohesion=6,lexical_resource=6,grammatical_range_accuracy=7)) == 6.0
+    assert overall_band(Scores(task_response=6,coherence_cohesion=7,lexical_resource=7,grammatical_range_accuracy=7)) == 6.5
     text = 'Contact student@example.com or +84 987 654 321.'
     clean = redact_pii(text)
     assert 'student@example.com' not in clean and '987' not in clean and len(clean) == len(text)
@@ -342,7 +342,8 @@ def test_assignment_anchor_exclusion_preserves_copy_protection():
     config = baseline_config()
     example = config['examples'][0]
     adjusted = assignment_safe_config(config, example['question'])
-    assert len(adjusted['examples']) < 8 and len(config['examples']) == 8
+    assert len(adjusted['examples']) < len(config['examples'])
+    assert all(e['score_source'] == 'examiner_verified' for e in config['examples'])
     protect(GradeRequest(prompt=example['question'],essay=ESSAY),adjusted)
     with pytest.raises(ProviderError):
         protect(GradeRequest(prompt=example['question'],essay=example['student_essay']),adjusted)

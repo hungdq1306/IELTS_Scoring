@@ -1,4 +1,4 @@
-"""13-fold Leave-One-Out Cross-Validation (Examiner-Calibration Audit) on examiner_verified essays."""
+"""metadata-selected Leave-One-Out Cross-Validation (Examiner-Calibration Audit) on examiner_verified essays."""
 from __future__ import annotations
 
 import argparse
@@ -54,18 +54,8 @@ class DeterministicMockScorer:
 
 
 def load_examiner_verified_from_seed(seed_jsonl: Path) -> list[EssayRecord]:
-    """Load strictly the 13 examiner_verified records from artifacts/dataset_v1/seed.jsonl."""
-    records: list[EssayRecord] = []
-    with seed_jsonl.open("r", encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if not line:
-                continue
-            rec = EssayRecord.model_validate_json(line)
-            if rec.quality_tier == "examiner_verified":
-                records.append(rec)
-    records.sort(key=lambda r: r.essay_id)
-    return records
+    from src.data.records import load_records, verified_records
+    return verified_records(load_records(seed_jsonl))
 
 
 def _finalize_loo_report(
@@ -103,7 +93,7 @@ def _finalize_loo_report(
         report,
         json_path=json_path,
         md_path=md_path,
-        title=f"Examiner-Calibration 13-Fold LOO-CV Audit ({mode_label})",
+        title=f"Examiner-Calibration Metadata-Selected LOO-CV Audit ({mode_label})",
     )
     return report
 
@@ -114,11 +104,11 @@ def run_loo_audit(
     out_dir: Path,
     mode_label: str = "dry_run",
 ) -> dict[str, Any]:
-    """Execute 13-fold Leave-One-Out Cross-Validation with zero target leakage (sync interface)."""
+    """Execute metadata-selected Leave-One-Out Cross-Validation with zero target leakage (sync interface)."""
     examiner_essays = load_examiner_verified_from_seed(seed_jsonl)
     n_folds = len(examiner_essays)
-    if n_folds != 13:
-        raise ValueError(f"Expected exactly 13 examiner_verified essays in {seed_jsonl}, found {n_folds}")
+    if n_folds < 2:
+        raise ValueError(f"Expected at least two provenance-verified essays in {seed_jsonl}, found {n_folds}")
 
     fold_records: list[dict[str, Any]] = []
     eval_pairs: list[dict[str, Any]] = []
@@ -173,19 +163,21 @@ async def run_loo_audit_live(
     daily_budget: int | None = None,
     resume: bool = True,
 ) -> dict[str, Any]:
-    """Execute live 13-fold LOO-CV against Gemini with resumable JSONL checkpointing & telemetry."""
+    """Execute live metadata-selected LOO-CV against Gemini with resumable JSONL checkpointing & telemetry."""
     from src.eval.live_scorer import LiveGeminiScorer
     from app.providers.gemini import GeminiProvider
 
     examiner_essays = load_examiner_verified_from_seed(seed_jsonl)
     n_folds = len(examiner_essays)
-    if n_folds != 13:
-        raise ValueError(f"Expected exactly 13 examiner_verified essays in {seed_jsonl}, found {n_folds}")
+    if n_folds < 2:
+        raise ValueError(f"Expected at least two provenance-verified essays in {seed_jsonl}, found {n_folds}")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     mode_label = f"live_{prompt_version}"
     ckpt_name = "loo_live_predictions.jsonl" if prompt_version == "v0" else f"loo_{mode_label}_predictions.jsonl"
     ckpt_path = out_dir / ckpt_name
+    if not resume and ckpt_path.exists() and ckpt_path.stat().st_size:
+        raise ValueError('Choose a new output directory for a fresh evaluation')
     cached: dict[str, dict[str, Any]] = {}
     if resume and ckpt_path.exists():
         with ckpt_path.open("r", encoding="utf-8") as fh:
@@ -196,6 +188,9 @@ async def run_loo_audit_live(
                     cached[rec["target_essay_id"]] = rec
 
     scorer = LiveGeminiScorer(prompt_version=prompt_version, rpm=rpm, daily_budget=daily_budget)
+    policy = scorer.cache_policy(examiner_essays)
+    if any(record.get('cache_policy') != policy for record in cached.values()):
+        raise ValueError('Cached predictions use a different prompt/data/overall policy; choose a new output directory')
     provider = GeminiProvider(scorer.settings)
     fold_records: list[dict[str, Any]] = []
     eval_pairs: list[dict[str, Any]] = []
@@ -217,7 +212,7 @@ async def run_loo_audit_live(
             if target.essay_id in cached:
                 rec = cached[target.essay_id]
                 print(
-                    f"[LOO {fold_idx:02d}/13] CACHED {target.essay_id} | true={target.overall:g} pred={rec['pred']['overall']:g}",
+                    f"[LOO {fold_idx:02d}/{n_folds}] CACHED {target.essay_id} | true={target.overall:g} pred={rec['pred']['overall']:g}",
                     flush=True,
                 )
             else:
@@ -231,6 +226,7 @@ async def run_loo_audit_live(
                     "pred": res["pred"],
                     "overall_error": round(res["pred"]["overall"] - target.overall, 2),
                     "rationale": res["rationale"],
+                    "cache_policy": policy, "overall_policy": "floor_half_v1",
                     "latency_ms": res["latency_ms"],
                     "usage": res["usage"],
                     "model": res["model"],
@@ -238,7 +234,7 @@ async def run_loo_audit_live(
                 with ckpt_path.open("a", encoding="utf-8", newline="\n") as fh:
                     fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
                 print(
-                    f"[LOO {fold_idx:02d}/13] LIVE {target.essay_id} | true={target.overall:g} pred={res['pred']['overall']:g} "
+                    f"[LOO {fold_idx:02d}/{n_folds}] LIVE {target.essay_id} | true={target.overall:g} pred={res['pred']['overall']:g} "
                     f"err={rec['overall_error']:+.1f} | {res['latency_ms']}ms | tok={res['usage'].get('total_token_count', 0)}",
                     flush=True,
                 )
@@ -277,7 +273,7 @@ async def run_loo_audit_live(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Run 13-fold LOO-CV Examiner-Calibration Audit.")
+    parser = argparse.ArgumentParser(description="Run metadata-selected LOO-CV Examiner-Calibration Audit.")
     parser.add_argument("--seed-jsonl", type=Path, default=Path("artifacts/dataset_v1/seed.jsonl"))
     parser.add_argument("--out-dir", type=Path, default=Path("artifacts/dataset_v1/baseline_v0"))
     parser.add_argument("--dry-run", action="store_true", help="Run zero-cost deterministic mock scorer.")
@@ -313,7 +309,7 @@ def main() -> None:
         parser.error("Specify either --dry-run or --live")
         return
 
-    print(render_metrics_markdown(report, title=f"Examiner-Calibration 13-Fold LOO-CV Audit ({mode_label})"))
+    print(render_metrics_markdown(report, title=f"Examiner-Calibration Metadata-Selected LOO-CV Audit ({mode_label})"))
     print("Examiner-Calibration Highlights:")
     print(json.dumps(report["examiner_calibration_highlights"], indent=2))
 

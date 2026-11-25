@@ -18,7 +18,7 @@ import yaml
 from src.data.tiering import DroppedRecord, EssayRecord, load_and_tier_dataset
 
 BAND_GRID = [4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0]
-TIERS_ORDER = ("examiner_verified", "max2_half", "max3_half_only")
+TIERS_ORDER = ("examiner_verified", "ai_augmented", "max2_half", "max3_half_only")
 
 
 def normalize_text(text: str) -> str:
@@ -299,11 +299,11 @@ def _build_audit_report(
         f"- **Random Seed:** `{config['random_seed']}` (fully deterministic)",
         f"- **Max Cross-Split Prompt Cosine Similarity Threshold:** `< {config['max_prompt_sim']:.2f}`",
         f"- **Near-Duplicate Essay Linkage Threshold:** `>= {config['near_dup_essay_sim']:.2f}`",
-        f"- **Gold Label Aggregation:** `{config['gold_aggregation']}` (official IELTS `ROUND_HALF_UP` to `0.5` increments)",
+        f"- **Gold Label Aggregation:** `{config['gold_aggregation']}` (criterion midpoint aggregation; overall uses `{config['overall_policy']}`)",
         f"- **Raw Dual-Rater Pool:** `{tier_summary['dual_rater_raw']}` essays -> "
         f"`{tier_summary['max2_half']}` `max2_half`, `{tier_summary['max3_half_only']}` `max3_half_only`, "
         f"`{tier_summary['rejected']}` `rejected`, `{tier_summary['dropped_clean_or_outlier']}` dropped (artifacts/outliers).",
-        f"- **Examiner-Verified Benchmark:** `{tier_summary['examiner_verified']}` essays (7 detailed lecturer essays 5.0–8.0 + 6 verified high-band essays 8.5–9.0).",
+        f"- **Examiner-Verified Benchmark:** `{tier_summary['examiner_verified']}` essays (independently verified labels only).",
         f"- **Quarantined Prompt/Essay Overlaps with Seed:** `{len(quarantined)}` essays (logged in `quarantined_overlap.json`).",
         f"- **Total Retained Dataset:** **`{len(all_rows)}` essays** (`Seed: {len(seed_rows)}`, `Dev: {len(dev_rows)}`, `Holdout: {len(holdout_rows)}`).",
         "",
@@ -411,6 +411,8 @@ def run_split_pipeline(config_path: Path, root: Path | None = None, output_dir_o
     repo_root = root or Path.cwd()
     config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
     out_dir = output_dir_override or (repo_root / config["output_dir"])
+    if (out_dir / "frozen_membership.json").exists():
+        raise ValueError("Frozen dataset: use output_dir_override for a separate experiment")
     out_dir.mkdir(parents=True, exist_ok=True)
 
     retained, dropped, tier_summary = load_and_tier_dataset(config, root=repo_root)
@@ -432,7 +434,7 @@ def run_split_pipeline(config_path: Path, root: Path | None = None, output_dir_o
 
     # 1. Assign all examiner_verified clusters to Seed (mandatory)
     seed_cids: set[str] = {
-        cid for cid, items in clusters.items() if any(r.quality_tier == "examiner_verified" for r in items)
+        cid for cid, items in clusters.items() if any(r.quality_tier in {"examiner_verified", "ai_augmented"} for r in items)
     }
 
     # 2. Classify remaining dual-rater clusters by tier purity

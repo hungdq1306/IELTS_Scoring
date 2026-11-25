@@ -1,0 +1,1530 @@
+{
+  "version": "frozen_membership_v1",
+  "splits": {
+    "seed": {
+      "sha256_before_hygiene": "7b9da6197774dffbc6a425a404ebd6a54c5822b8d73947da40a2a456e6145e01",
+      "records": [
+        {
+          "essay_id": "60d15778a7220c00129d0fef",
+          "prompt_cluster_id": "CL_DR_028",
+          "essay_sha256": "07896d0de32f16fb67320bc091c14dc7311ba0f75f563ce5a54118bcca0f2b4a",
+          "prompt_sha256": "c746828ca7d7c5a31a8d6b1d099776249891736700e05ad704e67641711879d9"
+        },
+        {
+          "essay_id": "6756f7ea91514b0011fd65e2",
+          "prompt_cluster_id": "CL_DR_073",
+          "essay_sha256": "bd4097c48a894ec85454461d62b5a0e236fd3e3ae3160794ce362f7d1b7aba65",
+          "prompt_sha256": "9164d6fd7041fabf4e58cc37f8b222db98643804f6f7687becfd6783cec4b849"
+        },
+        {
+          "essay_id": "lecturer_02",
+          "prompt_cluster_id": "CL_EX_001",
+          "essay_sha256": "e5b12e7e9c9bc46437c67859f7db441addc5ce4f52f0cfaa0cbb2c6e4151641b",
+          "prompt_sha256": "db8073af1b4c0c26c0fa2613935e63380984a0b7d573e483ba5b19d8ed9dd4c9"
+        },
+        {
+          "essay_id": "lecturer_03",
+          "prompt_cluster_id": "CL_EX_001",
+          "essay_sha256": "b1e17b9203c943b99ee82404a9f0eb1c90115e58d1d53b15742cc201fb6080b6",
+          "prompt_sha256": "eb610df7710c85073bb1ae5a7d07cfd298c582f0741830af5243b9ea3932ba27"
+        },
+        {
+          "essay_id": "lecturer_04",
+          "prompt_cluster_id": "CL_EX_002",
+          "essay_sha256": "bbfce51b9b30a3d30b5e52158db84f86ff8bb4b96b078050765a468c51c62155",
+          "prompt_sha256": "8573c556bfff318da94d0c1a06b4e036bfb69e8dabd6ac76d67d9cfa94b15861"
+        },
+        {
+          "essay_id": "lecturer_05",
+          "prompt_cluster_id": "CL_EX_003",
+          "essay_sha256": "871c376d3baebfd7f953b903880ea5d3f6e22165e4e0c99af270f47907f56055",
+          "prompt_sha256": "304da607fec3f97061174522a10518b45407a92a4fa5e9981d6d4ea271e15620"
+        },
+        {
+          "essay_id": "lecturer_06",
+          "prompt_cluster_id": "CL_EX_004",
+          "essay_sha256": "e2b6c4ac9661eb2798c40018d40ff7fca25c80e5b3a211e288bcde0204f4819a",
+          "prompt_sha256": "b5f76417f2cb35a8ef28153a93947f443b967b6d8da121d04f67c69d5a670f7d"
+        },
+        {
+          "essay_id": "lecturer_07",
+          "prompt_cluster_id": "CL_EX_005",
+          "essay_sha256": "549332ff6f9a664ec8b348761a86ed7cc1c61eb2a99373560554e935c4a04344",
+          "prompt_sha256": "11320f4b682b12203af9277c230d45200e6dd2bc587c8a3388480484c6080071"
+        },
+        {
+          "essay_id": "lecturer_08",
+          "prompt_cluster_id": "CL_EX_006",
+          "essay_sha256": "5b65c93bc61fdde113be969a95dee75c4f896ff9ad293693bfa9c2d31dd9dc7d",
+          "prompt_sha256": "1a072799bb5d431aebdff5964d340bf8841c4b107e485fee14895551a3e37171"
+        },
+        {
+          "essay_id": "lecturer_09",
+          "prompt_cluster_id": "CL_EX_007",
+          "essay_sha256": "85f150bd2ea59f789dc5f4cb445ea9ce975455effb92351e7b7a4de9b05f38a3",
+          "prompt_sha256": "1eb93e979584512fcdb1e08cfa2af190341ec637b33b2209101e467cbb438dfb"
+        },
+        {
+          "essay_id": "lecturer_10",
+          "prompt_cluster_id": "CL_EX_008",
+          "essay_sha256": "9e28c24bd2aea09c10f91b2745b4fad28ee5b3e5712af40f5acf46b4b705e5f5",
+          "prompt_sha256": "d680042b63cc955e96e9c6cced90235e9761f8b237cfb4b816a0fa1e43f0d65f"
+        },
+        {
+          "essay_id": "lecturer_11",
+          "prompt_cluster_id": "CL_EX_009",
+          "essay_sha256": "b4292451d659f5294a1b66ee6e73b1696d08a09b0b695f2a6b0158a658f500fc",
+          "prompt_sha256": "ec2af5995837a855f2d6b9f25da71a2da6ba09a081c9ec57fafa6378f90057fb"
+        },
+        {
+          "essay_id": "lecturer_12",
+          "prompt_cluster_id": "CL_EX_010",
+          "essay_sha256": "f54d800998181c8b8176fe7083c4868615353582fb5bb863e687c40340e37d2b",
+          "prompt_sha256": "9515f1daf3297d516731e301767a4510151a576cb4717b39469f4dc5658713e6"
+        },
+        {
+          "essay_id": "lecturer_13",
+          "prompt_cluster_id": "CL_EX_011",
+          "essay_sha256": "46afab940e8c1bfa402dd48a1e3f0897042ecab73381de82f3fa37af8a6fd928",
+          "prompt_sha256": "82219589a775236fe576af70d19981e37e85fe027d3d6a788a1a09543c00d4cb"
+        },
+        {
+          "essay_id": "lecturer_14",
+          "prompt_cluster_id": "CL_EX_012",
+          "essay_sha256": "a2b39ed476c8e62e9798483ca86a6d1797d522b5c1ff4dbd00d5e27f251c74a4",
+          "prompt_sha256": "6cd5db6d1feb8f8670aff2df0701126421793d49670f2953918a27fd4937b19b"
+        }
+      ],
+      "git_blob_sha256_before_hygiene": "491319ef966e99246e6f78c1c8cbdf3066119897bb355eace112776fe507652f"
+    },
+    "dev": {
+      "sha256_before_hygiene": "e0d1e13dfde444e61a36dea76b0c19d383bc148ca769b895a1f5a86711d83c5c",
+      "records": [
+        {
+          "essay_id": "5d5672b78482ba0017ec7d0a",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "8241071a87d64a81bd7084cf5b7e0465034ef8989e89dae4247fec021937ab62",
+          "prompt_sha256": "288fbbfd2468db867097396600bc1b94ca3d7647796d36f4640fa9e0926ff42c"
+        },
+        {
+          "essay_id": "5d8b0c085080810017fff260",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "c074c084466dc2905c310d17c5cc12f3563db3524b6571c88fcded8518bf4559",
+          "prompt_sha256": "d41a9226dd75b693ed9ecd26d76e6ee69671b0533b9a1efdf8aced06e7068ea8"
+        },
+        {
+          "essay_id": "5e515634b5257a00117ddf60",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "96f5ff35b825ed2928050c7a0f86847b8b7383d2d2dc882b2cddb9f4b1f5006b",
+          "prompt_sha256": "7c6daa7e7cb233ea4f66d4ef0db21e486e7321423da6557939044debdde979c1"
+        },
+        {
+          "essay_id": "5e6c2b42fcf42e0018cc74a0",
+          "prompt_cluster_id": "CL_DR_003",
+          "essay_sha256": "66b097e37eeb5efebbc1416b4e535eddf2d921a6e95aafc41a51f89086198c76",
+          "prompt_sha256": "46ce1df42d69009d440e8ddbba7ebed4c28d87c07bfded8e2b6886f07cfa3089"
+        },
+        {
+          "essay_id": "5e7360da158e7e0018501540",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "ef69e85967efb07d56abd0713c450ebeef00e6d2671c1d65e07e2556ea2a4498",
+          "prompt_sha256": "9f2251ab0496e7cef0bb9f536581a406d304f4a952d6a00939d0ba58d229bf9b"
+        },
+        {
+          "essay_id": "5ea1616e95d3d5001814e3fb",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "f85e9a930dde31a0d955fe058f8bd188c977569fdff7cbc1ad33c85b5e31db04",
+          "prompt_sha256": "4e46069cbe72927de0f336cdd19b65ff2a56f152ff0b254ac5c3bfcbba9dbb03"
+        },
+        {
+          "essay_id": "5ead2be2f3aa390018407dfb",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "da8584ea8f5b1907764e5b0dac42b0cfca955ba5e03cbbd4409c652aa6560491",
+          "prompt_sha256": "26cc811b0505bd7c3088ea88f0d996c981559519c5a053c8fafbe9d9c49acbc8"
+        },
+        {
+          "essay_id": "5eba3918f3561200186d5be6",
+          "prompt_cluster_id": "CL_DR_005",
+          "essay_sha256": "9c1d0f2eaa7f23e6a2295b80686b092390dabec263a7bfd2f071b7c5f7bb3994",
+          "prompt_sha256": "28457e2e71f22a46c61da4990b82cce1934bd6954af613849c2b4d2dc0de302c"
+        },
+        {
+          "essay_id": "5eef2baa9f3c5b001801537a",
+          "prompt_cluster_id": "CL_DR_007",
+          "essay_sha256": "ef73c344271df9754de7a9cf73b46496ab223833b38fde6a63bb0c2d8192110b",
+          "prompt_sha256": "6c9e2addc4b094308a493a05a842bff502188e6c91ecd84cf81f53b411b7ff92"
+        },
+        {
+          "essay_id": "5f00eb8a4449b10018276ff0",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "8663c64cdfb79d6707e013437e5dd9a1a71721768f8ea71b7d780bdeab5d258c",
+          "prompt_sha256": "fbc911342f4cfe8e9d0331c76c866a2446420f3eda715c5b433a0775cb12db2d"
+        },
+        {
+          "essay_id": "5f0d9a11401ea400186c6557",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "752bd7c2c1f8b51baa7dd2536dd636710df10342599668694bd30bd24178f5ec",
+          "prompt_sha256": "63cda43b1dbd526cafd07fe57a49ef380cfb07df754e8087ad5b333605451635"
+        },
+        {
+          "essay_id": "5f0e4264401ea400186c6700",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "914158efed2417195032f7344630d65521e268a938fa4b013d73ba001e287224",
+          "prompt_sha256": "fee3dfa63a0b4b9751d57a427af3de824b97519f97306b346d88483a17c7114e"
+        },
+        {
+          "essay_id": "5f1274e9401ea400186c7344",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "2b75e1a699a0ac8bd5fc85bbf2a1d2120e7b42060e58a87e016250c419716467",
+          "prompt_sha256": "85379924aeff0099b3a5d488ede24e2095a44deec07bf9888ef06f8e6487c95d"
+        },
+        {
+          "essay_id": "5f2d53d97cc0cc0018520c8f",
+          "prompt_cluster_id": "CL_DR_014",
+          "essay_sha256": "0c04b1db4f93c8001bddda4ab8b437c2971c9ed666167bb9e140cdfe58b375d0",
+          "prompt_sha256": "6250943b5c7cc085f717956d8ef6789b1b1672f34d56c1997edfc70a0346ff76"
+        },
+        {
+          "essay_id": "5f3f3321b66d150018c2f1b6",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "9134370309eb9ea8ce0776c4ce0d1eebe1b6679461977014034566d1270f4608",
+          "prompt_sha256": "71d418bd529d0e211a2fc0a84c1a61fd897ba5d6e858cec6d15f8b004baf7ee3"
+        },
+        {
+          "essay_id": "5f784dff56711600190472a3",
+          "prompt_cluster_id": "CL_DR_015",
+          "essay_sha256": "fedf4cb37f8c6234da1c3ef17f49da0c7e3a962928561331b2c6074811100ada",
+          "prompt_sha256": "580a277cc83f8b79f36b8b7f8d68435bdc13fcc1b3c51bb23dd6a36f89999c95"
+        },
+        {
+          "essay_id": "5f9e9211fb64d6001840940d",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "d1b8d0f9b249b6969cc29dbff2c59ceb931f74a6e47cbb2d7ee2d23b07b2b3ef",
+          "prompt_sha256": "626d4f9171acbc27f43754633f50a57b3514de500d804ab4cea63897e809fd8e"
+        },
+        {
+          "essay_id": "5fa718e2d42c03001818c813",
+          "prompt_cluster_id": "CL_DR_017",
+          "essay_sha256": "3b460cc1060171bb8ba63db71da2c9cb472e234426dc44392de85c7b444cb7b8",
+          "prompt_sha256": "ce648b5af487bb9df0b34fbe58683078203688d5d137e5ae18290130c37efbcb"
+        },
+        {
+          "essay_id": "5fa7de5ed42c03001818c87f",
+          "prompt_cluster_id": "CL_DR_018",
+          "essay_sha256": "e71a224885b214cba5d2b1e621cd415ffad9ee072dfb0aacd38e55b5638c450c",
+          "prompt_sha256": "eb38d13cf23b229343ef49865c0ec9f4465a5562e61622500ba11046cf3505f8"
+        },
+        {
+          "essay_id": "5fb2bca5671d2c0018fb54f8",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "0cabee2d8bacf26f032978a07aa575374a85532753dbb58058719530e55960e8",
+          "prompt_sha256": "71d418bd529d0e211a2fc0a84c1a61fd897ba5d6e858cec6d15f8b004baf7ee3"
+        },
+        {
+          "essay_id": "5fd332ed8ed6ec0018b4b835",
+          "prompt_cluster_id": "CL_DR_022",
+          "essay_sha256": "36bd64945a26b17ad564f3b0f7f4b6b01c4280388ddb72d26c65d4c94f742546",
+          "prompt_sha256": "b74049d4cb6ae3c608aedbdb4c362eaf36c7473d3e222ccc9cf237a4a4a2250c"
+        },
+        {
+          "essay_id": "5fdb40ea8a9fbf00193d4180",
+          "prompt_cluster_id": "CL_DR_022",
+          "essay_sha256": "5e55af9abf27bc2996de0feaa0e3e80ee5535ccf3da52763258161bf554317d3",
+          "prompt_sha256": "b74049d4cb6ae3c608aedbdb4c362eaf36c7473d3e222ccc9cf237a4a4a2250c"
+        },
+        {
+          "essay_id": "5ffc8295e735060018bfa3e1",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "fad12845114a2bdda1db0fc108ae776f38f230a558676cfaff9705bcb7750d3d",
+          "prompt_sha256": "f2f796adb1f32ddf1deb1ca9d53aea1fb078782bc8ffc684151fd5104e08c040"
+        },
+        {
+          "essay_id": "604ef08061559d00186243b0",
+          "prompt_cluster_id": "CL_DR_015",
+          "essay_sha256": "a153c6fc9485ff89d7d8b2a99a75087324301a714849b6f264c4b8dc9243d381",
+          "prompt_sha256": "580a277cc83f8b79f36b8b7f8d68435bdc13fcc1b3c51bb23dd6a36f89999c95"
+        },
+        {
+          "essay_id": "607184fe72355a0018492d5e",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "19ddff2a34f06c58cbe33f30906ee08cb2c14bf0d30af4241c8e18fc130d1f2c",
+          "prompt_sha256": "71d418bd529d0e211a2fc0a84c1a61fd897ba5d6e858cec6d15f8b004baf7ee3"
+        },
+        {
+          "essay_id": "6092542fdb248400181b74aa",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "4281a9ca001a2285f1be8d9038441fa9751271757031e47e916527a3f273d55e",
+          "prompt_sha256": "59230fc3534937b1f1e16f045b0c0c5fa419967d3d2317c38b99999c5cc882f6"
+        },
+        {
+          "essay_id": "609bda74282966001988e91a",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "d279d89ca537eedd08465f8065c85b8918453de51184d4abf72ab133d1ef621b",
+          "prompt_sha256": "af1737ecb71b72a0e402ff89d7559103fb2d107ed31858076cd0678b6ccabcd8"
+        },
+        {
+          "essay_id": "609f94cb9a39a1001896e084",
+          "prompt_cluster_id": "CL_DR_024",
+          "essay_sha256": "48afcdcabf12bced2614f97dcdee69f3ba1332864198a8adef0f8b0e42bf215d",
+          "prompt_sha256": "29a79d97e7334f18a13af945d6c62c0c344c6aa5decad487ae1d69b9c25af8bf"
+        },
+        {
+          "essay_id": "60be0a9ffa75470018286bb8",
+          "prompt_cluster_id": "CL_DR_025",
+          "essay_sha256": "69dca8d09333389b532397f45568abb24112a466c8bd75202290392dbf825f0d",
+          "prompt_sha256": "4c12c67af75e192546579e00d4418b8bc70ed4261cd66e25cf426462e765f688"
+        },
+        {
+          "essay_id": "60c6490eb558f000189f3086",
+          "prompt_cluster_id": "CL_DR_022",
+          "essay_sha256": "ba331ee95db4d8746591a0031493ae77d74f270bb76c207a87ae5d3c9e3c43ba",
+          "prompt_sha256": "b74049d4cb6ae3c608aedbdb4c362eaf36c7473d3e222ccc9cf237a4a4a2250c"
+        },
+        {
+          "essay_id": "60ceab78a7220c00129d0cfb",
+          "prompt_cluster_id": "CL_DR_025",
+          "essay_sha256": "fe0ca468079b0aca4a23f4631d186d20e9167c9156d8306eaeb5d22adbc96eeb",
+          "prompt_sha256": "76573bd2169a0bb7765c90726995812e7c13220392f098da45bbe5797097b373"
+        },
+        {
+          "essay_id": "60ceb509a7220c00129d0d01",
+          "prompt_cluster_id": "CL_DR_027",
+          "essay_sha256": "00b307a794fe0b592239fb56b0f8ac41dd6e8d386ccf6a27d15bd0814472a541",
+          "prompt_sha256": "b6f6f25613a2dc8efd43113bd0ec293cb2884880316cbc18b55fb61157644224"
+        },
+        {
+          "essay_id": "60e574dd00657e00180f5af5",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "3628f09fbd178376452689cf075cb696a82a550b77cc038c3ef5e68393e9f3be",
+          "prompt_sha256": "29b0ebd682120ed1e413106972a700acbb3043684f73301ae9fe8464413e4906"
+        },
+        {
+          "essay_id": "60f1959298eb510018eb0b96",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "25e28dd1d5fbe29446ddca2974343e6a06c312b134e3e330f2ba14fb03326703",
+          "prompt_sha256": "4cfdde878141c79cac77ea7af3f22e4fa40ce989b028660c78f970ab62a5277d"
+        },
+        {
+          "essay_id": "60f3b8b198eb510018eb0de7",
+          "prompt_cluster_id": "CL_DR_029",
+          "essay_sha256": "e77b4bb4f6f92eb69b7dbe770c6cad1d6956e419203bc48637e39dc3003e42cb",
+          "prompt_sha256": "e0a0f8b5a9f7942ef9ddb7de001cca05b96375a0fa6d9340c7b30f6563be2871"
+        },
+        {
+          "essay_id": "61012eabe6772000188b62f1",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "50b1f7d725b32f8a5edbe0be2e0884003c0c8aa38dac8579393669039c78da6c",
+          "prompt_sha256": "30758d38bbd925931ae79eaf335533de24556284b65d7bfe4b9e68b7ea5a7dd6"
+        },
+        {
+          "essay_id": "6106ba89d7300c00121df646",
+          "prompt_cluster_id": "CL_DR_007",
+          "essay_sha256": "af8b9a66c07bc9631485185a5f1a7e7461bbd4de6e43c456e8c1ca2c785a677e",
+          "prompt_sha256": "e0f9f271abcf093a5d196f1b4743f6b5fab1bcc9667662f4662b4c1b1aee69c3"
+        },
+        {
+          "essay_id": "610f6309d510c300193eb61e",
+          "prompt_cluster_id": "CL_DR_007",
+          "essay_sha256": "9fcbf94592a89003094d3cf1007633c94fbe71616a648e4ffa8bacfaf8129f36",
+          "prompt_sha256": "e0f9f271abcf093a5d196f1b4743f6b5fab1bcc9667662f4662b4c1b1aee69c3"
+        },
+        {
+          "essay_id": "61192f64daf9b5001972e203",
+          "prompt_cluster_id": "CL_DR_005",
+          "essay_sha256": "6501f69fa5998ecf21cfa27de7564f3c3ce8df54dceab74d6744355932c2ac40",
+          "prompt_sha256": "ff2d924032fc9e8584c6c23105d2485af54381baeab315c5ef47f9b946aa864c"
+        },
+        {
+          "essay_id": "6132854d2b4348001866d8b1",
+          "prompt_cluster_id": "CL_DR_027",
+          "essay_sha256": "e72d023ac69befd50938620af115f91a688cbd96175f52bbd62d81f29b8370d1",
+          "prompt_sha256": "b6f6f25613a2dc8efd43113bd0ec293cb2884880316cbc18b55fb61157644224"
+        },
+        {
+          "essay_id": "614a35051abe27001994b236",
+          "prompt_cluster_id": "CL_DR_034",
+          "essay_sha256": "5b5a95fb8f0010001755ed94005355477dfa50c7272da0e77b9e94271b22b16c",
+          "prompt_sha256": "b71c8419eaeceafa96533712223a7f5525ac2ebda5b01d4bfad1fe329f577c7b"
+        },
+        {
+          "essay_id": "6161d1d11def42001a4746ea",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "f85de4e82e05ac831690d0ee19f885953cb7868e3d1368221d7fc42b45ebf521",
+          "prompt_sha256": "af1737ecb71b72a0e402ff89d7559103fb2d107ed31858076cd0678b6ccabcd8"
+        },
+        {
+          "essay_id": "616c4443b202470018b6e79e",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "a08879cbdc051532dd0a4a1ccefebeae63748cb13c6474913b2b3b5a8ac7c8c8",
+          "prompt_sha256": "5bda190d925cc96701f7f29e2f43326e50a25c109ad5220216a37ebefacdf049"
+        },
+        {
+          "essay_id": "6182dd04ed99dc0019405d65",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "9df05aab57e808796dc77f222578cfc414c7afb324cfe859b8b5e45c0ae8b8c1",
+          "prompt_sha256": "2b8c75034c78ac58be63094b78e2b1fe93b1d62a76917a910901a945481fb3a9"
+        },
+        {
+          "essay_id": "619a1181b70763001987387c",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "77931fe5a7ac05e61da6b1229798bf82ea9a6f18027583bb2e6917c33230cfef",
+          "prompt_sha256": "91dbe1fa8fe8993be4085f76de115fe6070f062baec6aec4d03fceea4b33f580"
+        },
+        {
+          "essay_id": "61ae3b01553a6600118e18a2",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "bdbae5221d27e1f1f9475be543c683238b50a893d22d24365a532fc25a5642db",
+          "prompt_sha256": "8a898428a5af03b66fc3ad5f3638e3a4d9414ea02cc57854e237d5861b20c2f8"
+        },
+        {
+          "essay_id": "61ae411e553a6600118e18b7",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "eab24aae2616e451ffdb8b8b0a55c018d4cbe98d7668f5871db43123eb1dab37",
+          "prompt_sha256": "8a898428a5af03b66fc3ad5f3638e3a4d9414ea02cc57854e237d5861b20c2f8"
+        },
+        {
+          "essay_id": "61bcc5d76719d2001892d41a",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "0904580b65876a65a509de6c5bfe91e2688b82f7facb09368355deb84827cecd",
+          "prompt_sha256": "8be0b90d8007a81e970c273adbc8fd04fc811e60fcff86c0684936072797c545"
+        },
+        {
+          "essay_id": "61de9a7f9b85d30018f7305a",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "402b128bfeac57736b4906f4c2fbb6801983ffa55a0ae896922cc0d727e6e447",
+          "prompt_sha256": "657b362670f6a883444bd889d5a13fec05273035c55bf56101faef641479a439"
+        },
+        {
+          "essay_id": "621a7b2563df6c0019054d63",
+          "prompt_cluster_id": "CL_DR_003",
+          "essay_sha256": "090a654274f9a8c159f7e99351f0c6cc93552f2343a3d0ecae36768c6433a2c7",
+          "prompt_sha256": "ad0f6b9c4732a3b7a287670c1a250ef2322953162c34f911d5e034119b40bafc"
+        },
+        {
+          "essay_id": "623c642473b0070018cefcfc",
+          "prompt_cluster_id": "CL_DR_042",
+          "essay_sha256": "ebadf7937dd03ca38b4344eb11257105e69da68e21971607ae9f8ed3e2fb15c9",
+          "prompt_sha256": "64bfd4f03a54b642f93080cfdb65a20b57bd953fca02377a7edb2eb27ec1e0aa"
+        },
+        {
+          "essay_id": "62408bb2e1797300188da0f1",
+          "prompt_cluster_id": "CL_DR_043",
+          "essay_sha256": "dba773a35bc6cbbbaa6be76ca0e07077bb9b5d8c0d34ef1e41bedef00d372a4e",
+          "prompt_sha256": "1c912bf1bca3a54bf1478b9631900f718e0ec7d9c8b6e59ad0e866ddd26f6e34"
+        },
+        {
+          "essay_id": "624cc76c7f5f8300195525a1",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "beeea09254efd8bd145426f91c9523af89b75302804d509a8b7d85c8b283fdd4",
+          "prompt_sha256": "71d418bd529d0e211a2fc0a84c1a61fd897ba5d6e858cec6d15f8b004baf7ee3"
+        },
+        {
+          "essay_id": "624d6b70a010f000181b2850",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "8d11fb734ddc57438c7272e59cc806d90d607a5d7c09aa7fb0fe2703b1d649de",
+          "prompt_sha256": "71d418bd529d0e211a2fc0a84c1a61fd897ba5d6e858cec6d15f8b004baf7ee3"
+        },
+        {
+          "essay_id": "625027c0a010f000181b2c9f",
+          "prompt_cluster_id": "CL_DR_022",
+          "essay_sha256": "59ccf50cf946bdf1bc6b130d89debedcfc2a28d6448b120bed07627a48d412a5",
+          "prompt_sha256": "10d97768c1e93b1db4a4353708fffcca59efaa737cc8f1a2749a11b2224aaf7f"
+        },
+        {
+          "essay_id": "626fbb16257ecf00185420e9",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "7c0fb6fcc7301f6139ae9addbb86f0876d5e47e78480ea39ef6a86670c622eb6",
+          "prompt_sha256": "d53ad4a8d461763389077470879c945157bce6df05368d5459de177b6254ffa5"
+        },
+        {
+          "essay_id": "6277c436841b730018331062",
+          "prompt_cluster_id": "CL_DR_015",
+          "essay_sha256": "73f973ca269fe60144cf0c6f78857df493034cddf12ae0522cfeb863b4b0e1fa",
+          "prompt_sha256": "ba11d326ef836f3158d2211c14e5caf41ea990d5b5f2e1f52efc0b608fdf5611"
+        },
+        {
+          "essay_id": "627b7df0f1834b0018a2ccf6",
+          "prompt_cluster_id": "CL_DR_045",
+          "essay_sha256": "3d35c7824b07a434bccf03071c16ed116d665ee9892f1b63592029549564260c",
+          "prompt_sha256": "098c5a32e7d1cbc901081e248acc2aed9d5a66957f8b767efdbbc2f471592aba"
+        },
+        {
+          "essay_id": "627df7ca4bf2c20018e205d2",
+          "prompt_cluster_id": "CL_DR_003",
+          "essay_sha256": "6051fe10faf9d6d72c2df42dfe4cbcb0df4c1332d6a880804a323e9ce50c60f1",
+          "prompt_sha256": "46ce1df42d69009d440e8ddbba7ebed4c28d87c07bfded8e2b6886f07cfa3089"
+        },
+        {
+          "essay_id": "6294cf7af17c900019d0feb7",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "a42ba5549a39a20ae031a8779373ec6a7694f58084ee62f94dddd09798ba3dc2",
+          "prompt_sha256": "0b6d7f0db342c92688cb4080d5e2d33753781b26545708cf8c07095b37cfee51"
+        },
+        {
+          "essay_id": "62973f66349bd000180dd57e",
+          "prompt_cluster_id": "CL_DR_047",
+          "essay_sha256": "9f09fb4b6eaa90600b4fe5928cf18f178afd1c7e374ff518bb41e6c6c7b28a76",
+          "prompt_sha256": "98a257ff5cb5b4334459fec77661c613ee6979b9d56cbb012642198683eb9766"
+        },
+        {
+          "essay_id": "629f53a5b948af001881c71d",
+          "prompt_cluster_id": "CL_DR_048",
+          "essay_sha256": "3a8ce8d2b045328b4cb7c2901c7fff0de5ca70d5f9666d4e664d3325cae15669",
+          "prompt_sha256": "6be8bd8d2a5a3b2cf84654d82fa6dea1a4d85c0fdc09454b491d568684bdf0e8"
+        },
+        {
+          "essay_id": "62a0b79bb948af001881c931",
+          "prompt_cluster_id": "CL_DR_049",
+          "essay_sha256": "fa70d2fec3b42e131f9d22f21c939ee3dea410dcde017bdb6bacfc3035e818b4",
+          "prompt_sha256": "6cb1883ff8200f56b4d772fca1190cb4b3202e6f6571e095998915ededde2a59"
+        },
+        {
+          "essay_id": "62a2aca6b948af001881cc37",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "494040920e1a2e5c34c0e8789444327a0d3928537612c455b86269f79fae8c45",
+          "prompt_sha256": "b76ecd59e5a1a3cd20803333cd9db62f515dff813dd5d55df132a2e85a121a7e"
+        },
+        {
+          "essay_id": "62a99086a21aef00182b4d8e",
+          "prompt_cluster_id": "CL_DR_029",
+          "essay_sha256": "d8a1ae51a5b6669028af3252ca4634163c1e440db2413351a2c00b5e19f4e02c",
+          "prompt_sha256": "9472c525b9efca48d69dbfb099437526dcde57d4aa72c7ef8b7e05049cd70a41"
+        },
+        {
+          "essay_id": "62b10e15a21aef00182b5858",
+          "prompt_cluster_id": "CL_DR_045",
+          "essay_sha256": "6d2bb25e063029417bad591b9d210dbbefc70697e4d223e889145c17f53754df",
+          "prompt_sha256": "a7951c7f7fcc527f1271bfc96817b10c8403b3ba03f5cc6d95404b97adacfe73"
+        },
+        {
+          "essay_id": "62b27ceea21aef00182b5a67",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "ff312913047603395892192eabc768f5f40599b432c2c0f73fbad9e4c347598c",
+          "prompt_sha256": "8e762aae069b97d9f2e0648f965db5cc21dc208681e7154489ed058d252bfcea"
+        },
+        {
+          "essay_id": "62c426498ee1ab00180e14ed",
+          "prompt_cluster_id": "CL_DR_048",
+          "essay_sha256": "d81e6d3adb0bfc91ef4e4cf54a15ab52de1fd64ae81a067a58cb44b71282b889",
+          "prompt_sha256": "6be8bd8d2a5a3b2cf84654d82fa6dea1a4d85c0fdc09454b491d568684bdf0e8"
+        },
+        {
+          "essay_id": "62fd0c6f0751a40019b4bf4f",
+          "prompt_cluster_id": "CL_DR_051",
+          "essay_sha256": "9b0789bf1ea5f8ccfe50880a25dfdbfb01153b05e33ae9d825162f1cfcf7cdcd",
+          "prompt_sha256": "a584a80040cd3db62446789ade306a1bfe549305f7975621104fc8e4dad43068"
+        },
+        {
+          "essay_id": "631273abaee9de00187608d3",
+          "prompt_cluster_id": "CL_DR_051",
+          "essay_sha256": "c2058e82ef7e25429d64eed48d634adb8de0688554d9efb16f6a1443933d7d5d",
+          "prompt_sha256": "a584a80040cd3db62446789ade306a1bfe549305f7975621104fc8e4dad43068"
+        },
+        {
+          "essay_id": "631b0726aac8660018fa4a60",
+          "prompt_cluster_id": "CL_DR_034",
+          "essay_sha256": "fb4b22cbc36dd3a4e00fb0d6a1b3a8e7b903ca4786a131a01bccb7429849c9f7",
+          "prompt_sha256": "b71c8419eaeceafa96533712223a7f5525ac2ebda5b01d4bfad1fe329f577c7b"
+        },
+        {
+          "essay_id": "635d21439f701e0018cab3db",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "6b65eb4f9993db172e0e1e6169f9ec170d6316b6228d1176e613a8f577ff3875",
+          "prompt_sha256": "479ceb7a284740f273a8b1fcd29c62637e7038b6fbbba65195effc890845e66d"
+        },
+        {
+          "essay_id": "636271d2b0db9a0018b6f9ad",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "94a5bfb7ea7dacf8951ab39ed4ed1884046495629f69cf10be880b25c496137f",
+          "prompt_sha256": "c0b706857e937e64a801330e431480bf8b5153d237d956a8300516a90dce2ca9"
+        },
+        {
+          "essay_id": "6372dac0d1146c0019605c1a",
+          "prompt_cluster_id": "CL_DR_027",
+          "essay_sha256": "7257462163ec449bab95c40dd64539aa178a820ddbc6420d92082f1b4b99203a",
+          "prompt_sha256": "c601660ab9564044a769590d2321c510d527255c40ef791b17a437c9504cecbb"
+        },
+        {
+          "essay_id": "63a5f0fcd96858001876c7c0",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "50a065426cc54215ba11ba42c6443addbd5fcee4cfa83217b1e63140a5db1a7b",
+          "prompt_sha256": "7256b60897c2e1d7791bfbfd2c012f1efaa913ce2aab9905fac13ca14f229960"
+        },
+        {
+          "essay_id": "63c93fc133b0da0018669771",
+          "prompt_cluster_id": "CL_DR_024",
+          "essay_sha256": "299a16731889e86cb4367fe51146fbd8bb15c5d63e37877008564443d6a3b4d8",
+          "prompt_sha256": "29a79d97e7334f18a13af945d6c62c0c344c6aa5decad487ae1d69b9c25af8bf"
+        },
+        {
+          "essay_id": "63cec3aa33b0da001866a36c",
+          "prompt_cluster_id": "CL_DR_059",
+          "essay_sha256": "1aa13f56ef4bb10e62897ee2f5df301d2aefe63b3e6c5465ac0b5e0fd45c6a86",
+          "prompt_sha256": "08c5085e750367a484e6f0234ad8d7f5397e95f7f64ac24d83ccc20d767bf158"
+        },
+        {
+          "essay_id": "63d0fb8eeb394700194f091e",
+          "prompt_cluster_id": "CL_DR_059",
+          "essay_sha256": "30ca25faeb681aa2d0c2c53da8d6d84fea45b804c189733a10284ac6be513bce",
+          "prompt_sha256": "08c5085e750367a484e6f0234ad8d7f5397e95f7f64ac24d83ccc20d767bf158"
+        },
+        {
+          "essay_id": "63d5505a507b340018bedca6",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "867e8e98ec1cc9a0df2682110f6cad38b0a73f3320003e288c7c0e642672dd5a",
+          "prompt_sha256": "959b6f5b72dcfdb37b9b6eb38629f318ee24865e467ed73380de8ae1520505d6"
+        },
+        {
+          "essay_id": "63d635bf507b340018bede74",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "c2a6912d8ec2dc133e613c3bf1a14919248d8695b897daefeffe6d2b76f03ab9",
+          "prompt_sha256": "06e3332b900cf4be754b9709e144fc7cfdf8852407f8bb65f73876a18784536f"
+        },
+        {
+          "essay_id": "63d91e7dc80968001849348a",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "1dc76bb3fcac9b01b1d2af487c870ed27500bcd6da016f5198e57ced8e3c8a1c",
+          "prompt_sha256": "59f3f6e0bde27c5045416d9b345ef2cbbded9f4276d383afd5ceef692d82979b"
+        },
+        {
+          "essay_id": "63e10fab96e92a00181ace01",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "85012f4adc5446dcd99464d36f3061b3f3da9112361f0473521faee9fc1ef6f3",
+          "prompt_sha256": "21093ccffac3471f4dc6b80092ca073ede66fa6644412f0b617b6079a106fa8f"
+        },
+        {
+          "essay_id": "6413f13c96e92a00181b35bc",
+          "prompt_cluster_id": "CL_DR_045",
+          "essay_sha256": "f86afdf13e5a31b3d9d8eaf1a44d09b501c300fcb715bf46d2c73cc0da5acdf4",
+          "prompt_sha256": "a7951c7f7fcc527f1271bfc96817b10c8403b3ba03f5cc6d95404b97adacfe73"
+        },
+        {
+          "essay_id": "646923f37e89e60018c7f804",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "fc354b2c964f6ea3a79620bd5de5f532fa1a857b21a1d737e8f74d1d4678a633",
+          "prompt_sha256": "0156ef91489965b9a1540fe1aeb8e98c453c22b7fd409c1dc3de237a7f5e897b"
+        },
+        {
+          "essay_id": "64b3de2bb3c9080018855222",
+          "prompt_cluster_id": "CL_DR_018",
+          "essay_sha256": "32e739a58aef0ad424528294752c9de572c6ed5a1333c37b647e44f399d4665e",
+          "prompt_sha256": "eb38d13cf23b229343ef49865c0ec9f4465a5562e61622500ba11046cf3505f8"
+        },
+        {
+          "essay_id": "64d7aab1172443001832df30",
+          "prompt_cluster_id": "CL_DR_061",
+          "essay_sha256": "d29135ff7a84eb01ea29df673c11a737c5cbe9a25e308edd6fee2580bd63c5af",
+          "prompt_sha256": "d6084376e994a9991bcd015eec8065acf2e5ea2ad9c4e754ae4e7309cb40f9f1"
+        },
+        {
+          "essay_id": "64dcc063ba87b10018ac4d30",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "e04168e1cc2eeaafd9160065437c5467a04b15cb746b7ed42cb5a3915e29f2ec",
+          "prompt_sha256": "3b5eb0e539eb9ff13e68716cf70a6d1a33f305d6c2207fde08feff37147e2a66"
+        },
+        {
+          "essay_id": "65018edf9e63dc0018a99be1",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "db2d7c3981e0afe41881d6db83327af02bd10b62a32030a6c5713c9355fd12dc",
+          "prompt_sha256": "af1737ecb71b72a0e402ff89d7559103fb2d107ed31858076cd0678b6ccabcd8"
+        },
+        {
+          "essay_id": "651edc4d8051b40012eb52e5",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "b1bde3fa58bea072627d0e54bf04f955f65f55650d6126155df2151828531792",
+          "prompt_sha256": "27a74f4fb312dcc5f3d7c5a1d63ed0283e0d30e8b97ee2b15015cf5d2648ef3b"
+        },
+        {
+          "essay_id": "65200d90621d0f0012df7997",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "871f81b44b85cb1a5639c3d4c61df75a1341083d07ffd0de466e8c992d8534d3",
+          "prompt_sha256": "07597a283365fbd5472eb0feb0c43e2c922ac6ed9e9eb381d9c61da5017787b5"
+        },
+        {
+          "essay_id": "65278b07442ffe0012a6670d",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "a8c716f212cd45692d3ced1b9169296aad3770b3cdeaa0adc5bd6636f8c88646",
+          "prompt_sha256": "15d0243f7c9dca879feffee15cd7d5824be975506077645121baef71b575f6b1"
+        },
+        {
+          "essay_id": "653919df7599080012d0afd0",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "50b8bcf75a5f9666228e44f74ea1a93924f4d53a50683933107759c0049ba761",
+          "prompt_sha256": "570aaf70f11a88cdd1ee833b31dedb0c5ff2010b84d69da2a9d429c3e8e7c022"
+        },
+        {
+          "essay_id": "6547b681f672c3001237e384",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "e64bc0cf6d1dc8f173c180619d335a797da6d9aa42b6f83b61f79a9263d07e51",
+          "prompt_sha256": "177e77ad4dfca11540cbf874fa2fbf890a006d46baa76812e5917076d2f83adf"
+        },
+        {
+          "essay_id": "6548d615f672c3001237e6e0",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "b96b11b6332286293cb8cdb52bee773ad6b52f41edbe5510cb07abd28130b4df",
+          "prompt_sha256": "a7c223568ff7b66c43d02e4b0d0971fe021aa9992cd18e78c9938843dbba1f6b"
+        },
+        {
+          "essay_id": "654ab39aa9a1bd0012c0d682",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "d97b39ded5ec86824bde52655fd4a19520aa711b8c53754e98f4e52cdc69b907",
+          "prompt_sha256": "aca1f0bdb9a1b491c6dec6fd24ffce7251c27d2c9f58a56a8f478ee371e41565"
+        },
+        {
+          "essay_id": "654b74086d78320012f069d4",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "3cd87f1d5dafa4036ef53770ea49780c3da6fb7c5a9034b189c4587fac14580b",
+          "prompt_sha256": "51ea64d157f9a0fc755438d00b21bf8a67a69dea1521f144b61634a2b2e3b975"
+        },
+        {
+          "essay_id": "654b747d6d78320012f069d8",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "c0d74eef3f0c6ee3274830893e956c0dbf00b936f9f9d083e833d1aa0d379bce",
+          "prompt_sha256": "215a3eccde2e8c702e142c12f7c87af19b031c688a3bc48bf2d9a97d15374f0e"
+        },
+        {
+          "essay_id": "654b74a56d78320012f069da",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "ead43cba8d11dc70bca11717cc1ecb89e63111e82651c70a6498ad06e30c0ed9",
+          "prompt_sha256": "c1fdc28474c45797746d9d998a222a5875a28b2bb378f8047e1bc286384683d8"
+        },
+        {
+          "essay_id": "654b758c6d78320012f069e4",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "2e5dfd62a6aa5ea60ec16039999581160926fceec7a4679c12c45ff513c60c97",
+          "prompt_sha256": "188432f7b23e4669a1282b9bd82a60e62a21aa3fb3212f9b4e8782ec92e518cc"
+        },
+        {
+          "essay_id": "6552082949c7e900122ba4d9",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "6f3b10fcf573af3a8e875e26c806742e53dbf64c5b864421fd2b589509433e6b",
+          "prompt_sha256": "6fa80e88ed4946a4d41d691b576610edfe94e148bee1f7df981fd2b0a2766405"
+        },
+        {
+          "essay_id": "655208c649c7e900122ba4e7",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "4dc535bd9af53044018e5a210279b9813b32e60d007dd716f632e131eb46dd34",
+          "prompt_sha256": "6fa80e88ed4946a4d41d691b576610edfe94e148bee1f7df981fd2b0a2766405"
+        },
+        {
+          "essay_id": "65520c0549c7e900122ba51c",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "96c66238730fe40eda39244edc2ee6e21e74a38c28a01a104ce952bdac3f7f6b",
+          "prompt_sha256": "4cb688d26a9e6b7cbae18083d9ed75d426468ec06800658ddf035a8dad5a3624"
+        },
+        {
+          "essay_id": "655235162fb7020012d8e572",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "77b4e90b91d1d02191c317f4c27f30795229d7390bc6fd9537746e67c6788e86",
+          "prompt_sha256": "f2cf755377add8aad20d20c8d029698e88d8441d3932acefbcf1b00a960368e7"
+        },
+        {
+          "essay_id": "65524b88bd50ad0012a1cc8d",
+          "prompt_cluster_id": "CL_DR_066",
+          "essay_sha256": "a3e57701afc7558ef06f4d1d467cc66de943e905a702573cbeb24516b62d9022",
+          "prompt_sha256": "9923cbe2a57c8910d264023a555c3445a22a57ce70bad29f4584da0be8bebc86"
+        },
+        {
+          "essay_id": "6555fe9910f6a900136b6c61",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "e70fbb73ca1cfa4dd825535218031e6d195b5f69e32e728179461e4d379f275e",
+          "prompt_sha256": "dc546c21b49792cfa7f96050dc02bab62825e6169bd1e1215afb2753a0c8af50"
+        },
+        {
+          "essay_id": "6555ff5510f6a900136b6c70",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "e4c9bdb495283b6c238a47b9065c6450eaf04d12963643facfe2e502ff2537d9",
+          "prompt_sha256": "bb3797f9cd1564235d3b706a68dcb6671f80f214790941a4806f55499bbef024"
+        },
+        {
+          "essay_id": "6555ff8c10f6a900136b6c7a",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "8bd2aba1c68b9ea6a416f311fab7941900e21e078b42e56e3a65a5419c159acc",
+          "prompt_sha256": "cdf3f352a65022420037ff19d4c75830c0e4ecfd0079f42ac3f6e097b745b44b"
+        },
+        {
+          "essay_id": "6556014210f6a900136b6c8d",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "65f03b8abd2a9c7e16032923fb7f0d1749c17874c1f7957bde4a9377b104dc6f",
+          "prompt_sha256": "6efd779a4be131728181c3cd7fe23e234683226543123e2f01d59caba6a991ed"
+        },
+        {
+          "essay_id": "6558e694c86bfe0013a5a6fb",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "078ede5c7ac348ee31f14f057c7e64dcff41ac767627cf098e67c5b3c412e0c6",
+          "prompt_sha256": "26a1237f2ea7f3a1810e3217185d4ddd8bdb8efd97af5bf3dc446e0f00cabb0b"
+        },
+        {
+          "essay_id": "655b085effe2f100129d5daf",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "d2fb296717c9e0b122b96bfa765aec1585bc8abdf500628a4a3c1a9aab49c1aa",
+          "prompt_sha256": "5675e50ce2fdf808c1fff6b31dd110e9d3cae10e72a05a95a0d4c21ea44cbb9a"
+        },
+        {
+          "essay_id": "656aff4c2b2bf900112f0f1d",
+          "prompt_cluster_id": "CL_DR_059",
+          "essay_sha256": "6727ce0db6e1975f585d9ea7a25bf1d2cf892fcbc303e71d4d724ecead29785a",
+          "prompt_sha256": "08c5085e750367a484e6f0234ad8d7f5397e95f7f64ac24d83ccc20d767bf158"
+        },
+        {
+          "essay_id": "6576a20b3ceff00011afba04",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "c8a33f4d85bd4270de2e3d5f4272bec039f9829768186e34780df93e129acc23",
+          "prompt_sha256": "6fa69f02f939f607184086e90b23066c7e8ff95bbfb63790cb53126ec6cb39f8"
+        },
+        {
+          "essay_id": "657ad21576840600116a93c7",
+          "prompt_cluster_id": "CL_DR_042",
+          "essay_sha256": "6e30d37f2f956dbd2736224ad253f7abeec1dbc0d374d8782150ddee723dd9f8",
+          "prompt_sha256": "9bdcc0a40c11dca5253024cc3b72fe925c218b7f33f37b8ad2e69d80a91bce04"
+        },
+        {
+          "essay_id": "657c72074be1cc00112a7f96",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "43902b9fa3fee238bedb552d802af9b0cd8c10e08f6108b14a2f09e94914f499",
+          "prompt_sha256": "b69d37d3f7cd4953d399f9aca4286b6a7825c2cf0ca2fbf627729ad88a8e109a"
+        },
+        {
+          "essay_id": "6582ffc50493470011af08fd",
+          "prompt_cluster_id": "CL_DR_068",
+          "essay_sha256": "7b339254d5558e2dbde0df674ba0fe74d1885a4eba22f9cd2eff5e08e61bd0c0",
+          "prompt_sha256": "e4da69e185d7cab85038254da2227112622ae4edd010ee3cc6d447f73ca7f6cb"
+        },
+        {
+          "essay_id": "6588688d07eb1c0011bc9f87",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "5b5e038a9438fbbea654252db7ec17360505861fba84b60a9620f0bc02d7f301",
+          "prompt_sha256": "c0b706857e937e64a801330e431480bf8b5153d237d956a8300516a90dce2ca9"
+        },
+        {
+          "essay_id": "65910c9c07eb1c0011bcb3af",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "513086c2dcfbe427263885db83b68ff0e0d03a2efc350be0657dc2a3270ccbee",
+          "prompt_sha256": "0186ebbbc7351d0dd67c56f6608c4f8334e928de4daa5d995a2ab51019994c50"
+        },
+        {
+          "essay_id": "65a550b107eb1c0011bcec48",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "159916e8eee14543b0f69e0bc1e251df3f919fcc19b60fb2c315ea254bf0ec20",
+          "prompt_sha256": "f19a732357004840b56b6ef0fb573a74fdf216919698fd8864e09c118ad2fcce"
+        },
+        {
+          "essay_id": "65a62a1f07eb1c0011bcee67",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "b274bf3f9065c2b1defe46162a8814a0cd0a0c44e19a0fc9399ab32513a93852",
+          "prompt_sha256": "515d4e8d9d344381fb7efe35ede1faf9850268a145ecdb2c999332da07961edb"
+        },
+        {
+          "essay_id": "65ba42962d0c430011eb4957",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "2916e5085819f25db6807fa8543e43650f6f0d18eef682d37bbf93262d4e57bf",
+          "prompt_sha256": "0c0b982a08b20e086cb6614f9874b0232222d583a075c9090e4d54d5d2e7576e"
+        },
+        {
+          "essay_id": "65c614e682a15800142da99a",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "00240d6c35e2cfc596740fbc32dafd7be8e47a80de2f2487694054de5e4aed39",
+          "prompt_sha256": "4958788b12a631a4c3c391b11fbdbe89b37ce054e2295d1879d3f7a682771960"
+        },
+        {
+          "essay_id": "65d239e0434b9c00122fc127",
+          "prompt_cluster_id": "CL_DR_007",
+          "essay_sha256": "24b4f669e9df5447f791d09d8980f5f127edfe888cf71fb1e9165ef8187dcba5",
+          "prompt_sha256": "145d1739dbf8f0414e936b69a028538f174c4a8061dc68d4213f2e6aa1818880"
+        },
+        {
+          "essay_id": "65ee5ffab9261900117baf6d",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "a8760d51dc1b60a461eb8e3e6d1b67419f12359023e13c10c31f7b4429c0e4ab",
+          "prompt_sha256": "0156ef91489965b9a1540fe1aeb8e98c453c22b7fd409c1dc3de237a7f5e897b"
+        },
+        {
+          "essay_id": "660fb0c2143b1d001153a02f",
+          "prompt_cluster_id": "CL_DR_003",
+          "essay_sha256": "fc6c1446858ea44b97b672a8a805a6d1e90295938eee8c8d1a8ca8433d5b47c0",
+          "prompt_sha256": "46ce1df42d69009d440e8ddbba7ebed4c28d87c07bfded8e2b6886f07cfa3089"
+        },
+        {
+          "essay_id": "663b53e79f4b030011e5c24e",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "4d5207bb3bc06a93116921fe5d23096ba380673e0c5357679070d1052a96490d",
+          "prompt_sha256": "70bf3174a2a4a6d9879a4ed1ac3327599c8ab33f396a8880818fb66b9f0d69c9"
+        },
+        {
+          "essay_id": "66475f4cf23a8f001141eed5",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "5dc1458a7c9ba82f32d0faee7c3c646f18a61e370ad8e9827d4e6b6b468f93ce",
+          "prompt_sha256": "a34106fd5cbb031f5460caab841d7465f05ce9e6067d310d468f03e035849d7a"
+        },
+        {
+          "essay_id": "66489bc9f23a8f001141f20c",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "1bd58c48540dcad5398a5ca0b08f064dbb79255e90c80f8b2235214695e2be1d",
+          "prompt_sha256": "b562aa06d51ebffe1780ad8ea5cbc2b8e32503d6dcbefc2bde9f6434faa8bd12"
+        },
+        {
+          "essay_id": "664c9660409a80001187add9",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "3438434eaee9a66a46c17423e4b9892a11b4100560b6080981d5bde55016e680",
+          "prompt_sha256": "91a17a63d21546b0e36254b6925cc386ba9ebb633e279770b8d9ce27d5cf7156"
+        },
+        {
+          "essay_id": "665c86110442ea001278f220",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "342376e8851ce511c502407f63346d8c0d2fc66ee40ed9a9b53c4c0cdcc861c3",
+          "prompt_sha256": "cb4a4a8a4cbc0cdb01a789a7bfb2205a8209047cde463a5276197519e85a9363"
+        },
+        {
+          "essay_id": "665d75c60442ea001278f5a3",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "bf39b8efaa3b28862992f0e60b4b26837e1968f1d8e801ce9fa6e31428c13e9e",
+          "prompt_sha256": "84628a8aa1a95b2a3854ae95353d27abb352c3677ab94d617d0c1401394b4e26"
+        },
+        {
+          "essay_id": "66617924a8fb9b0011ffdee5",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "7c694db6189fc21480cb722729539c6348e031630fffa883218e23bbc7f9e937",
+          "prompt_sha256": "d64e7a27092efdc6b257613858a7206a9117a70bc036018499ad866ac50042b8"
+        },
+        {
+          "essay_id": "668662fdd784b30012d4b8ef",
+          "prompt_cluster_id": "CL_DR_043",
+          "essay_sha256": "d2f8e6b984b884cc8653ddd206a9b32dc258e98f129e9b82cec36daea1e2f6e7",
+          "prompt_sha256": "a2c9982c0543c4c94af401135f5d323e40c05572aafa0405614e898796b2f3ad"
+        },
+        {
+          "essay_id": "6703b3b51adb790012982314",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "3f5457b1d6689ee48f4c50b4c3c18b92b40db7c5ad9743213679a3d3dfe3794e",
+          "prompt_sha256": "db63ef3787848b6e9d92c7c58065b6b0f3926b7dcb5174ecf2f17c0e8626693d"
+        },
+        {
+          "essay_id": "67270d264f38620011398c76",
+          "prompt_cluster_id": "CL_DR_017",
+          "essay_sha256": "1f03824a8d911c2c0707bc89f400d21eb2824f57672f68f8b51128eebaf498a1",
+          "prompt_sha256": "ce648b5af487bb9df0b34fbe58683078203688d5d137e5ae18290130c37efbcb"
+        },
+        {
+          "essay_id": "67b77a4003465900115002ef",
+          "prompt_cluster_id": "CL_DR_042",
+          "essay_sha256": "050bd7eb4ecfe06ab0bc5b9b3694e88633bccc821faea84f9075129b7505d5f5",
+          "prompt_sha256": "64bfd4f03a54b642f93080cfdb65a20b57bd953fca02377a7edb2eb27ec1e0aa"
+        },
+        {
+          "essay_id": "67c82ff70fb4180011e05f07",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "eb9d8a8f32765c333f4f8fa9492f06a94154d393944ae374a6241d22432d5c7e",
+          "prompt_sha256": "c3117436bcc226a1d75e411e4f3b887030ea03b4e75603f9c4e1acf87b8be025"
+        },
+        {
+          "essay_id": "67d124a7aa7e8900111d02ae",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "c071a16d8871b94c52d296ecfae0ca7adf0b3abf2a8e407f691a37f3dd732410",
+          "prompt_sha256": "03624ba44c3da8d8a90f12f80369e4eace244c96ba3bc09e5320c74c1e68b9e3"
+        },
+        {
+          "essay_id": "67d1992faa7e8900111d035d",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "3c47f66345eecc4cfa232c749f2c91e9e0e530b2a5f10ce95b0874cddb318bed",
+          "prompt_sha256": "021fbed4b35f63ced3af36d3f122ebf9c46d02cbf11c40e4327b4537856cb3bc"
+        },
+        {
+          "essay_id": "67e27174cc0eec0012079ed6",
+          "prompt_cluster_id": "CL_DR_014",
+          "essay_sha256": "4232385885345e4e499602aad3fa526a67b469d789d15cee5406d97674064e8e",
+          "prompt_sha256": "6250943b5c7cc085f717956d8ef6789b1b1672f34d56c1997edfc70a0346ff76"
+        },
+        {
+          "essay_id": "67e8035dcc0eec001207a65e",
+          "prompt_cluster_id": "CL_DR_022",
+          "essay_sha256": "8c96a206955759f4d8a3ccdbaff675492134cd7ddc94735e2d05301710eba599",
+          "prompt_sha256": "c04704e540536b4e3022b27a8d57690dcc4e9aa4a0fe759e290cc61090331d91"
+        },
+        {
+          "essay_id": "67f14a30cc0eec001207b3e3",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "5bc288a9438c15c6ffa00145f473b502000ba10df462400061af32a6988e0463",
+          "prompt_sha256": "c941f61a7b281e85b5fca59336df4b2b7a54da7a4e920252f56775cd57d2bf61"
+        },
+        {
+          "essay_id": "680a34d0fae0b40011b5dd3c",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "b99ff6dd6e822cac5636034542e65422a36ea381f8dd8b196ea5f019d3e59be3",
+          "prompt_sha256": "3b03915977924579e3d451199c85545a494aa1480c5ae8797cbe6af53bc164e5"
+        },
+        {
+          "essay_id": "680a6d8bfae0b40011b5dda2",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "6e428c1c900deb8656ea7fc4f07cc97dcee13412386cbe12394f9f62a9342272",
+          "prompt_sha256": "2c8b662177c5197e70296dceb5b02d453fce18fec436f570c7fdd92599919fc3"
+        },
+        {
+          "essay_id": "682314b844ad070011460d69",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "95ffde97a70854f4aa60003d0f60d33a54b54e49ffdbbfad2f7362f1a660916d",
+          "prompt_sha256": "bc8a175e5b0df5ad2e959fa2c5e97d656dc2b3f6883bf4d634e28a7e014e8f95"
+        },
+        {
+          "essay_id": "68536a042969c00011221f7b",
+          "prompt_cluster_id": "CL_DR_005",
+          "essay_sha256": "af5efef128dca382f5aa0f7331d2389140980f40161a073eb6ecc804f734f536",
+          "prompt_sha256": "7ac8575aa80d829ad042c12f2ef19124571e3b0f9b921d3685f1773218a535e8"
+        },
+        {
+          "essay_id": "685f8e412969c00011222edf",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "cb3c2b5d22c1706e443676df7f4d9a81abccc3caf63185eeaab340b68f6f7448",
+          "prompt_sha256": "63b38023e994e000f969275285b6e7c1d50f105e0084dcdcb6b4965f1ba9bf72"
+        },
+        {
+          "essay_id": "686ed8dcdae560001174c84d",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "48a6c16df5f611597c270236f05b14f7e5d2d3f242d280825513abc9c6877dbd",
+          "prompt_sha256": "3c8a9e585ef53c368e5b141c4544429d1eb0fc74b5437f6e94c92b3f211ea4f1"
+        },
+        {
+          "essay_id": "6879de679a0a3d001153cfee",
+          "prompt_cluster_id": "CL_DR_076",
+          "essay_sha256": "409cc81272fd2dd850d4fe6bafbc24174e5ba80bba456784507c41cb2e1f0f03",
+          "prompt_sha256": "acddc8f7356e93f3146a9b63f6ba60534eb70b7a2d94f1a08c2e505d1b0f2324"
+        },
+        {
+          "essay_id": "687a319f0214090011cb53de",
+          "prompt_cluster_id": "CL_DR_077",
+          "essay_sha256": "79f7524421e071488563fa6c2ab56295119c29a64d9e40b8f7403fe89779caf6",
+          "prompt_sha256": "f173092d5d5f5935ad70db8d0a0aadac2a8345abf3afcd9794de8aeb7f077315"
+        },
+        {
+          "essay_id": "687ae5c70214090011cb54bc",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "33bb87b135d3f29a3a7bc73181d79711d0399b6b6b28face7d30fd4a23cedf86",
+          "prompt_sha256": "5286d28d2269d118f3bf56505187765c089abcf8b6b4276d0d0cb4444dd03101"
+        },
+        {
+          "essay_id": "687aec9b0214090011cb54c6",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "34c950f04ce533701e644892da7b7a6b8d859973f42d366ae62460ebe707116e",
+          "prompt_sha256": "6bf02852377d174bb66586c19c1b841a419e87c0f4f8476c3a542ef6e28c47ec"
+        },
+        {
+          "essay_id": "6887cb3357734f0015736db6",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "903188c76c9fb99117ddcb6849cead8482eb653988d516a9ef5dc4aa56ca32bb",
+          "prompt_sha256": "6bf02852377d174bb66586c19c1b841a419e87c0f4f8476c3a542ef6e28c47ec"
+        },
+        {
+          "essay_id": "689915e4f03bbd00121eee72",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "1c8d3af03225b12fa30b359c0102444436be0b8c804f6f3b377f60ff68337459",
+          "prompt_sha256": "d0a493fcb1bee48eebc782337490ec2d4ceda48c5c0a6a80dde5c6d5b4b55697"
+        },
+        {
+          "essay_id": "68a5e9c74c51b000128230f3",
+          "prompt_cluster_id": "CL_DR_003",
+          "essay_sha256": "1fe4c8f7e26a2a5f645e354a0fe8d125fe271f91b45fd256d535f60b8fa4859f",
+          "prompt_sha256": "8cc483e5093337b1d23888a940b7dde96ddbe2beed3a841bffa6de6968e4562d"
+        },
+        {
+          "essay_id": "68ac95271dec6900118074eb",
+          "prompt_cluster_id": "CL_DR_080",
+          "essay_sha256": "2bc64ea916b59f32249a12d88152880af671f69726374104607edd0fe4064fe0",
+          "prompt_sha256": "c188fc9a3cea3114077b22fd111b3b39581b189dc33ebdde7a207b63c69cb600"
+        },
+        {
+          "essay_id": "68c046ef2a54180012b92bef",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "18cc16bc4f6440b1c7ed6e71938b1f9ce94ec71d0fa0b60a18662212e72c5f0b",
+          "prompt_sha256": "d3a484d6c68cb0772090a9912f383f595dba8ab1e165f7839ba26753865f0799"
+        },
+        {
+          "essay_id": "68c10e642a54180012b92cde",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "2c10ebe22708ff0b7bf7673e8d0e2dee3044844100e0ba5bfb70b5a8ad06a68b",
+          "prompt_sha256": "c7764443acad7770a0f269b0716976a04150e93d19fae22ee4bae7f0d5cc4dda"
+        },
+        {
+          "essay_id": "68e055a649ac2a00115165f1",
+          "prompt_cluster_id": "CL_DR_060",
+          "essay_sha256": "7ee823e0afbb4c26802baa5c3402d6de9ea8e449cfe5e8f5ca66d12cb4df2dc4",
+          "prompt_sha256": "47ae5d9ec5cb2969f8547ea306673f54fe8315d012aee08ce3dec92d2917578c"
+        },
+        {
+          "essay_id": "68e2027649ac2a00115167b0",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "47752b55256df74d57df30e34b33ca0c20bce079ab1c04031f0d367cbf8f010c",
+          "prompt_sha256": "db1575d0782c9c0f35d8b9e43a0fd588042fe7139b6ebb529c6ee46a04fa1caf"
+        },
+        {
+          "essay_id": "68ebf4a17db7b30011748b55",
+          "prompt_cluster_id": "CL_DR_002",
+          "essay_sha256": "b4e110bfc827d2c5a8507a4f47477cf38ac54e1edfa62ac9cbe5468511caab14",
+          "prompt_sha256": "7ae0ec8c9ed11dd682fa8efb88b55fc3efe7c281add749d559252441e4989080"
+        },
+        {
+          "essay_id": "68f07bc03232880012f1f712",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "0f785a2372dcda8802bd946e051f37ea59875440a63ed1429903d6f4c45a871a",
+          "prompt_sha256": "177e77ad4dfca11540cbf874fa2fbf890a006d46baa76812e5917076d2f83adf"
+        },
+        {
+          "essay_id": "691909283232880012f21d23",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "15d0be372845e3730c66756675c4cc1c25dffae4f4cae73623e237e92c614021",
+          "prompt_sha256": "6f98a80692c8c17c21717356e2ee73c0ebd494835bb77b6314d5a70f019e02d2"
+        },
+        {
+          "essay_id": "6921d5d43232880012f22545",
+          "prompt_cluster_id": "CL_DR_038",
+          "essay_sha256": "ba9226dec893d0897b2cdff470ab73cd0f09810b49a8a8445f5e30c1b057127e",
+          "prompt_sha256": "501fec1b0c7b5d2999f16baebc095bb2747dff51b12972f22d951df14b5c2663"
+        },
+        {
+          "essay_id": "6932b517cf32480011963898",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "3a23bebff1f6d6ac13fd94ad869d6390586bc8bd4540500607e246309cae3c20",
+          "prompt_sha256": "cb4a4a8a4cbc0cdb01a789a7bfb2205a8209047cde463a5276197519e85a9363"
+        },
+        {
+          "essay_id": "696518537cc2050011504954",
+          "prompt_cluster_id": "CL_DR_082",
+          "essay_sha256": "ab04befa79fc1488c050ed88e7863928de8cd0caeae05819259258131f802802",
+          "prompt_sha256": "b6111abe9c737f1a072b9b7645d3c1933418717aec5437bc2eda3d709d39bf96"
+        },
+        {
+          "essay_id": "697729257cc20500115057d7",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "e94d65fa96bd324634633c3c721dc2327dc27b161dc438351418a3f420f52245",
+          "prompt_sha256": "fb100e75f99e09a3206de20ab4ba1bf9f91e6fcdb4354351eeb778ed8594a340"
+        },
+        {
+          "essay_id": "69a196ac84f0b1001257b3ed",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "058b72133facdd247c308bf4bc9597cfdf96c708d0539e34d7e77cd21d52d83e",
+          "prompt_sha256": "abfd37ab8466bb5047bed43c3f57272b3bafe5f0732537a278662110c9d46eae"
+        },
+        {
+          "essay_id": "69c275f174aafd00117f56b4",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "95bb1903320051cd807b3b0a310960168a311cb4d3ad2dedcbdf6823a9a4b41b",
+          "prompt_sha256": "cb4a4a8a4cbc0cdb01a789a7bfb2205a8209047cde463a5276197519e85a9363"
+        },
+        {
+          "essay_id": "69ccc5ee74aafd00117f5e47",
+          "prompt_cluster_id": "CL_DR_001",
+          "essay_sha256": "0b5abe561c0af60549fe56ae3af3ad796b90dd55eff3ac4cf9e58fc0900fb505",
+          "prompt_sha256": "e3b67cec3a7dae8c7efba1466907315d0f45cc1769d43461d4ac9f2855aa6c17"
+        },
+        {
+          "essay_id": "6a290b6ccca8310012b54c70",
+          "prompt_cluster_id": "CL_DR_048",
+          "essay_sha256": "252e8c952ba347406cce0a2ee85a78f8706172b79cab2775abec114bc729b831",
+          "prompt_sha256": "6be8bd8d2a5a3b2cf84654d82fa6dea1a4d85c0fdc09454b491d568684bdf0e8"
+        },
+        {
+          "essay_id": "6a339f86cca8310012b55482",
+          "prompt_cluster_id": "CL_DR_003",
+          "essay_sha256": "d3e7bf23a244a64b81ca786ee10b54741c016c635fff2ea67e88f9d3d3463e26",
+          "prompt_sha256": "46ce1df42d69009d440e8ddbba7ebed4c28d87c07bfded8e2b6886f07cfa3089"
+        },
+        {
+          "essay_id": "6a3e73f3b65fa3001144c56d",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "df9ef43706bd274405d631dc09f9e46f3c7fdc5a31121ca265ff8fffefd606e9",
+          "prompt_sha256": "e93747660256f0792316cf2f1e9df4966c51184b575f2f7a10bc8348ef0018e5"
+        },
+        {
+          "essay_id": "6a3ea676b65fa3001144c5a6",
+          "prompt_cluster_id": "CL_DR_009",
+          "essay_sha256": "eea0c706c77ba3ef1580dc7b784106a6d323896df5f01a426bffe5da25744ac3",
+          "prompt_sha256": "e93747660256f0792316cf2f1e9df4966c51184b575f2f7a10bc8348ef0018e5"
+        }
+      ],
+      "git_blob_sha256_before_hygiene": "8041dffac47a4b61b0520e0cf44a5d712ddca2b57dea9384965fbce75eb876de"
+    },
+    "holdout": {
+      "sha256_before_hygiene": "2eb6efe23882d4ae0b66f2993a49e159c829ca81db82d11e433a12134cf61ce0",
+      "records": [
+        {
+          "essay_id": "5e7bb5d5818e9c0018e295ed",
+          "prompt_cluster_id": "CL_DR_004",
+          "essay_sha256": "90b7239bda8e43f28a87f51355761fd89580e5b7d7fb81e49511ce70607cc571",
+          "prompt_sha256": "19614db9ae6ba5e727ec6e5b541184dd19553c680f7cbfd0ea7a6f53d356a6bd"
+        },
+        {
+          "essay_id": "5edbc3f89c2e600018fe3821",
+          "prompt_cluster_id": "CL_DR_006",
+          "essay_sha256": "4439ff4a3d56c21828043b79b673689e19084ae1be6bd31e1c9ea1256004dcfd",
+          "prompt_sha256": "b23aa3381701d52e8f79fbc27a211c68da600dd7390da2fb7af94bc218c7631d"
+        },
+        {
+          "essay_id": "5f0bcd78401ea400186c5faa",
+          "prompt_cluster_id": "CL_DR_008",
+          "essay_sha256": "4ecd741ba348ea6767702682b203417f43e517716c919556fe0057f7c8e3fd97",
+          "prompt_sha256": "3aabfd8b72a253fea89733fcd1167d670efe225e83f4b877dc5baaa5e97a941b"
+        },
+        {
+          "essay_id": "5f104169401ea400186c6d36",
+          "prompt_cluster_id": "CL_DR_010",
+          "essay_sha256": "3ba86433d85caeda0357d7b1d1caa91a2d13abd156fef5ff8eb406b32ff81f2d",
+          "prompt_sha256": "b317d9589cbd20e12bac04352be4f26ea6cb1d5c03f95cd0d2918f4329b4b052"
+        },
+        {
+          "essay_id": "5f14065b401ea400186c7764",
+          "prompt_cluster_id": "CL_DR_011",
+          "essay_sha256": "17f0d66807d53ba4e4cfbabbd1f3b91feafeb363f3e9b46c0a4d2ef9a577385a",
+          "prompt_sha256": "575a59b9bf99506a97916832712d752211740cdf97dcb0d5baac957bb389745b"
+        },
+        {
+          "essay_id": "5f1d3b1093166d0018e53494",
+          "prompt_cluster_id": "CL_DR_012",
+          "essay_sha256": "6ab7fa488aba1405bd9ee903348cc6b164f678fc467539d670d59203122d993b",
+          "prompt_sha256": "d50f22288a40a961814a72d96957b5f22496937d4dfe734bd6c9ae8a078958f9"
+        },
+        {
+          "essay_id": "5f2190cea60c7500183c18c4",
+          "prompt_cluster_id": "CL_DR_013",
+          "essay_sha256": "fa4ddc6f5b695eebbbabcf31a37ba468d88d02e4f41e23caa1b97330b0be30c4",
+          "prompt_sha256": "6cc5afc2f3a3fbda511401c2c5f6b164103a983ae20127cd518773a97d78568c"
+        },
+        {
+          "essay_id": "5f7f1a521a209400192cd177",
+          "prompt_cluster_id": "CL_DR_016",
+          "essay_sha256": "3b7491918970f2d038f55394c85b67db2d149fe301575cb6dffb05cef83f960c",
+          "prompt_sha256": "9a229ca738c779b43a6b179c6db911f59888f49b29fbcc2b60dda4d7acfa4a39"
+        },
+        {
+          "essay_id": "5f8e9a1f7394f200189a2e6d",
+          "prompt_cluster_id": "CL_DR_016",
+          "essay_sha256": "f7c46a5d3e342f4db8c3b9325641ea4c711bac7630af5ad6a44b5d164228dca1",
+          "prompt_sha256": "9a229ca738c779b43a6b179c6db911f59888f49b29fbcc2b60dda4d7acfa4a39"
+        },
+        {
+          "essay_id": "5fa98081d42c03001818c9ff",
+          "prompt_cluster_id": "CL_DR_019",
+          "essay_sha256": "6b53747fba601c07a00211279aa2f7b639ca12f5ba9924368122b81c71e50176",
+          "prompt_sha256": "1af192284b1f401595fe7f27d6520212e76c005306ba37a08954dae9c4db7f3b"
+        },
+        {
+          "essay_id": "5fb24fa5b2a32100182c7e84",
+          "prompt_cluster_id": "CL_DR_020",
+          "essay_sha256": "87fbcde3a12f2163d52d96a0680d253b7d1854b70e55da5c57d05956c551c1f7",
+          "prompt_sha256": "c0f7379fbbbe7fec3e0b249bee343c1ea90ba846f88fa29c5ae72963e088de61"
+        },
+        {
+          "essay_id": "5fc7a474a3de4a001876670d",
+          "prompt_cluster_id": "CL_DR_021",
+          "essay_sha256": "688454af9aef471c35a8d4d0cfe82f90c84866554176fedebe695f3a217ed77d",
+          "prompt_sha256": "03562f9dc6267c8590d86388165d0b08207c1bd73ed993496ce3f0ceed0ad1e2"
+        },
+        {
+          "essay_id": "60998015bab9670011ebd780",
+          "prompt_cluster_id": "CL_DR_023",
+          "essay_sha256": "e03609405e69bee3859b6a6bca1b060d5913e0f977666c5da47c0c22ec79512d",
+          "prompt_sha256": "ca8b29ad3b04495e7dec96427c554098ac9c84b93f0e0b77de12fa98b788f62c"
+        },
+        {
+          "essay_id": "60cb9faab558f000189f35dd",
+          "prompt_cluster_id": "CL_DR_026",
+          "essay_sha256": "f40b9577bf0f47ce20ec513fd88511ec8209b9b621447ab92721924e76b2b0c0",
+          "prompt_sha256": "f8756fa19f0930c1dd6254a5a0d93f0470495c78fb25ed4000f417ee6a3e9d06"
+        },
+        {
+          "essay_id": "60fb8667ff06050019cad03c",
+          "prompt_cluster_id": "CL_DR_030",
+          "essay_sha256": "eafe78f3d803c0ffdd2d060857bd5ed517474d517e363af011bb81080bf6302b",
+          "prompt_sha256": "5e0d8f5a70c11b776146e99651894d997cc640b856ceed51087d0fc6d58e80de"
+        },
+        {
+          "essay_id": "60fce526ff06050019cad1e1",
+          "prompt_cluster_id": "CL_DR_031",
+          "essay_sha256": "38753d70bd6320dd3de3a4cd512a154f3e601bca9e329cb4da1b05fcbfc243df",
+          "prompt_sha256": "62b2f97a6528b1031cc5cd950d8302b29f8876f6cc5d6b04b2c6fe54b7031255"
+        },
+        {
+          "essay_id": "6121e1d17f89230018c5d4fb",
+          "prompt_cluster_id": "CL_DR_032",
+          "essay_sha256": "37de2ab6c119d838f6e6169003a509f02c5c3dfc05dcb776a3663862a0eb1783",
+          "prompt_sha256": "1dae900a8094408c111858ca382668a4a3c51ed2a013f94edd5db963f418357b"
+        },
+        {
+          "essay_id": "6145771ef179820019c127c5",
+          "prompt_cluster_id": "CL_DR_033",
+          "essay_sha256": "14e3313a8266efde25d933fefe44ef5c43f2f4a6c0a59f54b1ffa633f35d2601",
+          "prompt_sha256": "36eae7808c59c6292fcf283ffdfc4be07a860425db93c04ab2b3f78c2d5b4fe1"
+        },
+        {
+          "essay_id": "614def4b529b0100197cbb11",
+          "prompt_cluster_id": "CL_DR_035",
+          "essay_sha256": "339a1e67eac1e64ff26c558838f5b39f9e9b4b7c7f7cf63ed18ab1462c7c2d77",
+          "prompt_sha256": "9129ffe1efe63f2c25b06674e278a2ad9565d9ceba46160b40a4e2e795b246b2"
+        },
+        {
+          "essay_id": "6176e6a037154d00196ed248",
+          "prompt_cluster_id": "CL_DR_036",
+          "essay_sha256": "af54918715e37d9e00b29640388fb4f6207a474231a76eb2c6eed1a79003eea5",
+          "prompt_sha256": "0b63938c821b65cc8412f68980d8c9cb91297de16f7c92e73380e6a92da850d4"
+        },
+        {
+          "essay_id": "6177cdaf37154d00196ed394",
+          "prompt_cluster_id": "CL_DR_037",
+          "essay_sha256": "90abb64d60a431578ff541e7a9ee210af895e23f9b7f537b5784d160b5748bda",
+          "prompt_sha256": "9cba2ce6d98b6a00721ce30e4a531243ed2fb5bc51e39e0998951453e7e9c48d"
+        },
+        {
+          "essay_id": "618bc16d95f6ce00186cf587",
+          "prompt_cluster_id": "CL_DR_033",
+          "essay_sha256": "34a539aebe97467ff9a70e86c038aaf1c43f551f81784f6406da4192587ca12d",
+          "prompt_sha256": "36eae7808c59c6292fcf283ffdfc4be07a860425db93c04ab2b3f78c2d5b4fe1"
+        },
+        {
+          "essay_id": "61f4292140113600180032e1",
+          "prompt_cluster_id": "CL_DR_039",
+          "essay_sha256": "f4f59213430a12b105889fb35944e5c0216bc36dc0819a2f44026304c47044c3",
+          "prompt_sha256": "f423f3a0a983dc20bb004d4edb3aae2533b8d6c167b3a88843a1c2a46914a3bc"
+        },
+        {
+          "essay_id": "6202be9440113600180045ec",
+          "prompt_cluster_id": "CL_DR_040",
+          "essay_sha256": "6f148eff798a85e9be14458f1eb8da85ffbd37ef6b3ef66445e4547ba3f2c6cf",
+          "prompt_sha256": "243c3cc85a08b05897bd408cf2168858ba38e3ab46b972a53479123552d4c8a5"
+        },
+        {
+          "essay_id": "623acd2b73b0070018cefa70",
+          "prompt_cluster_id": "CL_DR_041",
+          "essay_sha256": "0bfc4f9206e36ea8c68338d5aacaaf60214aed2ecba639773571d6bd11fc7e87",
+          "prompt_sha256": "857c436c7622f221bc9e69377a86899c9e5bd35858ed78b541579d3187be4d0a"
+        },
+        {
+          "essay_id": "62482aca7f5f830019551f82",
+          "prompt_cluster_id": "CL_DR_044",
+          "essay_sha256": "fb94b96ee8c87657f1689939162775d6f2c621c7d5ba6bf19b73e1483465b815",
+          "prompt_sha256": "38b1d9e48b370bde7530e0eeb6cb8ac95f5b607adb01f29b992febaaa28dce9b"
+        },
+        {
+          "essay_id": "628886379409cb001808883a",
+          "prompt_cluster_id": "CL_DR_046",
+          "essay_sha256": "4e166fb5b6ea197cfcea54e9bd900c6bf9c707d022c99ffe0473de9a4172ba42",
+          "prompt_sha256": "bded848e1e07d3ffd2e92881e8f912926c7507aff835290093da026953d7963c"
+        },
+        {
+          "essay_id": "62c84a8e8ee1ab00180e1cb1",
+          "prompt_cluster_id": "CL_DR_050",
+          "essay_sha256": "c84b050ab7034aea1b9e7d8864c3822cee0064f45bc333a985e0c50b011ed673",
+          "prompt_sha256": "48a0becc155519f9b06aae07d1f0c1f5a368cc13d7582cde87e67b6aca0f60e3"
+        },
+        {
+          "essay_id": "630dafc30751a40019b4db7c",
+          "prompt_cluster_id": "CL_DR_052",
+          "essay_sha256": "69193b1c8153b36976fb0d9ca383af748a280d10be5c429cd50c60ce8f5878e2",
+          "prompt_sha256": "a886d6cd9008ed2ee918ab6b2dbaf796cd7cd24cbed91a68424aa3ffb3d22841"
+        },
+        {
+          "essay_id": "6325e93eaac8660018fa5b3f",
+          "prompt_cluster_id": "CL_DR_053",
+          "essay_sha256": "0a6638a94424d16b49df423025440c72ccd4c126193ae42309f81fc48e1f318c",
+          "prompt_sha256": "075bb6bd65e5531d2221778944ec2d24896eeb02d98a2280e661ad1237799df8"
+        },
+        {
+          "essay_id": "638373e0d1146c0019607eb6",
+          "prompt_cluster_id": "CL_DR_054",
+          "essay_sha256": "8a382f03ae12ebe94fd45bb11cdec6e00beda067115b8a1ec918578ce5b58956",
+          "prompt_sha256": "43de099f386110928599ec42cf3afb7b7ef1fb616e18abc1b4c914c14918e0bb"
+        },
+        {
+          "essay_id": "639ad884543dbe001852169e",
+          "prompt_cluster_id": "CL_DR_055",
+          "essay_sha256": "babe2b05ce287858f02f24ea0e6988729654e6a0adb3ecdf3e60c9cb5aa5d3ef",
+          "prompt_sha256": "a12385bf178fe52b4b325f4dc5ec22b3753557131f6f0286b137d7577feb9fc6"
+        },
+        {
+          "essay_id": "63a9705f33b0da0018665b76",
+          "prompt_cluster_id": "CL_DR_056",
+          "essay_sha256": "d7e655e87c8ee1d28f2ddf647dc5218291ee8f1a328ed066b7a3a559e9885737",
+          "prompt_sha256": "7496b40664f453e1bbf6de46bbcf3d35d4cfce7babccb3f84ccb290396b0799b"
+        },
+        {
+          "essay_id": "63ac709633b0da0018666076",
+          "prompt_cluster_id": "CL_DR_057",
+          "essay_sha256": "2050d88d788db32b6e3f3d84de1d218341b0da78480bb66b67ed1a7b12e48996",
+          "prompt_sha256": "ca679c6c1c76261fe42608a01ae807e7c24b54a42ffdfcdf44173aa2326bc104"
+        },
+        {
+          "essay_id": "63bc505333b0da0018667bfb",
+          "prompt_cluster_id": "CL_DR_058",
+          "essay_sha256": "6fdcbb20f297cc67f331776ffeb93e27e499e9744f1f008ecaf2169e6b5c8dd0",
+          "prompt_sha256": "20ab9cb91257f2f342632a07345626a1ed8aa0bc12f8f3afc8e3a7f63ff1dba4"
+        },
+        {
+          "essay_id": "63c6caf933b0da001866926a",
+          "prompt_cluster_id": "CL_DR_010",
+          "essay_sha256": "68ab356cbc1742a5f45761e3fe739f5de531a2c58099634f05fb341a0ae12348",
+          "prompt_sha256": "b317d9589cbd20e12bac04352be4f26ea6cb1d5c03f95cd0d2918f4329b4b052"
+        },
+        {
+          "essay_id": "63e0dc2c96e92a00181acd76",
+          "prompt_cluster_id": "CL_DR_032",
+          "essay_sha256": "9db767ae2db9d944d5f11b8e7bfa24827922f7e0ab3db8662e5a8665f1dbfa8b",
+          "prompt_sha256": "1dae900a8094408c111858ca382668a4a3c51ed2a013f94edd5db963f418357b"
+        },
+        {
+          "essay_id": "6422a6dd2d17850019cd8d40",
+          "prompt_cluster_id": "CL_DR_041",
+          "essay_sha256": "db0b6d08fc7baa95ffc283e40423249709abf37a06a87242ecd04aeae1b46aec",
+          "prompt_sha256": "857c436c7622f221bc9e69377a86899c9e5bd35858ed78b541579d3187be4d0a"
+        },
+        {
+          "essay_id": "646391b096d136001a135009",
+          "prompt_cluster_id": "CL_DR_040",
+          "essay_sha256": "06a3fbede7b479e74212703c753357237e25eaf2f8a8eb9ea4c980bd08155aa6",
+          "prompt_sha256": "4cdb5b3887a39dba0c56db63e02f2ab7378f3af5523eb08f608777c2afa5c948"
+        },
+        {
+          "essay_id": "64dd33115ce55700187e8226",
+          "prompt_cluster_id": "CL_DR_020",
+          "essay_sha256": "4119d341909e46fbdec3e9a0f3c201c676b009be86bc2385caf70ff32c9d5573",
+          "prompt_sha256": "c0f7379fbbbe7fec3e0b249bee343c1ea90ba846f88fa29c5ae72963e088de61"
+        },
+        {
+          "essay_id": "64ed1240efce1f0018b4aa76",
+          "prompt_cluster_id": "CL_DR_062",
+          "essay_sha256": "1e7067d17cd1d333de1ff428a7217176fa91f3dd66ba67d9a8aedf6f9a327acc",
+          "prompt_sha256": "3acf6a14a7fb2590e023c97ab6594499b8ed673f017ec9c05f63a0a9720e56cc"
+        },
+        {
+          "essay_id": "64ef5fb7364e440019a8a199",
+          "prompt_cluster_id": "CL_DR_063",
+          "essay_sha256": "319069b411d2187a19b75613ffccdf0cf634178d0ad4724c9055dbf05c1b9b8c",
+          "prompt_sha256": "174175a6a8caf17a4b8657a08f5f9bbb16e3df44d6841c0250bfba6cf4db5b0b"
+        },
+        {
+          "essay_id": "650843dda662530018de103c",
+          "prompt_cluster_id": "CL_DR_064",
+          "essay_sha256": "b751360466fca0ecb937f3d5133d9535b18fa9cc87a740cebb2ec30b0b0a026d",
+          "prompt_sha256": "fae142948fe16e73f581b2cda4c1fa114cbf43b58368cba82650dd76311b09af"
+        },
+        {
+          "essay_id": "6552084e49c7e900122ba4e2",
+          "prompt_cluster_id": "CL_DR_065",
+          "essay_sha256": "51168520a43f58875a6ca28acba679f780e406f443fc2bcefa3fb7b21ef9ceaa",
+          "prompt_sha256": "0b44b7de5031fe795ab46f9892214272ed9471a52babb7d9524414b0b10aa200"
+        },
+        {
+          "essay_id": "655693053d79920013241fed",
+          "prompt_cluster_id": "CL_DR_067",
+          "essay_sha256": "2f82e8fa70ae468455af9b122ac7a875596caacf3bd29ad1839f06aec7f6b203",
+          "prompt_sha256": "7e3697ae5e5d0d6c46a90bea28e46309321cda73785c50f244a7bd84108b164c"
+        },
+        {
+          "essay_id": "655cdc63702320001198bd05",
+          "prompt_cluster_id": "CL_DR_010",
+          "essay_sha256": "842941bacecda82be56b5d227edf9699b99e9f3e03cf4498d021fde5981a4046",
+          "prompt_sha256": "effb6027c78cc5238821ec051a0cd188d567b618986bb3fd0f35ed055f08d3c7"
+        },
+        {
+          "essay_id": "65806161e5d1df00125a0817",
+          "prompt_cluster_id": "CL_DR_055",
+          "essay_sha256": "d47f5b2355be93aa42ece78084ef87d31d83f8978ca3522fa6e6c32143b29cb8",
+          "prompt_sha256": "a12385bf178fe52b4b325f4dc5ec22b3753557131f6f0286b137d7577feb9fc6"
+        },
+        {
+          "essay_id": "6580996de5d1df00125a08b6",
+          "prompt_cluster_id": "CL_DR_044",
+          "essay_sha256": "e76640ec10cbdcafc007113f19d24bd56b00b46b1e3874aac29aa976f7b2d635",
+          "prompt_sha256": "8187e3b0e92a573392c14bb2df46da214b6f640e476aa7ba8a4ddf808420ee78"
+        },
+        {
+          "essay_id": "6596945307eb1c0011bcc24d",
+          "prompt_cluster_id": "CL_DR_011",
+          "essay_sha256": "552f045c02a560ad81a42586a334bdf0cb23d1a38530f3795209eccbf7554e75",
+          "prompt_sha256": "575a59b9bf99506a97916832712d752211740cdf97dcb0d5baac957bb389745b"
+        },
+        {
+          "essay_id": "65f3f940ecea9d0011e703cc",
+          "prompt_cluster_id": "CL_DR_069",
+          "essay_sha256": "a802141a4ca263ac92a53fca2aee3a7247a737bbe23aa99d2b8aed818a058365",
+          "prompt_sha256": "13644468ba57dec85ec3824c30e9e023fba839687994ff512e5bc759c547f7c9"
+        },
+        {
+          "essay_id": "65f6fb79ecea9d0011e70b3a",
+          "prompt_cluster_id": "CL_DR_070",
+          "essay_sha256": "6431ee853024ee63406117a53a7c0e6a2f4cd73b2b796377b297fd361a24fe41",
+          "prompt_sha256": "c31f4c7949d744fc7f4f4bbaad8dbaf0d3fc0ed6a0407e6a16c4697fd358a628"
+        },
+        {
+          "essay_id": "668ff884d784b30012d4d263",
+          "prompt_cluster_id": "CL_DR_071",
+          "essay_sha256": "0367896afb6627d0415251260df6d2dec18a3f5ae3821a1f6ebf816e79cd1b36",
+          "prompt_sha256": "2118612bfce15e43ccfea1713c8da011abbbd32d1c3c3106b6747928950e9cb8"
+        },
+        {
+          "essay_id": "671e7d014f38620011397a47",
+          "prompt_cluster_id": "CL_DR_072",
+          "essay_sha256": "44ce382bd4307b827151343ac8d75296e581a46fb3363059ed88ea79bbab9ab8",
+          "prompt_sha256": "6192c4d7cfde8924d9cc2c97aeeac8d6b00c7a0af4b565269b6f4078a8d08f67"
+        },
+        {
+          "essay_id": "6751837c2034f70012a1ec71",
+          "prompt_cluster_id": "CL_DR_030",
+          "essay_sha256": "a83a57345ff2137cd35d5c797121b1095578bbfc5261deedbb1298b1302ccd2c",
+          "prompt_sha256": "b1b9a619ba67d4395e6743178ae3b9810362f2058685c974ceed8fdc2539d7df"
+        },
+        {
+          "essay_id": "67570d0f91514b0011fd6747",
+          "prompt_cluster_id": "CL_DR_074",
+          "essay_sha256": "af4bcaafa5f021dad3af7b057300d3b9b6f58000c655b89d2af32e52fead598b",
+          "prompt_sha256": "42ece40193c231e41ba59ae397b8af43a297204a5fe5cadfdc6d8d6670073b69"
+        },
+        {
+          "essay_id": "67d256cd283358001107c574",
+          "prompt_cluster_id": "CL_DR_075",
+          "essay_sha256": "4803e25dc1175dc38afed09cba36bfa62c0bace79bef36d2ecd6045879968b42",
+          "prompt_sha256": "7b9b97bd5f3b9a29f0464f63d0ebdc594b2ba71e1cc8c29b8410d7462a2ab321"
+        },
+        {
+          "essay_id": "67defefc85aefe00116eb69a",
+          "prompt_cluster_id": "CL_DR_016",
+          "essay_sha256": "9fd2cce60adc135138856066248214c5a49e04afbb1c0ce864f9936aee43cb6c",
+          "prompt_sha256": "9a229ca738c779b43a6b179c6db911f59888f49b29fbcc2b60dda4d7acfa4a39"
+        },
+        {
+          "essay_id": "681b1e3144ad070011460227",
+          "prompt_cluster_id": "CL_DR_072",
+          "essay_sha256": "eaebf8d10becc8727eda3e7e7c489d97cbf6083f608be91158ebad8658fdf950",
+          "prompt_sha256": "7b3f160f738a6944492e7ebabaff5702df2ae517c431dccea83a213e0843b0e4"
+        },
+        {
+          "essay_id": "685c93072969c00011222a9e",
+          "prompt_cluster_id": "CL_DR_056",
+          "essay_sha256": "c3910077fa49a9d0e9d9c7cc36f1c1034cbf2fd9623d67526e13b54d912120b4",
+          "prompt_sha256": "e66b4a76a87d75df3fc68bad95e9f5fda1ecdfb7fd235c12aa745e7f54167708"
+        },
+        {
+          "essay_id": "68843f6e57734f001573698a",
+          "prompt_cluster_id": "CL_DR_078",
+          "essay_sha256": "dcf7f601e34315a4b4158e14aaa6773feb077a2835c3a0a09593fc9de9e3d88d",
+          "prompt_sha256": "8b3ffc9302d7c3852ad13f674f2511d769139e917cc467ba804291b929c10f9d"
+        },
+        {
+          "essay_id": "68998528f03bbd00121eef17",
+          "prompt_cluster_id": "CL_DR_079",
+          "essay_sha256": "ac0f1073f2d6698cce841b46bfe3f27e4b711e8c6efafc87748b6904fbc377c8",
+          "prompt_sha256": "98e6c9809fae49ec319adaec0711da11a7617dc916624097b011d7f90100edd4"
+        },
+        {
+          "essay_id": "6904d4f53232880012f209a0",
+          "prompt_cluster_id": "CL_DR_081",
+          "essay_sha256": "3aa8d6ce5766d33c6efa7c6ffbf4402a16b40841fe1f813fb9100576319b6d1f",
+          "prompt_sha256": "37c0670b58f2532139fa4ee23b076477003965ae91056e4cf765543fefc8cf08"
+        },
+        {
+          "essay_id": "69446887cf32480011964896",
+          "prompt_cluster_id": "CL_DR_072",
+          "essay_sha256": "892daf2e80c8218dfe0ef6dc04893dcf4466b0adb7cca18ae83ee295f58b5154",
+          "prompt_sha256": "86ff773b0f5b89e8610277f0e001f75adf3809741754d501aab033d784fe8495"
+        }
+      ],
+      "git_blob_sha256_before_hygiene": "ea3bb44664b9cdda9ff64071505706709cd4246b302daccf4e6721eded284082"
+    }
+  },
+  "checkout_line_ending_policy": "Original Windows checkout hashes are retained; Git blob hashes support LF checkouts without rewriting any dataset."
+}

@@ -13,14 +13,8 @@ from src.eval.metrics import evaluate_predictions, export_metrics, render_metric
 
 
 def _load_jsonl(path: Path) -> list[EssayRecord]:
-    rows: list[EssayRecord] = []
-    with path.open("r", encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if line:
-                rows.append(EssayRecord.model_validate_json(line))
-    rows.sort(key=lambda r: r.essay_id)
-    return rows
+    from src.data.records import load_records
+    return load_records(path)
 
 
 def _band_error_table(eval_pairs: list[dict[str, Any]]) -> str:
@@ -73,6 +67,8 @@ async def run_dev_baseline_live(
     out_dir.mkdir(parents=True, exist_ok=True)
     ckpt_name = "dev_live_predictions.jsonl" if prompt_version == "v0" else f"dev_live_predictions_{prompt_version}.jsonl"
     ckpt_path = out_dir / ckpt_name
+    if not resume and ckpt_path.exists() and ckpt_path.stat().st_size:
+        raise ValueError('Choose a new output directory for a fresh evaluation')
     cached: dict[str, dict[str, Any]] = {}
     if resume and ckpt_path.exists():
         with ckpt_path.open("r", encoding="utf-8") as fh:
@@ -83,6 +79,9 @@ async def run_dev_baseline_live(
                     cached[rec["essay_id"]] = rec
 
     scorer = LiveGeminiScorer(prompt_version=prompt_version, rpm=rpm, daily_budget=daily_budget)
+    policy = scorer.cache_policy(seed_pool)
+    if any(record.get('cache_policy') != policy for record in cached.values()):
+        raise ValueError('Cached predictions use a different prompt/data/overall policy; choose a new output directory')
     provider = GeminiProvider(scorer.settings)
     records: list[dict[str, Any]] = []
     eval_pairs: list[dict[str, Any]] = []
@@ -109,6 +108,7 @@ async def run_dev_baseline_live(
                     "pred": res["pred"],
                     "overall_error": round(res["pred"]["overall"] - target.overall, 2),
                     "rationale": res["rationale"],
+                    "cache_policy": policy, "overall_policy": "floor_half_v1",
                     "latency_ms": res["latency_ms"],
                     "usage": res["usage"],
                     "model": res["model"],

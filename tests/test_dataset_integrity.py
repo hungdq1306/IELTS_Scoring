@@ -114,12 +114,14 @@ def test_holdout_tier_purity(splits: dict[str, list[EssayRecord]]) -> None:
     assert tiers == {"max2_half"}, f"Holdout must be 100% max2_half, got {tiers}"
 
 
-def test_seed_contains_all_13_examiner_verified(splits: dict[str, list[EssayRecord]]) -> None:
-    """5. Seed contains all 13/13 examiner_verified essays (and 0 in Dev/Holdout)."""
+def test_seed_contains_all_provenance_verified(splits: dict[str, list[EssayRecord]]) -> None:
+    """5. Seed contains all provenance-verified essays (and 0 in Dev/Holdout)."""
     seed_ex = [r for r in splits["seed"] if r.quality_tier == "examiner_verified"]
     dev_ex = [r for r in splits["dev"] if r.quality_tier == "examiner_verified"]
     hold_ex = [r for r in splits["holdout"] if r.quality_tier == "examiner_verified"]
-    assert len(seed_ex) == 13
+    manifest = json.loads((REPO_ROOT / 'data/lecturer/manifests/fs7_v1.json').read_text(encoding='utf-8'))
+    expected = {r['essay_id'] for r in manifest['examples'] if r['label_provenance'] == 'explicit_lecturer_annotation'}
+    assert {r.essay_id for r in seed_ex} == expected
     assert len(dev_ex) == 0
     assert len(hold_ex) == 0
 
@@ -136,17 +138,17 @@ def test_bit_for_bit_determinism(tmp_path: Path) -> None:
 
 
 def test_loo_cv_dry_run_zero_leakage(tmp_path: Path) -> None:
-    """Verify 13-fold LOO-CV runs cleanly with zero target leakage and exports valid metrics."""
+    """Verify metadata-selected LOO-CV runs cleanly with zero target leakage and exports valid metrics."""
     report = run_loo_audit(
         seed_jsonl=ARTIFACT_DIR / "seed.jsonl",
         scorer=DeterministicMockScorer(random_seed=42),
         out_dir=tmp_path,
         mode_label="test_dry_run",
     )
-    assert report["n_folds"] == 13
-    assert report["n_essays"] == 13
-    assert len(report["folds"]) == 13
-    assert all(f["fewshot_pool_size"] == 12 for f in report["folds"])
+    from src.data.records import load_records, verified_records
+    n = len(verified_records(load_records(ARTIFACT_DIR / 'seed.jsonl')))
+    assert report['n_folds'] == report['n_essays'] == len(report['folds']) == n
+    assert all(f['fewshot_pool_size'] == n - 1 for f in report['folds'])
     assert (tmp_path / "loo_audit_test_dry_run.json").exists()
     assert (tmp_path / "loo_audit_test_dry_run.md").exists()
     ov = report["metrics"]["overall"]
@@ -188,7 +190,7 @@ def test_live_demo_v1_stratified_wiring(tmp_path: Path) -> None:
     """Verify V1_STRATIFIED and v1 rubric are wired cleanly into the FastAPI live demo endpoint."""
     import json
     from fastapi.testclient import TestClient
-    from app.grading.lecturer import V1_STRATIFIED_IDS, configuration
+    from app.grading.lecturer import configuration
     from app.grading.rubric import PROMPT_VERSION
     from app.grading.schemas import CRITERIA
     from app.main import create_app
@@ -197,8 +199,9 @@ def test_live_demo_v1_stratified_wiring(tmp_path: Path) -> None:
 
     assert PROMPT_VERSION == "task2-v1-calibrated"
     cfg = configuration("V1_STRATIFIED")
-    assert [e["essay_id"] for e in cfg["examples"]] == V1_STRATIFIED_IDS
-    assert len(cfg["examples"]) == 8
+    from src.data.records import load_records, verified_records
+    expected_ids = {r.essay_id for r in verified_records(load_records(ARTIFACT_DIR / 'seed.jsonl'))}
+    assert {e['essay_id'] for e in cfg['examples']} == expected_ids
 
     captured: dict = {}
 
@@ -247,42 +250,17 @@ def test_live_demo_v1_stratified_wiring(tmp_path: Path) -> None:
         assert resp.status_code == 200, resp.text
         body = resp.json()
         assert body["fewshot_config"] == "V1_STRATIFIED"
-        assert body["reference_example_ids"] == V1_STRATIFIED_IDS
-        assert body["estimated_overall_band"] == 8.0
-        assert body["confidence"]["band_margin"] == 0.5
-        assert body["confidence"]["band_range_low"] == 7.5
-        assert body["confidence"]["band_range_high"] == 8.5
-        assert 55 <= body["confidence"]["percentage"] <= 95
-        assert body["confidence"]["label"] in {"High", "Moderate", "Borderline"}
-        assert "examiner judgment" in body["confidence"]["note"].lower()
+        assert set(body["reference_example_ids"]) == expected_ids
+        assert body["estimated_overall_band"] == 7.5
+        assert body["confidence"] is None
         assert "NO ARTIFICIAL 8.0 CEILING" in captured["system"]
         assert "SEAMLESS, UNOBTRUSIVE cohesion" in captured["system"]
-        assert "eight stratified examiner-verified references" in captured["system"].lower()
+        assert "verified criterion feedback" in captured["system"].lower()
 
 
-def test_band_confidence_and_half_band_range() -> None:
-    """Verify deterministic confidence calibration and +/-0.5 band range under boundary & variance conditions."""
+def test_confidence_unavailable_for_unvalidated_policy():
     from app.grading.schemas import Scores
     from app.grading.task2 import compute_band_confidence, overall_band
-
-    # 1. Exact balanced mid-range essay -> High confidence, 6.5 +/- 0.5 -> [6.0, 7.0]
-    s_clean = Scores(task_response=6.5, coherence_cohesion=6.5, lexical_resource=6.5, grammatical_range_accuracy=6.5)
-    c_clean = compute_band_confidence(s_clean, overall_band(s_clean), 280, [])
-    assert c_clean.band_range_low == 6.0 and c_clean.band_range_high == 7.0
-    assert c_clean.label == "High" and c_clean.score >= 0.85
-
-    # 2. Borderline .75 rounding boundary + wide spread + under-length -> Borderline / lower confidence
-    s_edge = Scores(task_response=5.0, coherence_cohesion=6.0, lexical_resource=7.0, grammatical_range_accuracy=7.0)
-    ov_edge = overall_band(s_edge)
-    assert ov_edge == 6.5  # 6.25 rounds to 6.5
-    c_edge = compute_band_confidence(s_edge, ov_edge, 210, ["under_250"])
-    assert c_edge.band_range_low == 6.0 and c_edge.band_range_high == 7.0
-    assert c_edge.score < c_clean.score
-    assert c_edge.label == "Borderline"
-    assert "borderline" in c_edge.note.lower()
-
-    # 3. Clamped upper bound at 9.0 -> [8.5, 9.0]
-    s_top = Scores(task_response=9.0, coherence_cohesion=9.0, lexical_resource=9.0, grammatical_range_accuracy=9.0)
-    c_top = compute_band_confidence(s_top, 9.0, 300, [])
-    assert c_top.band_range_low == 8.5 and c_top.band_range_high == 9.0
-    assert c_top.score < 1.0  # never claim 100% certainty
+    scores = Scores(task_response=5, coherence_cohesion=6, lexical_resource=7, grammatical_range_accuracy=7)
+    assert overall_band(scores) == 6.0
+    assert compute_band_confidence(scores, 6.0, 210, []) is None

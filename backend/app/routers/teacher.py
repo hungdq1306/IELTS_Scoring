@@ -221,7 +221,8 @@ async def add_anchor(body: AnchorInput, request: Request, user=Depends(staff_use
         session.add(TeacherAnchor(id=key, teacher_id=user.id,
             payload={'essay_id': key, 'question': redact_pii(body.prompt), 'student_essay': redact_pii(body.essay),
                      'scores': {**body.scores.model_dump(), 'overall': overall_band(body.scores)},
-                     'examiner_calibration_cue': 'Teacher-uploaded calibration anchor; not independently examiner verified.'}))
+                     'score_source': 'teacher_uploaded',
+                      'score_provenance': {'independently_verified': False, 'uploaded_by': user.id}}))
         session.add(AuditEvent(actor_id=user.id, action='anchor_added', target_id=key))
     return {'id': key}
 

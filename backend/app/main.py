@@ -14,8 +14,8 @@ from filelock import FileLock, Timeout
 
 from app import api_models as api
 from app.config import ROOT, load_settings
-from app.grading.schemas import GradeRequest
-from app.grading.task2 import grade_essay
+from app.grading.schemas import GradeRequest, Scores
+from app.grading.task2 import grade_essay, overall_band
 from app.providers.base import ProviderError
 from app.providers.gemini import FREE_MODELS, GeminiProvider
 from benchmark import store
@@ -164,7 +164,7 @@ def create_app(data_root: Path = ROOT / "data", results_root: Path = ROOT / "res
                 'word_count': example.word_count,
                 'scores': {c: getattr(example.scores, c) for c in CRITERIA},
                 'lecturer_reported_overall_band': example.scores.overall,
-                'calculated_overall_band': example.scores.overall,
+                'calculated_overall_band': overall_band(Scores(**{c: getattr(example.scores, c) for c in CRITERIA})),
                 'feedback_by_criterion': example.feedback_by_criterion.model_dump(),
                 'lecturer_assessment': {
                     'rationale_provenance': 'standardized_english_from_lecturer_annotation',

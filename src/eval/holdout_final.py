@@ -23,14 +23,8 @@ from src.eval.metrics import (
 
 
 def _load_essays(path: Path) -> list[EssayRecord]:
-    rows: list[EssayRecord] = []
-    with path.open("r", encoding="utf-8") as fh:
-        for line in fh:
-            line = line.strip()
-            if line:
-                rows.append(EssayRecord.model_validate_json(line))
-    rows.sort(key=lambda r: r.essay_id)
-    return rows
+    from src.data.records import load_records
+    return load_records(path)
 
 
 def _load_preds(path: Path) -> list[dict[str, Any]]:
@@ -48,17 +42,23 @@ def freeze_dev_cc_calibration(
     dev_v1_preds_path: Path,
     out_json_path: Path,
 ) -> dict[str, Any]:
-    """Compute single deterministic CC additive offset strictly on Dev v1 predictions (173 essays)."""
+    """Compute single deterministic CC additive offset strictly on policy-compatible frozen Dev predictions."""
     dev_rows = _load_preds(dev_v1_preds_path)
-    if len(dev_rows) != 173:
-        raise ValueError(f"Expected 173 Dev predictions in {dev_v1_preds_path}, got {len(dev_rows)}")
+    from src.data.records import load_records, check_membership
+    dataset_dir = Path(__file__).resolve().parents[2] / 'artifacts/dataset_v1'
+    expected = load_records(dataset_dir / 'dev.jsonl')
+    check_membership(expected, 'dev', dataset_dir)
+    if len(dev_rows) != len(expected) or {r['essay_id'] for r in dev_rows} != {r.essay_id for r in expected}:
+        raise ValueError('Dev predictions differ from frozen Dev membership')
+    if any(r.get('overall_policy') != 'floor_half_v1' for r in dev_rows):
+        raise ValueError('Dev calibration requires predictions with the current scoring policy')
     cc_diffs = [float(r["true"]["cc"]) - float(r["pred"]["cc"]) for r in dev_rows]
     cc_offset = float(np.mean(cc_diffs))
     payload = {
         "source": str(dev_v1_preds_path),
         "n_dev_essays": len(dev_rows),
         "cc_additive_offset": round(cc_offset, 6),
-        "note": "Learned strictly on frozen Dev v1 predictions (173 essays). Zero Holdout parameters fitted.",
+        "note": "Learned strictly on frozen Dev predictions. Zero Holdout parameters fitted.",
     }
     out_json_path.parent.mkdir(parents=True, exist_ok=True)
     out_json_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
@@ -79,12 +79,17 @@ async def _run_one_shot_holdout_version(
     from app.providers.gemini import GeminiProvider
 
     ckpt_path.parent.mkdir(parents=True, exist_ok=True)
+    if not resume and ckpt_path.exists() and ckpt_path.stat().st_size:
+        raise ValueError('Choose a new output directory for a fresh evaluation')
     cached: dict[str, dict[str, Any]] = {}
     if resume and ckpt_path.exists():
         for rec in _load_preds(ckpt_path):
             cached[rec["essay_id"]] = rec
 
     scorer = LiveGeminiScorer(prompt_version=prompt_version, rpm=rpm, daily_budget=daily_budget)
+    policy = scorer.cache_policy(seed_pool)
+    if any(record.get('cache_policy') != policy for record in cached.values()):
+        raise ValueError('Cached predictions use a different prompt/data/overall policy; choose a new output directory')
     provider = GeminiProvider(scorer.settings)
     records: list[dict[str, Any]] = []
     total = len(holdout_rows)
@@ -110,6 +115,7 @@ async def _run_one_shot_holdout_version(
                     "pred": res["pred"],
                     "overall_error": round(res["pred"]["overall"] - target.overall, 2),
                     "rationale": res["rationale"],
+                    "cache_policy": policy, "overall_policy": "floor_half_v1",
                     "latency_ms": res["latency_ms"],
                     "usage": res["usage"],
                     "model": res["model"],
@@ -291,8 +297,9 @@ async def run_final_holdout_evaluation(
     seed_pool = _load_essays(seed_jsonl)
     holdout_rows = _load_essays(holdout_jsonl)
 
-    # Hard verification: 63 essays, 47 independent clusters, 100% max2_half, zero overlap with Seed
-    assert len(holdout_rows) == 63, f"Expected 63 Holdout essays, got {len(holdout_rows)}"
+    # Verify frozen membership and clusters, tier purity, and zero Seed overlap.
+    from src.data.records import check_membership
+    check_membership(holdout_rows, 'holdout', holdout_jsonl.parent)
     assert {r.quality_tier for r in holdout_rows} == {"max2_half"}
     assert {r.essay_id for r in seed_pool}.isdisjoint({r.essay_id for r in holdout_rows})
 

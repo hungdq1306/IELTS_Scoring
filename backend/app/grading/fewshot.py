@@ -85,17 +85,18 @@ def configuration(experiment):
 def protect(request, config):
     from benchmark.datasets import normalize
     for example in config.get('_protected_references',config['examples']):
-        if (example.get('question') and normalize(example["question"]) == normalize(request.prompt)) or overlaps(example["essay"], request.essay):
+        if (example.get('question') and normalize(example["question"]) == normalize(request.prompt)) or overlaps(example.get("essay", example.get("student_essay", "")), request.essay):
             raise ProviderError("reference_overlap", "This essay or prompt overlaps the fixed reference set. Choose FS0.", 409)
 
 
 def compose(system, user, config):
+    from app.grading.payload import project_anchor
     if config["examples"]:
         from app.grading.lecturer import EXPERIMENTS, DIAGNOSTIC_NOTE, calibration_for
         if config["experiment"] in EXPERIMENTS:
             calibration = calibration_for(config["experiment"]) + (DIAGNOSTIC_NOTE if config.get("diagnostic_mode") else "")
         else:
             calibration = CALIBRATION
-        return system + "\n" + calibration, json.dumps({"REFERENCE EXAMPLES": config["examples"],
+        return system + "\n" + calibration, json.dumps({"REFERENCE EXAMPLES": [project_anchor(e) for e in config["examples"]],
                                                            "NEW ESSAY": json.loads(user)}, ensure_ascii=False)
     return system, user

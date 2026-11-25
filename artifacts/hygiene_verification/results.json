@@ -1,0 +1,26 @@
+{
+  "python_full_suite": {
+    "passed": 153,
+    "skipped": 1,
+    "deselected": 1,
+    "failed": 0,
+    "duration_seconds": 434.95,
+    "skipped_cases": [
+      {
+        "class": "backend.tests.test_migrations_postgres",
+        "name": "test_postgres_legacy_upgrade",
+        "reason": "MIGRATION_TEST_DATABASE_URL not provided"
+      }
+    ]
+  },
+  "dataset_portability_recheck": {
+    "passed": 3,
+    "failed": 0
+  },
+  "frontend_unit_tests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "offline_frontend_build": "passed; generated assets restored to tracked content",
+  "paid_api_calls": 0
+}

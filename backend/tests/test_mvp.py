@@ -52,7 +52,7 @@ def test_reject_bad_band(value):
 
 def test_model_schema_and_grounding():
     request = sample()
-    assert overall_band(Scores(**payload()["criterion_scores"])) == 6.5
+    assert overall_band(Scores(**payload()["criterion_scores"])) == 6.0
     result = validate_grade(generation(), request, 25)
     assert result.word_count == 5
     assert result.criterion_feedback.task_response.evidence[0].quote == "Public transport"

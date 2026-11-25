@@ -49,37 +49,21 @@ class BaselineGradeResponse(BaseModel):
 
 
 def format_fewshot_block(fewshot_pool: list[EssayRecord]) -> str:
-    """Format calibration anchor essays deterministically ordered from lowest to highest band."""
-    ordered = sorted(fewshot_pool, key=lambda r: (r.overall, r.essay_id))
-    parts = [
-        "=== CALIBRATION REFERENCE ANCHORS (OFFICIAL BAND SCALE 4.5 - 9.0) ===",
-        "Use these verified anchor essays to calibrate your strictness and ceiling/floor scores.",
-    ]
-    for idx, ex in enumerate(ordered, start=1):
-        parts.append(
-            f"\n[Anchor {idx} | Tier={ex.quality_tier} | TR={ex.tr:g}, CC={ex.cc:g}, LR={ex.lr:g}, GRA={ex.gra:g}, Overall={ex.overall:g}]\n"
-            f"Prompt: {ex.prompt}\n"
-            f"Essay ({ex.word_count} words): {ex.essay}"
-        )
-    parts.append("\n=== END OF CALIBRATION ANCHORS ===")
-    return "\n".join(parts)
+    from app.grading.payload import project_anchor
+    from app.grading.schemas import CRITERIA
+    from src.eval.prompt_v1 import select_stratified_anchors
+    return json.dumps([project_anchor({
+        'question': r.prompt, 'student_essay': r.essay,
+        'scores': dict(zip(CRITERIA, (r.tr, r.cc, r.lr, r.gra))),
+        'score_source': r.score_source, 'score_provenance': r.score_provenance,
+        'feedback_by_criterion': r.examiner_feedback,
+        'metadata': {'paragraph_boundary_verified': r.paragraph_boundary_verified,
+                     'paragraph_spans': r.paragraph_spans},
+    }) for r in select_stratified_anchors(fewshot_pool)], ensure_ascii=False)
 
 
 def build_user_prompt(target: EssayRecord, fewshot_pool: list[EssayRecord]) -> str:
-    anchors = format_fewshot_block(fewshot_pool)
-    payload = {
-        "prompt": target.prompt,
-        "essay": target.essay,
-        "word_count": target.word_count,
-        "length_note": "Under 250 words — evaluate Task Response development strictly." if target.word_count < 250 else "Meets 250+ word expectation.",
-    }
-    return (
-        f"{anchors}\n\n"
-        "Now assess the following target IELTS Writing Task 2 essay independently against the May 2023 official rubric "
-        "and the calibration anchors above. Provide concise criterion rationales BEFORE locking criterion_scores "
-        "in 0.5-band increments.\n\n"
-        f"TARGET_ESSAY_JSON:\n{json.dumps(payload, ensure_ascii=False)}"
-    )
+    return build_user_prompt_v1(target, fewshot_pool)
 
 
 class LiveGeminiScorer:
@@ -108,6 +92,14 @@ class LiveGeminiScorer:
         self.model_name = self.settings.model
         self.last_telemetry: dict[str, Any] = {}
 
+    def cache_policy(self, pool):
+        import hashlib
+        from app.grading.payload import PAYLOAD_VERSION
+        from src.eval.prompt_v1 import PROMPT_V1_VERSION
+        serialized = json.dumps([r.model_dump() for r in pool], sort_keys=True, ensure_ascii=False)
+        digest = hashlib.sha256(serialized.encode()).hexdigest()
+        return f'{PAYLOAD_VERSION}:floor_half_v1:{PROMPT_V1_VERSION}:{self.prompt_version}:{self.model_name}:{digest}'
+
     async def score_async(self, target: EssayRecord, fewshot_pool: list[EssayRecord], provider: GeminiProvider) -> dict[str, Any]:
         pool_ids = {e.essay_id for e in fewshot_pool}
         if target.essay_id in pool_ids:
@@ -129,6 +121,7 @@ class LiveGeminiScorer:
         ov = compute_ielts_overall(tr, cc, lr, gra)
 
         result = {
+            "overall_policy": "floor_half_v1",
             "pred": {"tr": tr, "cc": cc, "lr": lr, "gra": gra, "overall": ov},
             "rationale": {
                 "brief": parsed.brief_rationale,

@@ -271,6 +271,13 @@ def evaluate_predictions(
     Each item in `pairs` must have keys `true` and `pred` (each with `overall`, `tr`, `cc`, `lr`, `gra`),
     and optionally `prompt_cluster_id` (falling back to `essay_id` for clustered bootstrap).
     """
+    from copy import deepcopy
+    from src.data.tiering import compute_ielts_overall
+    pairs = deepcopy(pairs)
+    for item in pairs:
+        for side in ('true', 'pred'):
+            scores = item[side]
+            scores['overall'] = compute_ielts_overall(*(scores[c] for c in ('tr', 'cc', 'lr', 'gra')))
     cluster_ids = [
         str(item.get("prompt_cluster_id") or item.get("essay_id") or f"item_{i}")
         for i, item in enumerate(pairs)
@@ -293,6 +300,8 @@ def evaluate_predictions(
         )
         results[key] = tm.model_dump()
     return {
+        "overall_policy": "floor_half_v1",
+        "overall_reference": "computed_from_criteria",
         "n_essays": len(pairs),
         "n_clusters": len(set(cluster_ids)),
         "benchmarks": {
@@ -311,6 +320,7 @@ def render_metrics_markdown(report: dict[str, Any], title: str = "AES Evaluation
     sd_lo, sd_hi = b.get("sd_ratio_range", [SD_RATIO_MIN, SD_RATIO_MAX])
     lines = [
         f"# {title}",
+        f"- **Overall policy:** `{report.get('overall_policy', 'unspecified')}` (computed from criteria; reported labels are separate)",
         f"- **Evaluated Essays:** `{report['n_essays']}` across `{report.get('n_clusters', report['n_essays'])}` prompt clusters",
         f"- **Benchmarks:** `QWK >= {b['qwk_min']:.2f}`, `|SMD| <= {b['smd_abs_max']:.2f}`, "
         f"`SD Ratio in [{sd_lo:.2f}, {sd_hi:.2f}]`, Clustered Bootstrap 95% CI (`{b.get('bootstrap_iters', DEFAULT_BOOTSTRAP_ITERS)}` iters)",

@@ -1,0 +1,36 @@
+{
+  "branch": "hung/task2-claude-haiku55-eval",
+  "base_commit": "f6076786fd521ca2032172e38f7f209b40f95900",
+  "splits": {
+    "seed": {
+      "records": 15,
+      "sha256": "d0a985561b4eab37846fa5b7b6cbd5ca2cd7ffe186218fc6655f65e24552bbe7",
+      "membership_order_clusters_essay_prompt_unchanged": true,
+      "bytes_unchanged": false
+    },
+    "dev": {
+      "records": 173,
+      "sha256": "e0d1e13dfde444e61a36dea76b0c19d383bc148ca769b895a1f5a86711d83c5c",
+      "membership_order_clusters_essay_prompt_unchanged": true,
+      "bytes_unchanged": true
+    },
+    "holdout": {
+      "records": 63,
+      "sha256": "2eb6efe23882d4ae0b66f2993a49e159c829ca81db82d11e433a12134cf61ce0",
+      "membership_order_clusters_essay_prompt_unchanged": true,
+      "bytes_unchanged": true
+    }
+  },
+  "verification_mode": "offline; fake providers; SQLite; no paid API calls",
+  "seed_provenance": {
+    "examiner_verified": 7,
+    "ai_augmented": 6,
+    "dual_rater": 2
+  },
+  "paragraph_audit": {
+    "records": 12,
+    "verified": 0,
+    "upstream_raw_available": 0
+  },
+  "dataset_id_literals_in_python_source": []
+}

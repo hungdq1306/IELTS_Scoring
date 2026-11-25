@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-QualityTier = Literal["examiner_verified", "max2_half", "max3_half_only", "rejected"]
+QualityTier = Literal["examiner_verified", "max2_half", "max3_half_only", "ai_augmented", "rejected"]
 CRITERIA_KEYS = ("tr", "cc", "lr", "gra")
 
 # Strict pattern for scraped website / HTML contamination (avoids false positives on essays about copyright law)
@@ -21,17 +21,16 @@ ARTIFACT_RE = re.compile(
 
 
 def round_half(val: float | int | str | Decimal) -> float:
-    """Round a numeric value to the nearest 0.5 increment using official IELTS ROUND_HALF_UP."""
+    """Round a numeric value to the nearest 0.5 increment using ROUND_HALF_UP for criterion normalization."""
     dec = val if isinstance(val, Decimal) else Decimal(str(val))
     half_units = (dec * Decimal("2")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
     return float(half_units / Decimal("2"))
 
 
 def compute_ielts_overall(tr: float, cc: float, lr: float, gra: float) -> float:
-    """Compute official IELTS Writing Task 2 overall band (.25 -> .5, .75 -> +1.0)."""
-    total = Decimal(str(tr)) + Decimal(str(cc)) + Decimal(str(lr)) + Decimal(str(gra))
-    half_units = (total / Decimal("2")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-    return float(half_units / Decimal("2"))
+    """FogWrite floor-to-half policy; reported labels remain separate."""
+    from backend.app.grading.bands import floor_overall
+    return floor_overall((tr, cc, lr, gra))
 
 
 def parse_half_band(raw: Any) -> float | None:
@@ -84,6 +83,14 @@ class EssayRecord(BaseModel):
     overall: float = Field(..., ge=0.0, le=9.0)
     word_count: int = Field(..., ge=1)
     source: str
+    overall_reported: float | None = None
+    overall_computed: float | None = None
+    overall_policy: str | None = None
+    score_source: Literal['examiner_verified', 'ai_augmented', 'dual_rater'] | None = None
+    score_provenance: dict[str, Any] = Field(default_factory=dict)
+    paragraph_spans: list[dict[str, Any]] | None = None
+    paragraph_boundary_verified: bool | None = None
+    paragraph_boundary_source: str | None = None
     examiner_feedback: dict[str, Any] | list[Any] | str | None = None
     r1_scores: dict[str, float] | None = None
     r2_scores: dict[str, float] | None = None
@@ -114,7 +121,7 @@ def _load_examiner_verified(config: dict[str, Any], root: Path) -> tuple[list[Es
     inputs = config["inputs"]
     cm = config["column_mappings"]
 
-    # 1. Load 7 detailed lecturer-graded essays (fs7_v1.json)
+    # Load detailed teacher annotations from the configured manifest.
     fs7_path = root / inputs["examiner_fs7_json"]
     fs7_cfg = cm["examiner_fs7"]
     fs7_payload = json.loads(fs7_path.read_text(encoding="utf-8"))
@@ -125,6 +132,9 @@ def _load_examiner_verified(config: dict[str, Any], root: Path) -> tuple[list[Es
         artifact = detect_artifact(prompt, essay)
         if artifact:
             dropped.append(DroppedRecord(essay_id=eid, source="examiner_fs7", reason=artifact))
+            continue
+        if item.get('label_provenance') != 'explicit_lecturer_annotation' or not item.get('prompt_verified'):
+            dropped.append(DroppedRecord(essay_id=eid, source="examiner_fs7", reason="unverified_provenance"))
             continue
         scores_obj = item.get(fs7_cfg["scores_obj"], {})
         parsed = {k: parse_half_band(scores_obj.get(v)) for k, v in fs7_cfg["criteria"].items()}
@@ -138,6 +148,11 @@ def _load_examiner_verified(config: dict[str, Any], root: Path) -> tuple[list[Es
                 prompt=prompt,
                 essay=essay,
                 quality_tier="examiner_verified",
+                score_source="examiner_verified",
+                score_provenance={"independently_verified": item.get("label_provenance") == "explicit_lecturer_annotation",
+                                  "source_record": str(inputs["examiner_fs7_json"]),
+                                  "label_provenance": item.get("label_provenance")},
+                overall_reported=scores_obj.get("overall"), overall_computed=ov, overall_policy="floor_half_v1",
                 tr=parsed["tr"],
                 cc=parsed["cc"],
                 lr=parsed["lr"],
@@ -149,7 +164,7 @@ def _load_examiner_verified(config: dict[str, Any], root: Path) -> tuple[list[Es
             )
         )
 
-    # 2. Load 6 verified high-band essays (supplemental/essays.jsonl)
+    # Supplemental labels retain their actual source provenance.
     supp_path = root / inputs["examiner_supplemental_jsonl"]
     supp_cfg = cm["examiner_supplemental"]
     with supp_path.open("r", encoding="utf-8") as fh:
@@ -179,7 +194,11 @@ def _load_examiner_verified(config: dict[str, Any], root: Path) -> tuple[list[Es
                     essay_id=eid,
                     prompt=prompt,
                     essay=essay,
-                    quality_tier="examiner_verified",
+                    quality_tier="examiner_verified" if item.get('provenance', {}).get('independently_verified_lecturer_grade') is True else "ai_augmented",
+                    score_source="examiner_verified" if item.get('provenance', {}).get('independently_verified_lecturer_grade') is True else "ai_augmented",
+                    score_provenance={"independently_verified": item.get('provenance', {}).get('independently_verified_lecturer_grade') is True,
+                                      **item.get('provenance', {})},
+                    overall_reported=scores_obj.get("overall"), overall_computed=ov, overall_policy="floor_half_v1",
                     tr=parsed["tr"],
                     cc=parsed["cc"],
                     lr=parsed["lr"],
@@ -333,7 +352,8 @@ def load_and_tier_dataset(config: dict[str, Any], root: Path | None = None) -> t
     all_records = examiner_records + dr_records
     all_dropped = ex_dropped + dr_dropped
     summary = {
-        "examiner_verified": len(examiner_records),
+        "examiner_verified": sum(r.quality_tier == "examiner_verified" for r in examiner_records),
+        "ai_augmented": sum(r.quality_tier == "ai_augmented" for r in examiner_records),
         "dual_rater_raw": dr_counts["total_raw"],
         "max2_half": dr_counts["max2_half"],
         "max3_half_only": dr_counts["max3_half_only"],

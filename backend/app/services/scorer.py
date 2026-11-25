@@ -16,8 +16,8 @@ from app.grading.v2 import AssessmentOutputV2, essay_metadata, feedback_language
 
 def baseline_config():
     config = configuration('V1_STRATIFIED')
-    if len(config['examples']) != 8:
-        raise ProviderError('fewshot_configuration', 'The frozen eight-anchor artifact is incomplete.', 503)
+    if not config['examples'] or not config['production_fewshot_ready']:
+        raise ProviderError('fewshot_configuration', 'The verified anchor artifact is incomplete.', 503)
     return config
 
 
@@ -49,8 +49,13 @@ async def score(submission, provider):
     snapshot = submission.config_snapshot
     config = copy.deepcopy(snapshot['fewshot'])
     # Redact teacher examples as well as the learner's text. Never send database identities.
+    from app.grading.payload import transform_essay
     for example in config.get('examples', []):
-        for key in ('student_essay', 'question', 'prompt'):
+        for key in ('student_essay', 'essay', 'student_essay_excerpt'):
+            if key in example:
+                example[key], example['metadata'] = transform_essay(
+                    example[key], redact_pii, example.get('metadata', example))
+        for key in ('question', 'prompt'):
             if key in example:
                 example[key] = redact_pii(example[key])
     request = GradeRequest(prompt=redact_pii(submission.prompt), essay=redact_pii(submission.essay))
@@ -58,7 +63,7 @@ async def score(submission, provider):
     v2 = snapshot.get('prompt_version') == 'v2'
     assessment_input = json.loads(detailed_input(request))
     if v2:
-        assessment_input.pop('length_note', None)
+        assessment_input['metadata'].update(essay_metadata(request.essay))
     system, user = compose(DETAILED_PROMPT, json.dumps(assessment_input, ensure_ascii=False), config)
     if snapshot.get('style'):
         user = json.dumps({'assessment_data': json.loads(user),
@@ -77,8 +82,6 @@ async def score(submission, provider):
         if start_policy >= 0 and end_policy > start_policy:
             system = system[:start_policy] + system[end_policy:]
         system += V2_RULES + feedback_language_rules(feedback_language)
-        user += '\n<essay_metadata>' + json.dumps(essay_metadata(request.essay)) + '</essay_metadata>'
-        user += '\n<student_essay>' + request.essay.replace('<','&lt;').replace('>','&gt;') + '</student_essay>'
     execution = {'model_name': snapshot['model_name'], 'thinking_budget': snapshot['score_thinking_budget']} if snapshot.get('model_name') else {}
     generation = await provider.generate_structured(system, user, AssessmentOutputV2 if v2 else DetailedModelGrade, **execution)
     if v2:
